@@ -4,13 +4,14 @@
 本项目的开启纯粹为了记录个人学习js书籍时，对相关知识点的记录。方便随时查阅。并非js入门教程。   
 
 
-* [1. 快速入门](#1)  
-    * [1.1 字符串](#2)
-    * [1.2 数组](#3)
-    * [1.3 对象](#4)
-    * [1.4 条件判断](#5)
-    * [1.5 Map和Set](#6)
-    * [1.6 iterable](#7)
+* [1. 快速入门](#1)
+    * [1.1 let和const命令](#new1)  
+    * [1.2 字符串](#2)
+    * [1.3 数组](#3)
+    * [1.4 对象](#4)
+    * [1.5 条件判断](#5)
+    * [1.6 Map和Set](#6)
+    * [1.7 iterable](#7)
 * [2. 函数](#8)  
     * [2.1 函数定义和调用](#9)
     * [2.2 变量作用域与解构赋值](#10)
@@ -24,9 +25,116 @@
     * [3.2 JSON](#18)
 * [参考书籍](#100)
 
-<h2 id="1">快速入门</h2>
+<h2 id="1">快速入门</h2>   
 
-<h3 id="2">字符串</h3>
+<h3 id="new1">let和const命令</h3>
+
+**ES6**新增了let命令，所有声明的变量只在let命令所在的代码块内有效：   
+
+```
+{
+    let a = 10;
+    var b = 1;
+}
+a // ReferenceError: a is not defined
+b // 1
+```   
+for循环的计数器就很适合let:    
+
+```
+var a = [];
+for( let i = 0;i < 10; i++ ){
+    a[i] = function (){
+        console.log(i);
+    }
+}
+a[6]() //6
+```   
+
+let和const不存在变量提升：   
+```
+console.log(foo); // undefined
+var foo = 2;
+```  
+```
+console.log(foo); // 报错
+let foo = 2;
+```     
+
+变量要在声明后使用。x默认值为y，此时y还没有声明，属于死区：   
+
+```
+function bar(x=y,y=2){
+    return [x,y];
+}
+
+bar() // y is not defined
+```   
+
+var变量提升导致内层的tmp变量覆盖了外层的tmp变量：       
+  
+```
+var tmp = new Date();
+function f(){
+    console.log(tmp);
+    if(false){
+        var tmp = 'hello'
+    }
+}
+f() //undefined
+```   
+
+let实际上为js新增了块级作用域：   
+*块级作用域的出现，使立即执行函数不再必要了*     
+
+```
+function f1(){
+    let n = 5;
+    if( true ){
+        let n = 10;
+    }
+    console.log(n)
+}
+f1() //5
+```   
+
+const声明一个只读常量，声明就不能改变：    
+
+```
+const PI = 3.1415;
+PI //3.1415
+PI = 3 // 报错
+```   
+
+const声明就要立即初始化，不能留到后边赋值:       
+
+`const foo; // 报错`    
+
+const实际上保证的并不是变量的值不得改动，而是变量指向的那个内存地址不得改动。        
+对于复合类型(主要是对象和数组)而言,变量指向的内存地址保存的只是一个指针。    
+const保证指针固定，至于它指向的数据结构是不是可变，完全不能控制：   
+
+```
+const foo = {};
+
+//为foo添加一个属性，可以成功
+foo.prop = 123;
+foo.prop // 123
+
+//将foo指向另一个对象，就会报错
+foo = {} 
+```   
+
+```
+const a = [];
+a.push('hello') // 可执行
+a.length = 0 // 可执行
+a = ['Dave'] // 报错
+```     
+
+**ES6**声明变量六种方法：使用var命令、function命令、let命令、const命令、import命令、class命令    
+
+<h3 id="2">字符串</h3>   
 
 **ES6**多行字符串用反引号 \`... \`表示：   
 ```
