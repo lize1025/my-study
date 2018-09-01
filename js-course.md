@@ -1058,7 +1058,7 @@ d; // Sat Sep 01 2018 17:42:45 GMT+0800 (中国标准时间)
 d.getMonth(); // 8
 ```   
 
-*使用Date.parse()时传入的字符串使用实际月份01~12，转换为Date对象后getMonth()获取的月份值为0~11。*   
+*使用Date.parse()时传入的字符串使用实际月份01-12，转换为Date对象后getMonth()获取的月份值为0-11。*   
 
 获取当前时间戳:   
 
@@ -1089,7 +1089,6 @@ var xiaoming = {
 };
 var s = JSON.stringify(xiaoming);
 console.log(s);
-//{"name":"小明","age":14,"gender":true,"height":1.65,"grade":null,"middle-school":"\"W3C\" Middle School","skills":["JavaScript","Java","Python","Lisp"]}
 ```   
 
 第二个参数用于控制如何筛选对象的键值，如果我们只想输出指定的属性，可以传入Array   
