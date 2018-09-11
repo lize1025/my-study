@@ -50,7 +50,7 @@
     let a = 10;
     var b = 1;
 }
-a // ReferenceError: a is not defined
+a // Uncaught ReferenceError: a is not defined
 b // 1
 ```   
 for循环的计数器就很适合let:    
@@ -122,7 +122,7 @@ PI = 3 // 报错
 
 const声明就要立即初始化，不能留到后边赋值:       
 
-`const foo; // 报错`    
+`const foo; // Uncaught SyntaxError: Missing initializer in const declaration`    
 
 const实际上保证的并不是变量的值不得改动，而是变量指向的那个内存地址不得改动。        
 对于复合类型(主要是对象和数组)而言,变量指向的内存地址保存的只是一个指针。    
@@ -163,6 +163,7 @@ var age = 20;
 var message = '你好, ' + name + ', 你今年' + age + '岁了!';  
 ```
 **ES6**模板字符串：  
+  
 `var message = 你好,${name},你今年${age}岁了`   
 
 toUpperCase()把一个字符串全部变为大写：   
@@ -270,8 +271,8 @@ arr.join('-'); // 'A-B-C-1-2-3'
 ```   
 
 <h3 id="4">对象</h3> 
-访问属性是通过.操作符完成的，但这要求属性名必须是一个有效的变量名。如果属性名包含特殊字符，就必须用引号括起来：  
-
+访问属性是通过.操作符完成的，但这要求属性名必须是一个有效的变量名。如果属性名包含特殊字符，就必须用引号括起来：   
+      
 ```
 var xiaohong = {
     name: '小红',
@@ -307,9 +308,10 @@ for (;;) { // 将无限循环下去
 ```  
 
 <h3 id="6">Map和Set</h3>  
-**ES6**新数据类型  
-Map是一组键值对的结构，具有极快的查找速度。  
-*注意：由于一个key只能对应一个value，所以，多次对一个key放入value，后面的值会把前面的值冲掉*    
+**ES6**新数据类型 Map是一组键值对的结构，具有极快的查找速度。      
+
+*注意：由于一个key只能对应一个value，所以，多次对一个key放入value，后面的值会把前面的值冲掉*   
+
 
 ```
 var m = new Map([['Michael', 95], ['Bob', 75], ['Tracy', 85]]);
@@ -347,7 +349,7 @@ s; // Set {1, 2, 3, "3"}
 s.add(4);
 s; // Set {1, 2, 3,"3", 4}
 s.add(4);
-s; // 仍然是 Set {1, 2, 3, 4}
+s; // 仍然是 Set {1, 2, 3,"3", 4}
 ```   
 
 通过delete(key)方法可以删除元素：   
@@ -458,8 +460,10 @@ s.forEach(function (element, sameElement, set) {
 <h3 id="9">函数定义和调用</h3>   
 
 js的函数也是一个对象。   
-下边要有分号，表示赋值结束:   
-var abs = function(x){return x};   
+下边要有分号，表示赋值结束:     
+
+```var abs = function(x){return x}; ```   
+
 函数传入的参数多或者少也没有问题    
 
 arguments，它只在函数内部起作用，并且永远指向当前函数的调用者传入的所有参数。arguments类似Array但它不是一个Array
@@ -644,7 +648,7 @@ var person = {
 let {name, passport:id} = person;
 name; // '小明'
 id; // 'G-12345678'
-// 注意: passport不是变量，而是为了让变量id获得passport属性:
+// passport不是变量，而是为了让变量id获得passport属性:
 passport; // Uncaught ReferenceError: passport is not defined   
 ```    
 
@@ -673,7 +677,8 @@ var x, y;
 // 语法错误: Uncaught SyntaxError: Unexpected token =
 ```    
 
-这是因为JavaScript引擎把{开头的语句当作了块处理，于是=不再合法。解决方法是用小括号括起来：     
+这是因为JavaScript引擎把{开头的语句当作了块处理，于是=不再合法。解决方法是用小括号括起来：    
+     
 `({x, y} = { name: '小明', x: 100, y: 200});`     
 
 解构赋值在很多时候可以大大简化代码。例如，交换两个变量x和y的值，可以这么写，不再需要临时变量：   
@@ -828,9 +833,9 @@ function lazy_sum(arr) {
 
 `f(); // 15`     
 
-*在这个例子中，我们在函数lazy_sum中又定义了函数sum，并且，内部函数sum可以引用外部函数lazy_sum的参数和局部变量。     
-当lazy_sum返回函数sum时，相关参数和变量都保存在返回的函数中，这种称为“闭包（Closure）”的程序结构拥有极大的威力。*    
-
+在这个例子中，我们在函数lazy_sum中又定义了函数sum，并且，内部函数sum可以引用外部函数lazy_sum的参数和局部变量。     
+当lazy_sum返回函数sum时，相关参数和变量都保存在返回的函数中，这种称为“闭包（Closure）”的程序结构拥有极大的威力。      
+  
 当我们调用lazy_sum()时，每次调用都会返回一个新的函数，即使传入相同的参数：    
 
 ```
@@ -996,6 +1001,7 @@ obj.getAge(); // 25
 ```    
 
 如果使用箭头函数，以前的那种hack写法就不需要了：   
+     
 `var that = this;`    
 
 由于this在箭头函数中已经按照词法作用域绑定了，所以，用call()或者apply()调用箭头函数时，无法对this进行绑定，即传入的第一个参数被忽略：    
@@ -1015,7 +1021,7 @@ obj.getAge(2018); // 28
 <h3 id="15">generator</h3>
 
 generator（生成器）是 **ES6** 标准引入的新的数据类型。一个generator看上去像一个函数，但可以返回多次：    
-generator和函数不同的是，generator由function*定义（注意多出的*号），并且，除了return语句，还可以用yield返回多次。    
+generator和函数不同的是，generator由function*定义（注意多出的星号），并且，除了return语句，还可以用yield返回多次。    
 
 要编写一个产生斐波那契数列的函数，可以这么写：    
 
@@ -1145,16 +1151,16 @@ null和undefined没有toString()方法
   
 ```  
 var now = new Date();
-now; // Wed Jun 24 2015 19:49:22 GMT+0800 (CST)
+now; // Tue Sep 11 2018 16:20:08 GMT+0800 (中国标准时间)
 now.getFullYear(); // 2018, 年份
 now.getMonth(); // 8, 月份，注意月份范围是0~11，5表示六月
-now.getDate(); // 1, 表示24号
-now.getDay(); // 3, 表示星期三
-now.getHours(); // 19, 24小时制
-now.getMinutes(); // 49, 分钟
-now.getSeconds(); // 22, 秒
-now.getMilliseconds(); // 875, 毫秒数
-now.getTime(); // 1435146562875, 以number形式表示的时间戳
+now.getDate(); // 11, 表示11号
+now.getDay(); // 2, 表示星期二
+now.getHours(); // 16, 24小时制
+now.getMinutes(); // 20, 分钟
+now.getSeconds(); // 8, 秒
+now.getMilliseconds(); // 832, 毫秒数
+now.getTime(); // 1536654008832, 以number形式表示的时间戳
 ```   
 
 创建一个指定日期和时间的Date对象，可以用：   
@@ -1298,8 +1304,10 @@ function foo() {
 }
 ```     
 
-函数也是一个对象，它的原型链是：   
-foo ----> Function.prototype ----> Object.prototype ----> null    
+函数也是一个对象，它的原型链是：     
+  
+`foo ----> Function.prototype ----> Object.prototype ----> null`    
+
 由于Function.prototype定义了apply()等方法，因此，所有函数都可以调用apply()方法。    
 
 构造函数   
@@ -1391,10 +1399,12 @@ function PrimaryStudent(props) {
 }
 ```   
 
-但是，调用了Student构造函数不等于继承了Student，PrimaryStudent创建的对象的原型是：   
+但是，调用了Student构造函数不等于继承了Student，PrimaryStudent创建的对象的原型是：    
+  
 `new PrimaryStudent() ----> PrimaryStudent.prototype ----> Object.prototype ----> null`   
 
-必须想办法把原型链修改为：   
+必须想办法把原型链修改为：     
+  
 `new PrimaryStudent() ----> PrimaryStudent.prototype ----> Student.prototype ----> Object.prototype ----> null`   
 
 这样，原型链对了，继承关系就对了。   
@@ -1558,16 +1568,19 @@ screen.height：屏幕高度，以像素为单位；
 
 location对象表示当前页面的URL信息。例如，一个完整的URL：   
 
-http://www.example.com:8080/path/index.html?a=1&b=2#TOP   
-可以用location.href获取。要获得URL各个部分的值，可以这么写：   
+http://www.example.com:8080/path/index.html?a=1&b=2#TOP     
 
+可以用location.href获取。要获得URL各个部分的值，可以这么写：   
+   
+```   
 location.protocol; // 'http'   
 location.host; // 'www.example.com'   
 location.port; // '8080'   
 location.pathname; // '/path/index.html'   
 location.search; // '?a=1&b=2'   
-location.hash; // 'TOP'   
-
+location.hash; // 'TOP'
+```   
+   
 要加载一个新页面，可以调用location.assign()。如果要重新加载当前页面，调用location.reload()方法非常方便。    
 
 document对象表示当前页面。由于HTML在浏览器中以DOM形式表示为树形结构，document对象就是整个DOM树的根节点。   
@@ -1661,7 +1674,7 @@ function doSubmitForm() {
 
 二种方式是响应form本身的onsubmit事件，在提交form时作修改   
 注意要return true来告诉浏览器继续提交，如果return false，浏览器将不会继续提交form     
-种情况通常对应用户输入有误，提示用户错误信息后终止提交form。   
+这种情况通常对应用户输入有误，提示用户错误信息后终止提交form。   
 
 在检查和修改input时，要充分利用input type="hidden"来传递数据。   
 很多登录表单希望用户输入用户名和口令，但是，安全考虑，提交表单时不传输明文口令，而是口令的MD5    
@@ -1843,7 +1856,7 @@ JSONP通常以函数调用的形式返回，例如，返回JavaScript内容如�
 `foo('data');`     
 
 这样一来，我们如果在页面中先准备好foo()函数，然后给页面动态加一个script节点，相当于动态读取外域的JavaScript资源，最后就等着接收回调了。     
-以163的股票查询URL为例，对于URL：http://api.money.126.net/data/feed/0000001,1399001?callback=refreshPrice，你将得到如下返回：     
+以163的股票查询URL为例，对于URL：http://api.money.126.net/data/feed/0000001,1399001?callback=refreshPrice  你将得到如下返回：     
 
 `refreshPrice({"0000001":{"code": "0000001", ... });`
 
@@ -1872,7 +1885,7 @@ function getPrice() {
 如果浏览器支持HTML5，那么就可以一劳永逸地使用新的跨域策略：CORS了。    
 CORS全称Cross-Origin Resource Sharing，是HTML5规范定义的如何跨域访问资源。     
 
-假设本域是my.com，外域是sina.com，只要响应头Access-Control-Allow-Origin为http://my.com，或者是*，本次请求就可以成功。    
+假设本域是my.com，外域是sina.com，只要响应头Access-Control-Allow-Origin为  http://my.com  或者是*，本次请求就可以成功。    
 可见，跨域能否成功，取决于对方服务器是否愿意给你设置一个正确的Access-Control-Allow-Origin    
 
 <h3 id="27">Promise</h3>    
