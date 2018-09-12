@@ -37,6 +37,11 @@
     * [6.1 $.ajax()](#30)
     * [6.2 编写jQuery插件](#31)
 * [7. 错误处理](#32)
+* [8. 高性能JavaScript(ES5)](#33)
+    * [8.1 加载和执行](#34)
+    * [8.2 数据存储](#35)
+    * [8.3 DOM编程](#36)
+    * [8.4 算法和流程控制](#37)
 * [参考书籍](#100)
 
 <h2 id="1">快速入门</h2>   
@@ -2275,6 +2280,421 @@ try {
 
 所以，涉及到异步代码，无法在调用时捕获，原因就是在捕获的当时，回调函数并未执行。    
 类似的，当我们处理一个事件时，在绑定事件的代码处，无法捕获事件处理函数的错误。    
+   
+<h2 id="33">高性能JavaScript(ES5)</h2>   
+   
+<h3 id="34">加载和执行</h3>  
+
+浏览器执行js时，页面的下载和渲染都会等待脚本解析和执行。    
+   
+ie8和高版本浏览器可以并行下载js文件，但下载过程仍然会阻塞其他资源下载，比如图片。并且页面也要等待都解析和执行完才行。    
+
+由于js会阻塞页面其他资源下载，所以建议把js放页面底部。   
+   
+减少页面中脚本数量，可以改善性能。    
+   
+无阻塞下载js方法：   
+defer属性，只有 Internet Explorer 支持 defer 属性。   
+
+js动态创建script。文件的下载和执行过程不会阻塞页面其他进程:    
+
+```
+var script = document.createElement('script');
+script.type = 'text/javascript';
+script.src = 'file.js'
+doucment.getElementsByTagName('head')[0].appendChild(script);
+```
+   
+在html5中 document.getElementsByTagName('head')[0] === document.head    
+   
+XHR对象下载js文件，通过创建动态script元素将代码注入页面：    
+   
+```
+var xhr = new XMLHttpRequest();
+xhr.open('get','files.js',true);
+xhr.onreadystatechange = function(){
+    if(xhr.readyState == 4){
+        if(xhr.status >= 200 && xhr.status < 300 || xhr.status == 304){
+            var script = document.createElement('script');
+            script.text = xht.responseText;
+            document.body.appendChild(script);
+        }
+    }
+}
+xhr.send(null);
+```  
+  
+css文件本身是并行下载，不会阻塞页面其他进程。   
+  
+LABjs文件加载器。RequireJS 和 SeaJS 模块加载器。   
+    
+<h3 id="35">数据存储</h3>   
+  
+数据存储位置会很大程度上影响其读取速度。     
+4种基本数据存储位置：字面量，本地变量，数组元素，对象成员。     
+   
+局部变量存在于作用域链的起始位置，所以访问最快，全局变量总处在作用域链最末端，最慢。   
+   
+document是全局对象，引用了三次，所以先保存到局部变量里。由于数量原因，不会有太大差异，如果有几十个全局变量，性能就会改善许多:   
+
+```
+function initUI(){
+    var doc = document,
+        bd = doc.body,
+        links = doc.getElementsByTagName('a'),
+        i = 0,
+        len = links.length
+
+    while( i<len ){
+        update( links[i++] )
+    }
+
+    doc.getElementById('btn').onclick = function(){
+        start()
+    }
+
+    bd.className = 'active'
+}
+```
+   
+改变执行环境作用域的方法:with和try-catch   
+   
+访问document对象的属性非常快，而访问局部变量则变慢了，最好避免使用with:   
+
+```
+    function initUI(){
+        with( document ){
+            var bd = body,
+                links = getElementsByTagName('a'),
+                i = 0,
+                len = links.length
+
+            while( i<len ){
+                update( links[i++] )
+            }
+
+            getElementById('btn').onclick = function(){
+                alert('done')
+            }
+
+            bd.className = 'active'
+                
+        }
+    }
+```   
+   
+当try捕捉到错误，会把异常对象堆入一个变量对象，并置于作用域首位，catch内部局部变量将会放在第二个作用域对象中。    
+handleError(ex)是子句中唯一执行代码，且没有局部变量访问，作用域临时改变就不会影响代码性能。    
+
+```
+    try{
+        methodThat()
+    }catch(ex){
+        handleError(ex); //委托给错误处理器函数
+    }
+```   
+   
+动态作用域：with语句，try-catch子句，包含eval()的函数   
+   
+使用闭包最需要关注的性能点：   
+在频繁访问跨作用域的标识符时，每次访问都会带来性能损失。   
+将常用的跨作用域变量存储在局部变量中，然后直接访问局部变量。来减轻闭包对执行速度的影响。   
+   
+对象成员包括属性和方法：   
+当一个被命名的成员引用了一个函数，该成员就被称为一个方法。   
+当一个被命名的成员引用了非函数类型的成员，就被称为属性。   
+   
+对象两种成员类型：实例成员和原型成员   
+   
+解析对象成员，当school.toString()被调用时，从对象实例开始找，没有继续搜索原型，直到找到并执行。   
+可以用hasOwnProperty()方法判断对象是否包含特定实例成员，对象是否包含特定属性，可以用in   
+
+```
+var school = {
+    name:'zheng',
+    age:'32'
+}
+
+alert(school.hasOwnProperty('name')); // true
+alert(school.hasOwnProperty('toString')); // false
+
+alert('age' in school) //true
+alert('toString' in school) //true
+```   
+   
+在同一个函数里边不要多次查找读取同一个对象成员:   
+
+```
+function hasCla(ele,cN1,cN2){
+    var curcN = ele.className;
+    return curcN == cN1 || curcN == cN2
+}
+```   
+  
+<h3 id="36">DOM编程</h3> 
+
+DOM文档对象模型。用于操作XML和HTML文档的程序接口，浏览器中，主要用来与html文档打交道，在浏览器中用js实现的。   
+
+减少访问DOM的次数，把运算尽量留给ECMAscript   
+
+```
+    function innerLoop(){
+        var content = '';
+        for(var count=0;count<15000;count++){
+            content += 'a';
+        }
+        document.getElementById('here').innerHTML = content
+    }
+
+    innerLoop()
+```
+  
+innerHTML对比DOM方法   
+在对性能有苛刻要求的操作中更新一大段HTML。推荐innerHTML   
+  
+老版本ie下，字符串合并性能并不是最好的，可以用数组来合并大量字符串。   
+      
+节点克隆：克隆已有节点，用element.clone()代替document.createElement()      
+//先创建需要重复的元素，重复的在用clone()，这样做运行结果会稍微快一点。      
+
+HTML集合：包含了DOM节点引用的类数组对象。底层文档对象更新时，他也会自动更新。     
+
+```
+document.getElementsByName()
+document.getElementsByClassName()
+document.getElementsByTagName()
+document.images
+document.links
+document.forms
+document.forms[0].elements //页面中第一个表单的所有字段
+```   
+  
+通常情况遍历一个较小的集合，缓存length就够了：   
+
+```
+function loopLen(){
+    var coll = document.getElementsByTagName('a'),
+        len = coll.length;
+    for( var count=0;count<len;count++ ){
+        console.log(count)
+    }
+}
+```  
+  
+遍历数组比遍历集合快，如果先将集合元素拷贝到数组再访问他的属性会更快。    
+不过额外步骤会带来消耗。开始要遍历次集合，因此应评估在特定环境下使用数组拷贝是否有帮助。    
+
+将HTML集合拷贝到普通数组：    
+
+```
+function HtmlToArray(coll){
+    for(var i=0,a=[],len=coll.length;i<len;i++){
+        a[i] = coll[i]
+    }
+    return a;
+}
+var html = document.getElementsByTagName('a')
+var arr = HtmlToArray(html)	
+``` 
+   
+使用children代替childNodes会更快，因为children能区分元素节点。集合项更少。   
+   
+querySelectorAll()方法：   
+使用css选择器作为参数并返回一个NodeList类数组对象，不会返回HTML集合。返回的节点不会对应实时的文本结构。   
+
+querySelector() 方法返回文档中匹配指定 CSS 选择器的一个元素。   
+querySelector()和querySelectorAll()支持id8及以上版本。    
+  
+重排和重绘可能代价非常昂贵，应合并多次对DOM和样式的修改，然后一次处理掉：   
+
+```
+var ele = document.getElementById('mydiv');
+ele.style.borderLeft = '1px';
+ele.style.borderRight = '2px';
+ele.style.padding = '3px';
+
+var ele = document.getElementById('mydiv');
+ele.style.cssText += '; border-left:1px;';
+
+var ele = document.getElementById('mydiv');
+ele.className = 'active';
+```
+
+批量修改DOM：   
+
+```
+<ul id="mylist"></ul>
+
+var data = [
+    {
+        'name':'zheng',
+        'url':'http://baidu.com'
+    },
+    {
+        'name':'ji',
+        'url':'http://www.sina.com.cn'
+    }
+];
+
+// 更新数据函数
+function appendData(appendToele,data){
+    var a ='',li = '';
+    for( var i=0,max=data.length;i<max;i++ ){
+        a = document.createElement('a');
+        a.href = data[i].url;
+        a.appendChild(document.createTextNode(data[i].name));
+        li = document.createElement('li');
+        li.appendChild(a);
+        appendToele.appendChild(li);
+    }
+}
+
+// 方法一：data数组中每一个新条目附加到DOM都会导致重排
+var ul = document.getElementById('mylist');
+appendData( ul,data )
+
+// 方法二：改变display属性减少重排
+var ul = document.getElementById('mylist');
+ul.style.display = 'none';
+appendData( ul,data )
+ul.style.display = 'block';	
+
+//方法三：创建修改节点的备份
+var old = document.getElementById('mylist');
+var clone = old.cloneNode(true);
+appendData( clone,data );
+old.parentNode.replaceChild( clone,old );
+
+// 方法四：代码片段，只触发一次重排，只访问一次实时DOM
+var fragment = document.createDocumentFragment();
+appendData( fragment,data );
+document.getElementById('mylist').appendChild(fragment);
+```
+   
+使用事件委托减少事件处理器的数量   
+使用时间代理，只需给外层元素绑定已个处理器，就可以处理在其元素上触发的所有事件。   
+根据DOM标准，每个事件都要经历三个阶段：捕获，到达目标，冒泡   
+IE不支持捕获，但对于委托而言，冒泡已经足够了。   
+  
+动画中使用绝对定位。  
+   
+缓存布局信息   
+
+<h3 id="37">算法和流程控制</h3>  
+
+代码的组织结构和解决具体问题的思路是影响代码性能的主要因素    
+  
+for循环 while do-while for-in   
+for-in每次迭代操作会同时搜索实例和原型属性，除非明确需要迭代一个属性数量未知的对象，否则避免用。    
+
+优化循环，减少对象成员及数组成员以及数组项的查找次数     
+
+for循环继续执行的条件，是;;之间的这个判断要为真      
+
+```
+for( var i=0,len=items.length;i<len;i++ ){...}
+
+var j=0;
+count = items.length;
+while( j<count ){...} 
+
+var k=0;
+num = items.length;
+do{...} while( k<num );
+```
+   
+倒序循环是编程语言中一种通用的性能优化方法。颠倒数组的顺序来提高性能   
+倒序循环，并把减法操作放在控制条件中，每个条件只是简单和0比较，控制条件与true比较时，转化下是不是true就好了。   
+
+```
+for( var i=items.length;i--; ){...}
+
+var j = items.length;
+while( j-- ){...}
+
+var k = items.length-1;
+do{...} while( k-- );
+```  
+  
+达夫设备：一种限制迭代次数的模式   
+
+forEach()遍历一个数组的所有成员：    
+`items.forEach( function(value,index,array){...} )  //参数：当前数组项的值，索引，数组本身`   
+
+if-else,switch,查找表   
+
+if-else适用于判断两个离散值或几个不同的值域   
+
+优化if-else   
+确保最可能出现的条件放在首位   
+减少条件判断次数，避免判断太长。 可以把if-else嵌套起来使用。    
+  
+switch判断多于两个离散值时更佳   
+
+查找表：使用数组或普通对象来构建，当单个键和值之间存在映射时，适合用。   
+比如索引和值正好对应：   
+
+```
+var results = ['res1','res2'...]
+return results[value]
+
+//代替switch的
+switch( value ){
+    case 0:
+    return res1;
+    case 1:
+    return res2
+    ...
+    default:
+    return res10
+}
+```   
+ 
+递归：   
+
+```
+var factorial = (function f(num){
+if(num<=1){
+return 1;
+}else{
+return num*arguments.callee(num-1);
+}
+})(4)
+alert(factorial)//24 (4*3*2*1)    
+```   
+
+递归遇到调用栈大小限制,调用栈错误。   
+检查代码中的递归实例：   
+函数调用自身：function re(){re()};re()   
+两个函数相互调用:function first(){second()};function second(){first()};first();   
+不正确终止条件。   
+算法中含太多层递归。   
+递归改为用迭代实现。   
+
+多次调用递归函数时，为避免重复工作，可以用一种递归算法的memoization技术:   
+
+```
+function mem(n){
+
+if( !mem.cache ){
+    mem.cache = {
+        '0' : 1,
+        '1' : 1
+    };
+}
+
+if( !mem.cache.hasOwnProperty(n) ){
+    mem.cache[n] = n * arguments.callee(n-1);					
+}
+
+    return mem.cache[n]
+}
+
+console.log( mem(6) )
+console.log( mem(5) )
+console.log( mem(4) )
+```  
+
 
 <h3 id="100">参考书籍</h3>   
 
