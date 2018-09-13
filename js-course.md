@@ -42,6 +42,9 @@
     * [8.2 数据存储](#35)
     * [8.3 DOM编程](#36)
     * [8.4 算法和流程控制](#37)
+    * [8.5 快速响应用户界面](#38)
+    * [8.6 编程实践](#39)
+    * [8.7 构建并部署高性能js应用](#40)
 * [参考书籍](#100)
 
 <h2 id="1">快速入门</h2>   
@@ -153,7 +156,49 @@ a = ['Dave'] // 报错
 
 **ES6**声明变量六种方法：使用var命令、function命令、let命令、const命令、import命令、class命令    
 
-<h3 id="2">字符串</h3>   
+<h3 id="2">字符串</h3>  
+  
+`str += 'one' + 'two';`  
+
+运行会经历四个步骤：   
+1.在内存中创建临时字符串   
+2.连接后的字符串onetwo被赋值给临时字符串   
+3.临时字符串与str当前值连接   
+4.结果赋值给str  
+
+优化方法：直接附加内容给str。避免产生临时字符串    
+ie8之前版本浏览器无效,反而会慢，因为实现机制不同，ie7会每连接一对字符串就把它复制到一块新分配的内存中。    
+
+```
+str += 'one';
+str += 'two';
+```   
+
+或者只用一个语句达到上边效果：    
+
+`str = str + 'one' +'two' //附加字符串都是从左往右连接的，所以同样避免了使用临时字符串。`    
+
+数组项合并比其他字符串连接方法更慢，但事实上，在ie7和ie6中相反。      
+
+```
+//其它浏览器更高效：
+var str = 'a',
+    news = '',
+    time = 5000;
+
+while( time-- ){news += str;}
+
+//ie6,7更高效：
+var str = 'a',
+    arr = [],
+    news = '',
+    time = 5000;
+
+while( time-- ){arr[arr.length] += str;}
+news = arr.join('');	
+```   
+
+多数情况，使用concat()比使用+和+=稍慢。    
 
 **ES6**多行字符串用反引号 \`... \`表示：   
 ```
@@ -463,6 +508,59 @@ s.forEach(function (element, sameElement, set) {
 <h2 id="8">函数</h2>   
 
 <h3 id="9">函数定义和调用</h3>   
+
+函数声明：   
+使用 function 关键字声明一个函数，再执行一个函数名。   
+`function fnName() {...} `     
+   
+函数表达式：   
+使用 function 关键字声明一个函数，但未给函数命名，最后将匿名函数赋予一个变量。
+`var fnName = function() { ... }`    
+
+匿名函数：  
+使用 function 关键字声明一个函数，但未给函数命名，所以叫匿名函数。   
+匿名函数属于函数表达式，匿名函数有很多作用，赋予一个变量则创建函数，赋予一个事件则成为事件处理程序或创建闭包等。   
+`function() { ... }`   
+
+函数声明和函数表达式不同之处在于：   
+
+JavaScript 引擎在解析 JavaScript 代码时会“函数声明提升”当前执行环境(作用域)上的函数声明，    
+函数表达式必须等到 JavaScript 引擎执行到它所在行时，才会从上而下一行一行地解析函数表达式。    
+
+函数表达式后面可以加括号立即调用该函数，函数声明不可以，只能以 fnName() 形式调用。    
+   
+() 、! 、+ 、- 、= 等运算符，都将函数声明转换成函数表达式,可以在后面加括号，并立即执行函数的代码:       
+     
+```
+(function(a) {
+  console.log(a);  //使用()运算符，打印出123
+})(123);
+
+(function(a) {
+  console.log(a);  //使用()运算符，打印出1234
+}(1234));
+
+!function(a) {
+  console.log(a);  //使用!运算符，打印出12345
+}(12345);
+
++function(a) {
+  console.log(a);  //使用+运算符，打印出123456
+}(123456);
+
+-function(a) {
+  console.log(a);  //使用-运算符，打印出1234567
+}(1234567);
+
+var fn = function(a) {
+  console.log(a);  //使用=运算符，打印出12345678
+}(12345678);
+```   
+
+javascript 中没有私有作用域的概念，你在全局或局部作用域中声明了一些变量，可能会被其他人不小心用同名的变量给覆盖掉。   
+根据 javascript 函数作用域链的特性，可以使用这种技术可以模仿一个私有作用域：     
+用匿名函数作为一个“容器”，“容器”内部可以访问外部的变量，而外部环境不能访问“容器”内部的变量，    
+所以 (function(){ ... })() 内部定义的变量不会和外部的变量发生冲突，俗称“匿名包裹器”或“命名空间”。    
 
 js的函数也是一个对象。   
 下边要有分号，表示赋值结束:     
@@ -1893,6 +1991,225 @@ CORS全称Cross-Origin Resource Sharing，是HTML5规范定义的如何跨域访
 假设本域是my.com，外域是sina.com，只要响应头Access-Control-Allow-Origin为  http://my.com  或者是*，本次请求就可以成功。    
 可见，跨域能否成功，取决于对方服务器是否愿意给你设置一个正确的Access-Control-Allow-Origin    
 
+高性能Ajax包括:      
+   
+了解项目具体需求，选择正确的数据格式和与之匹配的传输技术。    
+
+请求数据：    
+XMLHttpRequest(XHR)    
+动态注入脚本    
+iframes    
+Comet   
+Multipart XHR   
+   
+```
+var url = '/data.php';
+var params = [
+    'id=123456',
+    'limit=20'
+];
+
+var req = new XMLHttpRequest();
+req.onreadystatechange = function(){
+    if( req.readyState === 4 ){
+        var responseHeaders = req.getAllResponseHeaders();
+        var data = req.responseText;
+        //处理数据
+    }
+}
+req.open( 'GET',url + '?' + params.join('&'),true );
+req.setRequestHeader( 'X-Requested-With','XMLHttpRequest' ); //设置请求头信息
+req.send(null);
+```    
+ 
+对于那些不会改变服务器状态，只会获取数据的请求，应该使用GET，经GET请求的数据会被缓存起来。   
+只有当请求的URL加上参数的长度接近或超过2048个字符时，才应该用POST获取数据。      
+   
+动态脚本注入，能跨域请求数据。但提供的控制有限。不能设置请求头信息，参数也只能是GET方式。请求超时也不能设置。    
+
+```
+var scrEle = document.createElement('script');
+    scrEle.src = 'abc.js';
+    document.getElementsByTagName('head')[0].appendChild( scrEle );
+```   
+   
+Multipart XHR:允许客户端只用一个http请求从服务器端传送多个资源   
+缺点：获取的资源无法被缓存   
+ie6,7不支持data:URL 和 readyState为3的状态(正在与服务器交互，传输过程。)    
+
+```
+var req = new XMLHttpRequest();
+    req.open( 'GET','abc.php',true );
+    req.onreadystatechange = function(){
+        if( req.readyState === 4 ){
+            splitImages( req.responseText ); //接收到结果由splitImages()处理
+        }
+    }
+    req.send(null);
+
+    //服务器端读取图片将图片转换为base64编码的字符串，之间用Unicode编码连接，然后返回给客户端。
+    function splitImages(imageString){
+        var imageData = imageString.split('\u0001');
+        var imageElement = '';
+
+        for( var i=0,len=imageData.length;i<len;i++ ){
+            imageElement = document.createElement('img');
+            imageElement.src = 'data:image/jpeg;base64,' + imageData[i];
+            document.getElementById('container').appendChild(imageElement);
+        }
+    }
+```   
+
+发送数据：    
+XMLHttpRequest    
+beacons(图片信标)   
+   
+XMLHttpRequest以post方式回传数据：   
+
+```
+var url = '/data.php';
+var params = [
+    'id=934875',
+    'limit=20'
+];
+
+function xhrPost(url,params,callback){
+    var req = new XMLHttpRequest();
+    req.onerror = function(){
+        setTimeout(function(){
+            xhrPost(url,params,callback);
+        },1000);
+    };
+    req.onreadystatechange = function(){
+        if( req.readyState == 4 ){
+            if( callback && typeof callback === 'function' ){
+                callback();
+            }
+        }
+    };
+
+req.open( 'POST',url,true );
+req.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+req.setRequestHeader('Content-Length',params.length);
+req.send(params.join('&'));
+}
+```   
+   
+beacons：向服务器回传数据最快且最有效的方式。   
+缺点：能接收到的响应类型有限。如需要返回大量数据，用XHR。如果只关心数据发送到服务器，可以用信标技术    
+   
+并没有创建img元素或插入到DOM   
+服务器接收到数据并保存，无须向客户端发送回馈，因此没有图片会实际显示。	   
+  
+```
+var url = '/abc.php';
+var params = ['step=2','time=123456'];
+( new Image() ).src = url + '?' + params.join('&');
+```   
+   
+数据格式：XML,XPath,json,jsonp,html,自定义格式    
+   
+XML：   
+
+```
+//把每一个值都放到标签的属性上，文件尺寸会变小，解析也容易的多
+<users total="4">
+    <user id="1-id001" username="alice" realname="alice smith" email="alice@sina.com" />
+    <user id="2-id001" username="bom" realname="bom smith" email="bom@sina.com" />
+    <user id="3-id001" username="zhe" realname="zhe smith" email="zhe@sina.com" />
+</users>
+
+//把特定XML响应解析成一个对象
+function parseXML(responseXML){
+    var user = [];
+    var userNodes = responseXML.getElementsByTagName('user');
+    for( var i=0,len=userNodes.length;i<len;i++ ){
+        user[i] = {
+            id:userNodes[i].getAttribute('id'),
+            username:userNodes[i].getAttribute('username'),
+            realname:userNodes[i].getAttribute('realname'),
+            email:userNodes[i].getAttribute('email')
+        }
+    };
+    return user;
+}
+```   
+   
+XPath即为XML路径语言，它是一种用来确定XML（标准通用标记语言的子集）文档中某部分位置的语言。   
+XPath解析XML文档比getElementsByTagName快许多。    
+   
+json：用js对象和数组直接编写的轻量级易于解析的数据格式。json数据被当成字符串返回。    
+
+```
+//普通写法
+[
+    {
+        "id":"1-id001",
+        "username":"alice", 
+        "realname":"alice smith",
+        "email":"alice@sina.com"
+    },
+    {
+        "id":"2-id001",
+        "username":"bom", 
+        "realname":"bom smith",
+        "email":"bom@sina.com"
+    }
+]
+
+//可以把属性名简写，甚至可以去掉属性名用二维数组。这样可读性差但是文件会小很多：
+[
+    ["1-id001","alice","alice smith","alice@sina.com"],
+    ["2-id001","bom","bom smith","bom@sina.com"]
+]
+```   
+  
+jsonp:使用动态脚本注入，json数据被当成另一个js文件并作为原生代码执行，而不是字符串。   
+为实现这一点，数据必须封装在一个回调函数里。解析速度快，能跨域使用。   
+   
+```   
+// 例如查CA1998航班
+var flightHandler = function(data){
+    alert('你查询的航班结果是：票价 ' + data.price + ' 元，' + '余票 ' + data.tickets + ' 张。');
+};
+
+// 提供jsonp服务的url地址（不管是什么类型的地址，最终生成的返回值都是一段javascript代码）
+var url = "http://flightQuery.com/jsonp/flightResult.aspx?code=CA1998&callback=flightHandler";
+var script = document.createElement('script');
+script.setAttribute('src', url);
+document.getElementsByTagName('head')[0].appendChild(script);
+
+//jquery实现
+$(function(){
+    $.ajax({
+            url: "http://flightQuery.com/jsonp/flightResult.aspx?code=CA1998",
+            dataType: "jsonp",
+            jsonp: "callback",//传递给请求处理程序或页面的，用以获得jsonp回调函数名的参数名(一般默认为:callback)可以不写。
+            jsonpCallback:"flightHandler",//自定义的jsonp回调函数名称，默认为jQuery自动生成的随机函数名，也可以写"?"，jQuery会自动为你处理数据,可以不写。
+            success: function(json){
+                alert('您查询到航班信息：票价： ' + json.price + ' 元，余票： ' + json.tickets + ' 张。');
+            },
+            error: function(){
+                alert('fail');
+            }
+        });
+    });
+
+    $.getJSON('http://flightQuery.com/jsonp/flightResult.aspx?code=CA1998&callback=?', function(json) {
+            alert('您查询到航班信息：票价： ' + json.price + ' 元，余票： ' + json.tickets + ' 张。');
+    });
+```   
+   
+html:服务器端也可以构建好整个html再传回给客户端，js可以直接innerHTML插入页面，但html作为数据格式，既缓慢又臃肿。   
+   
+自定义格式：使用XHR或动态脚本注入获取，用split()解析。 解析大数据集比jsonp略快，尺寸更小，但是可读性差。   
+   
+缓存数据，避免发送不必要请求：   
+在服务端：设置HTTP头信息以确保你的响应会被浏览器缓存    
+如果希望缓存ajax，必须使用GET方式发送请求，和在响应中发送正确的http头部信息。    
+在客服端：把获取到的信息存储到本地，避免再次请求。     
+第一种技术使用简单好维护，第二种给前端最大控制权。    
+
 <h3 id="27">Promise</h3>    
 
 在JavaScript的世界中，所有代码都是单线程执行的。   
@@ -2695,7 +3012,238 @@ console.log( mem(5) )
 console.log( mem(4) )
 ```  
 
+<h3 id="38">快速响应用户界面</h3>     
 
+浏览器UI线程：   
+用于执行js和更新用户界面的进程。线程的工作基于一个简单的队列系统，任务会被保存在队列中，直到进程空闲。    
+一旦空闲，队列中的下一个任务就被提出运行。任务可以是js代码，UI更新，包括重绘和重排。    
+
+单个js操作花费的总时间不应当超过100毫秒，过长运行时间会导致UI更新出现延迟，影响用户体验。         
+复杂js任务不能在100毫秒完成，最理想方法是让出UI线程控制权，使UI可以更新。这时可以考虑用定时器。     
+
+setTimeout(),setInterval()接收相同参数，要执行的函数和执行前的等待时间。     
+第二个参数是多少毫秒后向UI列队插入一个函数的js任务：      
+表示任务何时被添加到列队，不是一定会在这段时间后执行。会等列队其他前边任务执行完再执行。计算时间是从setTimeout()调用时开始算。     
+
+*注意：js定时器延迟通常差几毫秒，建议最小值25毫秒，再小的延时，对一些UI更新来说不够用。*    
+    
+记录代码运行时间：    
+
+```
+var start = +new Date();
+var stop;
+(function(a) {
+console.log(a);  //使用()运算符，打印出123
+})(123)
+stop = +new Date();
+alert( stop-start );
+```   
+   
+js中可以在某个元素前使用+号，这个操作是将该元素转换成Number类型，如果转换失败，那么将得到 NaN。    
+所以 +new Date将会调用 Date.prototype 上的 valueOf 方法，Date.prototype.value 方法等同于 Date.prototype.getTime() 。         
+所以下列代码效果相同：     
+
+```
+console.log(+new Date);
+
+console.log(new Date().getTime());
+
+console.log(new Date().valueOf());
+
+console.log(new Date() * 1);
+```   
+   
+for循环时间过长，主要原因里边执行代码复杂，或者数组太大。    
+为避免锁定浏览器给用户带来的糟糕体验，可以使用定时器处理数组:    
+
+```
+var todo = items.concat() //克隆数组items
+setTimeout(function(){
+    process( todo.shift() );
+    if( todo.length ){
+        setTimeout( arguments.callee,25 )
+    }else{
+        callback( items )
+    }
+},25)
+```   
+
+*注意：使用定时器处理数组的副作用是处理数组的总时长增加了。*
+
+Web Workers:    
+引入一个接口，能使代码运行且不占用浏览器UI线程的时间，也不影响其他worker中运行的代码。   
+   
+Web Workers有着不同的全局运行环境，因此无法从js代码中创建它。需要创建一个完全独立的js文件：    
+
+```
+var worker = new Worker('b.js');
+worker.onmessage = function(event){
+    alert(event.data);
+}
+worker.postMessage('zheng')
+
+//b.js内容：
+self.onmessage = function(event){self.postMessage('hello ' + event.data + "!")}
+
+//self指向全局worker对象
+//postMessage传递数据
+//onmessage接收信息 该事件event对象有一个data属性用于存放传入的数据
+```   
+  
+worker通过importScripts()加载外部js文件：importScripts('file1.js','file2.js')     
+
+如需终止 Web Workers，并释放浏览器/计算机资源，使用 terminate() 方法   
+
+解析一个很大的json。假设数据量足够大。worker成为不错的解决方案。   
+
+<h3 id="39">编程实践</h3>   
+  
+setTimeout(),setInterval()第一个参数传函数，不要传字符串。    
+
+使用object，array直接量：    
+
+```
+var myobj = {name:'zheng',age:32};
+var arr = ['zheng',32,true,null];
+```    
+   
+避免重复工作：   
+延迟加载:    
+如能力监测，当一个函数在页面多次调用时，只检测一次，速度会很快。(第一次会慢一些)：    
+
+```
+function addHandler(target,eventType,handler){
+        if( target.addEventListener ){
+            addHandler = function(target,eventType,handler){
+                target.addEventListener(eventType,handler,false);
+            };
+        }else{
+            addHandler = function(target,eventType,handler){
+                target.attachEvent("on" + eventType,handler);
+            };
+        }
+        addHandler(target,eventType,handler)
+    };
+
+    var content = document.getElementById('content');
+    addHandler(content,'click',function(){
+        alert('succes')
+    })
+```   
+   
+条件预加载:   
+会在脚本加载时就检测，适用于一个函数马上就要被用到，整个页面频繁出现的场合。   
+
+```
+var addHandler = document.body.addEventListener ?
+                 function(target,eventType,handler){
+                    target.addEventListener(eventType,handler,false);
+                 }:
+                 function(target,eventType,handler){
+                    target.attachEvent("on" + eventType,handler);
+                 };
+
+var removeHandler = document.body.addEventListener ?
+                    function(target,eventType,handler){
+                        target.removeEventListener(eventType,handler,false);
+                    }:
+                    function(target,eventType,handler){
+                        target.detachEvent("on" + eventType,handler);
+                    };
+```   
+   
+在进行数学计算时，考虑使用直接操作数字的二进制形式的位运算。   
+用位操作符可提升js的速度，使用位运算代替纯数字操作：   
+数字操作对2取模：   
+
+```
+for( var i=0,len=div.length;i<len;i++ ){
+    if( i%2 ){ //注意索引0开始
+        div[i].className = 'even'
+    }else{
+        div[i].className = 'odd'
+    }
+}	
+```   
+
+位运算操作：     
+偶数最低位0，奇数最低位1，要给定数字与1进行按位与运算。此数是偶数，结果就是0，奇数结果就是1 。   
+
+```
+for( var i=0,len=div.length;i<len;i++ ){
+    if( i&1 ){
+        div[i].className = 'even'
+    }else{
+        div[i].className = 'odd'
+    }
+}	
+```   
+   
+位掩码。用于处理同时存在多个布尔选项的情形。   
+如果有许多选项保存在一起并频繁检查，位掩码有助提高整体性能。   
+
+```
+var oa = 1;
+var ob = 2;
+var oc = 4;
+var od = 8;
+var oe = 16;
+var opt = oa | ob | oc;
+if(opt & oa){...}
+if(opt & od){...}
+```   
+   
+无论js代码如何优化，都不会比js引擎提供的原生方法更快。比如如下，每个值都是预先计算好的：  
+
+```
+Math.PI // π常量值   
+Math.SQRT2 // 2的平方根   
+Math.abs(num) // 返回num的绝对值   
+Math.sqrt(num) // 返回num的平方根   
+```   
+
+<h3 id="40">构建并部署高性能js应用</h3>   
+
+合并多个js文件减少http请求数。   
+压缩js文件。   
+服务器端压缩js(Gzip编码)。   
+设置http响应头缓存js文件，通过文件名增加时间戳避免缓存问题。   
+使用CDN内容发布网络，通过向最近的用户传输内容，极大地减少网络延时。   
+    
+实现前端自动化   
+   
+开发流程，主要是下面四点：   
+开发环境初始化   
+样式、脚本的依赖管理   
+文件编译、压缩合并、混淆   
+自动化测试 等等   
+   
+自动化工具：   
+开发环境初始化-----------------yeoman(yo、grunt、bower)   
+样式、脚本的依赖管理----------bower   
+文件编译、压缩合并、混淆-----grunt，gulp及其插件   
+自动化测试 等等----------------karma等   
+浏览器构建JavaScript模块脚本的前端工具---Webpack   
+   
+版本控制 ：git   
+项目模块化   
+虚拟机 vargrant   
+   
+性能分析：在脚本运行期间定时执行各种函数和操作，找出需要优化的部分。   
+   
+网络分析：检查图片样式表和脚本的加载过程，以及他们对页面整体加载和渲染的影响。   
+   
+在浏览器上进行的优化可能适用与其他浏览器，也可能产生相反效果。   
+性能分析工具确保优化的时间花费在系统最慢且影响大多数浏览器的地方，而不是去判定哪些函数或操作缓慢。   
+   
+使用未压缩过的脚本进行调试和性能分析。   
+   
+DOMContentLoaded事件触发的时刻，表示DOM树已经解析完成并准备就绪。   
+window的load事件触发的时刻，表示DOM准备就绪后所有外部资源也已经加载完成。   
+   
+chrome控制台开发人员工具：     
+http://user.qzone.qq.com/47935982/blog/1440062099    
+   
 <h3 id="100">参考书籍</h3>   
 
 [廖雪峰官网教程](https://www.liaoxuefeng.com/wiki/001434446689867b27157e896e74d51a89c25cc8b43bdb3000/001434499763408e24c210985d34edcabbca944b4239e20000)   
@@ -2703,4 +3251,5 @@ console.log( mem(4) )
 [JavaScript高级程序设计](http://www.wrox.com)     
 
 [ES6标准入门](https://github.com/ruanyf/es6tutorial)    
-
+  
+[高性能JavaScript](https://humanwhocodes.com/)  
