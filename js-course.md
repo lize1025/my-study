@@ -45,9 +45,10 @@
     * [8.5 快速响应用户界面](#38)
     * [8.6 编程实践](#39)
     * [8.7 构建并部署高性能js应用](#40)
+* [9. 正则表达式](#41)
 * [参考书籍](#100)
 
-<h2 id="1">快速入门</h2>   
+<h2 id="1">快速入门</h2>     
 
 <h3 id="new1">let和const命令</h3>
 
@@ -3244,6 +3245,391 @@ window的load事件触发的时刻，表示DOM准备就绪后所有外部资源�
 chrome控制台开发人员工具：     
 http://user.qzone.qq.com/47935982/blog/1440062099    
    
+<h2 id="41">正则表达式</h2>    
+
+正则表达式通常被用来检索、替换那些符合某个模式(规则)的文本      
+
+exec() 方法用于检索字符串中的正则表达式的匹配。     
+返回一个类似数组的对象，其中存放匹配的结果等。如果未找到匹配，则返回值为 null。   
+
+使用for in可以知道它的属性:     
+index表示匹配在原字符串中的索引；    
+input则是表示输入的字符串；     
+0表示只有一个匹配结果。可以用下标0来引用这个匹配结果。这个数量可能改变。通过返回值的length属性来得知匹配结果的总数量。
+
+```
+function execReg(reg,str){
+	var result = reg.exec(str);
+	document.write('index:' + result.index + '<br/>' + 'input:' + result.input + '<br/>');
+	for(i=0;i<result.length;i++){
+		document.write('result['+i+']:' + result[i] + '<br/>')
+	}
+}
+
+var reg = /\w/
+var str = 'bbs.babcd.comgde'
+execReg(reg,str)
+```    
+
+exec方法对正则表达式的更新     
+exec方法在返回结果对象的同时，还可能会更新原来的正则表达式，这就要看正则表达式是否设置了g修饰符     
+如果设置了g，那么exec执行之后会更新正则表达式的lastIndex属性，表示本次匹配后，所匹配字符串的下一个字符的索引    
+下一次再用这个正则表达式匹配字符串的时候就会从上次的lastIndex属性开始匹配    
+
+```
+function execReg(reg,str){
+	var result = reg.exec(str);
+	document.write('index:'+ result.index + '<br/>' + 'input:' + result.input +'<br/>');
+	for(i=0;i<result.length;i++){
+		document.write('resutl['+i+']:' + result[i] + '<br/>')
+	}
+}
+
+var reg = /\w/
+var str = 'bcs.babcd.comgde'
+execReg(reg,str)
+execReg(reg,str)
+// 以上两次结果一样，因为没有设置全局g
+
+function execReg(reg,str){
+	var result = reg.exec(str);
+	document.write('index:'+ result.index + '<br/>' + 'input:' + result.input +'<br/>');
+	for(i=0;i<result.length;i++){
+		document.write('resutl['+i+']:' + result[i] + '<br/>')
+	}
+}
+
+var reg = /\w/g
+var str = 'bcs.babcd.comgde'
+execReg(reg,str)
+execReg(reg,str)
+//以上就会不一样了
+```    
+   
+匹配内容中指定的字母文字等:     
+{1}匹配一个 {2}匹配连续的两个 {3,4}匹配连续的三个或者四个,有四个就不匹配三个，匹配最多的    
+{1,} 匹配最少一个，多了不限。z+ 和 z{1,} 是一个意思    
+
+
+```
+function execReg(reg,str){
+	var result = reg.exec(str)
+	console.log(result)
+}
+
+var reg = /这{1,}/    
+var str = 'zz这这这这zzzjijzk这jj'
+execReg(reg,str)
+```
+
+```
+var result = /z{3,4}/.exec('zjijzkjjzzzzzzz')
+console.log(result)
+```    
+  
+z? 和 z{0,1} 是一个意思。如果希望正则尽量少地匹配字符，那么就可以在表示数字的符号后面加上一个?       
+组成如下的形式：{n,}?, *?, +?, ??, {m,n}?  这里匹配一个 这 如果第一个不是这 那么匹配就是空    
+
+```
+var result36 = /这?/.exec('这这这这zzzjijzk这jj') 
+console.log(result36)
+```   
+
+z* 和 z{0,} 是一个意思,匹配最少零个，就是说开头第一个如果不是，匹配就是空。开头要是是，有几个匹配几个。     
+
+```
+var result37 = /这*/.exec('这这这这zzzjijzk这jj')
+console.log(result37)
+```    
+
+匹配开始^，结尾$ 。/^开头,结尾$/     
+  
+```
+var result1 = /^正/.exec('正则表达式')
+console.log(result1)
+
+var result2 = /表达式$/.exec('正则表达式')
+console.log(result2)
+```    
+
+.(点)会匹配字符串中除了换行符\n之外的所有字符的第一个   
+
+```
+var result3 = /./.exec('正则表达式')
+console.log(result3)
+```   
+
+.+就是匹配所有，包括一个空格，一个下滑线，和一个破折号。但是遇到换行符\n 后边的就不匹配了    
+
+```
+var result4 = /.+/.exec('正则表达式') 
+console.log(result4)
+```    
+
+.点匹配除换行符以外的任意字符  *星号贪婪量词，尽可能匹配多次   
+
+```
+var str = '<p>1</p><div>啊</div><p>2</p><div>啊啊</div><p>3</p><div>啊啊啊</div>'
+var reg = /<p>.*<\/p>/
+var a = str.replace(reg,'abc')
+console.log(a) // abc<div>啊啊啊</div>
+```    
+
+*?惰性量词,匹配尽可能少的字符。   
+
+```
+var str = '<p>1</p><div>啊</div><p>2</p><div>啊啊</div><p>3</p><div>啊啊啊</div>'
+var reg = /<p>.*?<\/p>/
+var a = str.replace(reg,'abc')
+console.log(a) //abc<div>啊</div><p>2</p><div>啊啊</div><p>3</p><div>啊啊啊</div>
+```   
+   
+二选一，正则表达式中的或，"|"    
+```
+var result5 = /^b|^c/.exec('cblueidea')
+console.log(result5)
+
+var result6 = /^b|c.+/.exec('dcainiao')
+console.log(result6)  //结果是cainiao 因为匹配的是c.+
+```   
+  
+字符集合[] 如[abc]表示a或者b或者c中的任意一个字符   
+```
+var result7 = /^[abc]/.exec('bbs.abc.def')
+console.log(result7)
+```   
+
+在字符集合中使用如下的表示方式:[a-z],[A-Z],[0-9]，分别表示小写字母，大写字母，数字    
+
+```
+var result8 = /^[a-zA-Z][a-zA-Z0-9_]+/.exec('tes中文t')
+console.log(result8) //tes
+```   
+
+反字符集合[^abc] ^在正则表达式开始部分的时候表示开头的意思，但是在字符集合中，它表示的是类似“非“的意思。    
+例如[^abc]就表示不能是a，b或者c中的任何一个。[^0-9]表示非数字，[^a-z]表示非小写字母，以此类推。    
+
+```
+var result9 = /[^abc]/.exec('ccabeebecagad')
+console.log(result9)  //e
+```   
+
+边界与非边界 \b表示的边界的意思，也就是说，只有字符串的开头和结尾才算数。与\b对应\B表示非边界    
+```
+var result10 = /c\b/.exec('ddaacaafdsfc') //匹配开始是c,就要 /\bc/ 这么写
+console.log(result10)  //c
+```   
+
+数字与非数字  \d表示数字的意思，相反，\D表示非数字   
+
+```
+var result11 = /[\d]/.exec('fasdfasf4213dfa2')  
+console.log(result11) //4
+
+var result12 = /\D/.exec('531中文fsdsr5')  //返回第一个非数字
+console.log(result12)  //中
+```   
+
+\f匹配换页符，\n匹配换行符，\r匹配回车，\t匹配制表符，\v匹配垂直制表符。     
+\s匹配单个空格，等同于[\f\n\r\t\v]。\S表示非空格字符   
+[\s\S]匹配换行在内的任意字符     
+
+```
+var result13 = /\s.+/.exec('this is a test')
+console.log(result13) //is a test
+
+var result14 = /\S+/.exec('this is a test')
+console.log(result14) //this
+```   
+
+\w表示单词字符，等同于字符集合[a-zA-Z0-9_]    
+\W表示非单词字符，等效于[^a-zA-Z0-9_]    
+
+```
+var result15 = /\w+/.exec('blue123中文dd')
+console.log(result15) //blue123
+
+var result16 = /\W+/.exec('blue123中文dd啊啊')
+console.log(result16) //中文
+
+var result17 = /(\w)(\w)/.exec('blueidea')
+console.log(result17) //bl,b,l
+//bl是整个正则匹配的内容，b是第一个括号里的子正则表达式匹配的内容，l是第二个括号匹配的内容。
+```   
+
+"\1"是等同于“第1个括号匹配的内容”，而不是“第一个括号的内容”。      
+   
+```
+var result18 = /(\w)\1/.exec('bbs.blueidea.com')
+console.log(result18) //返回bb,b
+
+var result19 = /(\w)(\w)\2\1/.exec('woow')
+console.log(result19) //返回woow,w,o
+```  
+
+使用形如(?:pattern)的正则就可以避免保存括号内的匹配结果   
+```
+var result20 = /^(?:b|c).+/.exec('blue')
+console.log(result20) //返回blue，就不返回b了
+
+var result21 = /^(?:b|c)\1/.exec('blue')
+console.log(result21) //返回null 由于根本就没有记录括号内匹配的内容，自然没有办法反向引用了
+```    
+
+正向预查，意思就是：要匹配的字符串，后面必须紧跟着pattern (?=pattern)      
+形式(?!pattern)和?=恰好相反，要求字符串的后面不能紧跟着某个pattern    
+括号里的内容并不参与真正的匹配，只是检查一下后面的字符是否符合要求而已      
+
+```
+var result22 = /cainiao(?=1)/.exec('cainiao1ef')
+console.log(result22) //cainiao
+
+var result23 = /cainiao(?!1)/.exec('cainiao1')
+alert(result23) //返回null 因为紧挨着1了
+```   
+
+正则表达式的修饰符 全局匹配，修饰符g /pattern/g          
+不区分大小写，修饰符i        
+行首行尾，修饰符m     
+
+```
+var result24 = /b/i.exec('Bule')
+console.log(result24)  //返回B
+
+var result25 = /^b/m.exec('test\nblue')
+alert(result25) //m修饰符的作用是修改^和$在正则表达式中的作用，让它们分别表示行首和行尾。 在此返回b     
+```
+
+test方法仅仅检查是否能够匹配str，并且返回布尔值以表示是否成功。    
+
+```
+var result26 = /9/.test('de9abdfde')
+console.log(result26)
+
+var result27 = /a/.test('fbfbfl')
+console.log(result27)
+```   
+
+match方法:str.match(reg);与正则表达式的exec方法类似。      
+返回一个类似数组的对象，有input和index属性。但是如果正则表达式设置了g修饰符，就不提供input和index    
+*注意：exec方法是reg.exec(str) 而match方法是str.match(reg)*     
+
+```
+function matchReg(reg,str){
+	var result = str.match(reg);
+	if(result){
+		document.write('index:' + result.index + '<br/>' + 'input:' + result.input +'<br/>');
+		for(i=0;i<result.length;i++){
+			document.write('result['+i+']:' + result[i] + '<br/>')
+		}
+	}else{
+		alert('null:匹配失败')
+	}
+}
+var reg = /\w/g
+var str = 'bcs.babcd.comgde'
+matchReg(reg,str)
+matchReg(reg,str)
+```    
+ 
+replace方法: str.replace (reg,'new str');     
+
+```
+var result28 = 'baidu.com.bai'.replace(/\w+/g,'word')
+console.log(result28)
+```   
+
+replace函数中使用$引用子正则表达式匹配内容。就像在正则里使用\1来引用第一个子正则表达式所匹配的内容一样。    
+在replace函数的替换字符里也可以使用$1来引用相同的内容。    
+
+```
+var result29 = 'abc.def.ghi'.replace(/(\w+).(\w+).(\w+)/,'$1.$1.$1')
+console.log(result29) 
+
+var result30 = 'cainiao gaoshou'.replace(/(\w+)\s(\w+)/,'$2 $1')
+console.log(result30)
+
+var result31 = 'cainiao gaoshou'.replace(/(\w+)\s(\w+)/,'$$ $$')
+alert(result31) // 想要用$这个字符的话，需要写成$$
+```   
+
+search方法 str.search(reg); 返回正则表达式第一次匹配的位置。    
+
+```
+var result32 = 'blueidea'.search(/idea/)
+console.log(result32) //4
+
+var result33 = 'abc.def.ghi'.search(/\W/)
+console.log(result33) //3
+```   
+
+split返回分割后的数组:        
+
+```
+var result34 = 'abc.def.ghi'.split(/\W/)
+console.log(result34) //返回abc,def,ghi
+
+var result35 = 'http://baidu.com'.split(/\W/)
+console.log(result35) //字符串被分为了有5个元素的数组，其中包括了两个为空字符串的元素。
+```   
+
+正则表达式工作原理：    
+    
+1.编译：   
+当通过直接量或者RegExp()创建一个正则表达式对象时，浏览器会验证表达式，转化成一个原生代码程序，用于执行匹配。   
+建议把正则对象赋值给一个变量，可以避免重复执行编译。   
+   
+2.设置起始位置：确定目标字符串的起始搜索位置。   
+   
+3.匹配正则表达式字元：逐个检查文本和正则表达式模式。   
+当一个特定字元匹配失败，会回溯到之前尝试匹配的位置，然后尝试其他可能的路径。     
+     
+4.匹配成功或失败。     
+       
+回溯是匹配过程的基础，正则强大的根源，一不小心就会失控。     
+当正则匹配目标字符串时，遇到量词(*,+?,{2,}),正则需要决定匹配更多字符。遇到分支(|操作)，需要选择一个尝试匹配。    
+
+`/h(ello|appy) hippo/.test('hello there, happy hippo')`     
+
+首先查找第一个h。接下来，子表达式(ello|appy)选择最左侧检车ello是否匹配字符串中下一个字符。    
+匹配成功，进而匹配随后的空格，由于hippo中的h无法匹配下一个字符串中的t。匹配无法继续。此时，    
+会回溯到最近的决策点（匹配完首字符h后面的位置），尝试匹配第二个分支。匹配没有成功，也没有更多可选项。    
+所以正则表达式认为从第一个字符开始匹配是不能成功的，从第二个字符开始重新尝试，也就是从e。没有找到h。   
+直到在第14个字符的位置匹配到happy中的h。再进入分支未匹配到ello，但是回溯到第二分支后匹配整个字符串成功。   
+
+提高正则表达式效率方法：    
+    
+正则慢的原因通常是匹配失败的过程慢，而不是匹配成功的过程慢。   
+   
+正则最好以简单，必须的字元开始。起始标记尽可能快速测试并排除明显不匹配的位置。比如可以用：    
+锚^或$ 特定字符 字符类\d等 单词边界\b 避免以分组或选择元字开头 /one|two/的顶层分支    
+    
+尽量具体化匹配模式   
+    
+减少分支(|)数量，缩小分支范围：      
+   
+[cb]at 替代 cat|bat   
+rea?d  替代 red|read   
+r(?:ed|aw) 替代 red|raw   
+[\s\S] 替代 (.|\r|\n)   
+    
+暴露必须的字元：如锚^  /^(ab|cd)/ 而不是/(^ab|^cd)/    
+   
+使用合适的量词：如贪婪和惰性量词的选择使用   
+   
+把正则表达式赋值给变量。   
+   
+将复杂的正则拆分为简单的片段。   
+   
+不要一味使用正则，比如只是搜索字符串是否以分号结尾：      
+逐个测试整个字符串，每当检测到分号，就移动到下一个$，检查是否是末尾，不匹配就继续搜索。反而效率不高。   
+
+```
+var abc = /;$/.test(str) 
+var abc = str.charAt( str.length-1 ) == ';'//要快于正则
+```   
+
+
 <h3 id="100">参考书籍</h3>   
 
 [廖雪峰官网教程](https://www.liaoxuefeng.com/wiki/001434446689867b27157e896e74d51a89c25cc8b43bdb3000/001434499763408e24c210985d34edcabbca944b4239e20000)   
