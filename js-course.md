@@ -5,13 +5,14 @@
 
 
 * [1. 快速入门](#1)
-    * [1.1 let和const命令](#new1)  
-    * [1.2 字符串](#2)
-    * [1.3 数组](#3)
-    * [1.4 对象](#4)
-    * [1.5 条件判断](#5)
-    * [1.6 Map和Set](#6)
-    * [1.7 iterable](#7)
+    * [1.1 基本语法和数据类型](#new2)
+    * [1.2 let和const命令](#new1)  
+    * [1.3 字符串](#2)
+    * [1.4 数组](#3)
+    * [1.5 对象](#4)
+    * [1.6 条件判断](#5)
+    * [1.7 Map和Set](#6)
+    * [1.8 iterable](#7)
 * [2. 函数](#8)  
     * [2.1 函数定义和调用](#9)
     * [2.2 变量作用域与解构赋值](#10)
@@ -46,9 +47,115 @@
     * [8.6 编程实践](#39)
     * [8.7 构建并部署高性能js应用](#40)
 * [9. 正则表达式](#41)
+* [10. 事件](#42)
 * [参考书籍](#100)
 
-<h2 id="1">快速入门</h2>     
+<h2 id="1">快速入门</h2>       
+    
+<h3 id="new2">基本语法和数据类型</h3>    
+
+typeof typeof 任何 返回string    
+
+```
+var a = {b:2}
+a.b
+a['b']
+```    
+
+`ele.onclick === ele['onclick']`    
+如做能力检测时候，ele['on'+type]就没法用点    
+  
+{"a.2":2}不是变量名就要加引号   
+
+按位或,按位与,异或:   
+
+```
+var a=3,b=7
+a | b  //7
+```   
+
+转成2进制    
+3 011   
+7 111   
+或运算有一个是1就是1，所以是111，再转换为10进制就是7   
+a&b都是1才是1    
+a^b一样是0，不一样是1     
+
+位运算是整数运算，所以取整有简便方法：   
+
+```
+123.13234 | 0  //123
+"123.13234" | 0  //123
+Math.floor(123.13234) //123
+```   
+
+&&如果都是true，那么直接返回后边的。如果前边是false，那就返回前边的。如     
+
+```
+123&&456 //456
+0&&123 //0
+```    
+
+二进制转换十进制：    
+100最右边开始0*2的0次方+0*2的1次方+1*2的2次方。结果就是4    
+   
+十进制转换二进制：   
+除以2：   
+12/2为6 整除记录0   
+6/2为3 整除记录0   
+3/2为1 不整除记录1   
+1/2 不整除记录1   
+然后反过来看，12的二进制就是1100   
+
+基本数据类型：undefined,null,string,number,boolean     
+不能给基本类型添加属性和方法    
+基本类型值是不可变的：     
+
+```
+var name = 'zheng'
+name.toUpperCase() //ZHENG
+console.log(name) //zheng
+```   
+    
+基本类型的变量是存放在栈区的，栈区包括了变量的标识符和变量的值     
+引用类型的值是可变的。    
+引用类型的值同时保存在栈区（栈内存）和堆区（堆内存）中的对象。    
+栈区保存变量标识符和指向堆内存中该对象的指针，也可以说该对象在堆内存中的地址。    
+
+```
+var a = {}
+var b = {}
+a == b //false
+```  
+    
+引用类型的值是按引用访问的，就是比较两个对象堆内存中的地址是否相同，明显不同。    
+引用类型的赋值，其实是对象保存在栈区地址指针的赋值，因此两个变量指向同一个对象，任何操作都会相互影响。     
+    
+变量向变量赋值引用类型时：     
+   
+```
+var a = {}
+var b = a
+a.name = 'Zheng'
+b.age = 1
+console.log(b.name) //Zheng
+console.log(a.age) //1
+```    
+
+变量向变量赋值基本类型时：    
+
+```
+var c = 10
+var d = c
+c++
+console.log(d) //10
+console.log(c) //11
+```    
+
+x=y=z=[1,2,3]那xyz都是数组123    
+
+!!这样就可以把非布尔类型转换成布尔类型了：    
+`var isArr = !!area.length //返回布尔值true或者false ` 
 
 <h3 id="new1">let和const命令</h3>
 
@@ -218,22 +325,52 @@ var message = '你好, ' + name + ', 你今年' + age + '岁了!';
 `var message = 你好,${name},你今年${age}岁了`   
 
 toUpperCase()把一个字符串全部变为大写：   
+
 ```
 var s = 'Hello';
 s.toUpperCase(); // 返回'HELLO'
-```
+```   
+
 toLowerCase()把一个字符串全部变为小写：   
+
 ```
 var s = 'Hello';
 var lower = s.toLowerCase(); // 返回'hello'并赋值给变量lower  
 ```   
-indexOf()会搜索指定字符串出现的位置，也可操作数组：   
+
+stringObject.indexOf(searchvalue,fromindex) 返回字符串首次出现的位置    
+stringObject.charAt(index) 返回制定位置的字符串   
+stringObject.split(separator,howmany) 用于把字符串分割成数组   
+stringObject.concat(str1,str2,str3) 合并多个字符串，返回合并的结果，实际值并未改变。也可合并数组。   
+   
+indexOf()会搜索指定字符串首次出现的位置，也可操作数组：    
+   
 ```
 var s = 'hello, world';
 s.indexOf('world'); // 返回7
 s.indexOf('World'); // 没有找到指定的子串，返回-1
 ```   
-substring()返回指定索引区间的子串：   
+
+charAt() 方法可返回指定位置的字符:  
+如果参数 index 不在 0 与 string.length 之间，该方法将返回一个空字符串    
+
+```
+"144253".charAt(3) //2   
+"144253".charAt(6) //''
+```  
+
+字符串截取：    
+slice(),substr(),substring()   
+slice和substring两个参数，起始位置和结束位置（不包括结束位置）   
+substr起始位置和字符串长度   
+substring两个参数，较小的做起始，另一个做结束。   
+参数是负数时：   
+slice将字符串长度与负数相加做参数，也可理解为从字符串末尾算起，如-1就是最后一个字符。   
+substring将负数变成0   
+ie对substr接收负数处理有错误，返回原始字符串   
+   
+substring()返回指定索引区间的子串：      
+   
 ```
 var s = 'hello, world'   
 s.substring(0, 5); // 从索引0开始到5（不包括5），返回'hello'   
@@ -242,20 +379,25 @@ s.substring(7); // 从索引7开始到结束，返回'world'
 
 <h3 id="3">数组</h3> 
 
-slice()就是对应String的substring()版本，它截取Array的部分元素，然后返回一个新的Array   
+slice()就是对应String的substring()版本，它截取Array的部分元素，然后返回一个新的Array  
+
 ```
 var arr = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 arr.slice(0, 3); // ['A', 'B', 'C']
 arr.slice(3); // ['D', 'E', 'F', 'G']
 ```  
+
 如果不给slice()传递任何参数，它就会从头到尾截取所有元素。利用这一点，我们可以很容易地复制一个Array：   
+
 ```
 var arr = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 var aCopy = arr.slice();
 aCopy; // ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 aCopy === arr; // false
 ```  
+
 push()向Array的末尾添加若干元素，pop()则把Array的最后一个元素删除掉：  
+
 ```
 var arr = [1, 2];
 arr.push('A', 'B'); // 返回Array新的长度: 4
@@ -267,7 +409,9 @@ arr; // []
 arr.pop(); // 空数组继续pop不会报错，而是返回undefined
 arr; // []
 ```   
-如果要往Array的头部添加若干元素，使用unshift()方法，shift()方法则把Array的第一个元素删掉：   
+
+如果要往Array的头部添加若干元素，使用unshift()方法，shift()方法则把Array的第一个元素删掉：     
+
 ```
 var arr = [1, 2];
 arr.unshift('A', 'B'); // 返回Array新的长度: 4
@@ -279,46 +423,68 @@ arr; // []
 arr.shift(); // undefined
 arr; // []
 ```   
+
 reverse()把整个Array的元素给掉个个，也就是反转：   
+
 ```
 var arr = ['one', 'two', 'three'];
 arr.reverse(); 
 arr; // ['three', 'two', 'one']
 ```   
+
 splice()方法是修改Array的“万能方法”，它可以从指定的索引开始删除若干元素，然后再从该位置添加若干元素：   
 从索引2开始删除3个元素,然后再添加两个元素:
+
 ```
 var arr = ['Microsoft', 'Apple', 'Yahoo', 'AOL', 'Excite', 'Oracle'];
 arr.splice(2, 3, 'Google', 'Facebook'); // 返回删除的元素 ['Yahoo', 'AOL', 'Excite']
 arr; // ['Microsoft', 'Apple', 'Google', 'Facebook', 'Oracle']
 ```
+
 只删除,不添加:
+
 ```
 arr.splice(2, 2); // ['Google', 'Facebook']
 arr; // ['Microsoft', 'Apple', 'Oracle']
 ```
+
 只添加,不删除:
+
 ```
 arr.splice(2, 0, 'Google', 'Facebook'); // 返回[],因为没有删除任何元素
 arr; // ['Microsoft', 'Apple', 'Google', 'Facebook', 'Oracle']
 ```   
-concat()方法把当前的Array和另一个Array连接起来，并返回一个新的Array：   
+
+concat()方法把当前的Array和另一个Array连接起来，并返回一个新的Array：    
+*concat()也可用于合并字符串,返回合并后的结果。*       
+
 ```
 var arr = ['A', 'B', 'C'];
 var added = arr.concat([1, 2, 3]);
 added; // ['A', 'B', 'C', 1, 2, 3]
 arr; // ['A', 'B', 'C']
 ```
-concat()方法可以接收任意个元素和Array，并且自动把Array拆开，然后全部添加到新的Array里：  
+
+concat()方法可以接收任意个元素和Array，并且自动把Array拆开，然后全部添加到新的Array里： 
+
 ```
 var arr = ['A', 'B', 'C'];
 arr.concat(1, 2, [3, 4]); // ['A', 'B', 'C', 1, 2, 3, 4]
 ```   
+
 join()方法，它把当前Array的每个元素都用指定的字符串连接起来，然后返回连接后的字符串   
 如果Array的元素不是字符串，将自动转换为字符串后再连接：   
+
 ```
 var arr = ['A', 'B', 'C', 1, 2, 3];
 arr.join('-'); // 'A-B-C-1-2-3'
+```   
+
+合并数组的一种方法：    
+
+```
+var arr = [1,2,3]
+arr.push.apply(arr,[4,5])
 ```   
 
 <h3 id="4">对象</h3> 
@@ -343,8 +509,47 @@ xiaohong.name; // '小红'
 xiaoming.hasOwnProperty('name'); // true
 ```  
 
+避免遍历包含原型的属性：    
+
+```
+var arr = ["admin","manager","db"]
+Array.prototype.name= "zhangshan"; 
+for( var i in arr ){
+	if( arr.hasOwnProperty(i) ){
+		console.log(i+':'+arr[i])
+	}
+}
+```   
+
+只有hasOwnPrototype()能给出正确答案:
+
+```
+Object.prototype.bar = 1
+var foo ={goo:undefined}
+foo.bar //1
+'bar' in foo //true
+foo.hasOwnPrototype('bar') //false
+foo.hasOwnPrototype('goo') //true
+```    
+  
+凡是通过new Function()创建的对象都是函数对象，其他的都是普通对象：   
+
+```
+//f1,f2,f3为函数对象：    
+function f1(){}
+var f2 = function(){}
+var f3 = new Function('str','console.log(str)')
+
+//o1,o2,o3为普通对象
+var o1 = new f1()
+var o2 = {}
+var o3 = new Object()
+```    
+
 <h3 id="5">条件判断</h3>
-js把null、undefined、0、NaN和空字符串''视为false，其他值一概视为true   
+js把null、undefined、0、NaN和空字符串''视为false，其他值一概视为true     
+  
+*0 === -0  // true*
 
 for循环的3个条件都是可以省略的，如果没有退出循环的判断条件，就必须使用break语句退出循环，否则就是死循环：   
 
@@ -357,7 +562,14 @@ for (;;) { // 将无限循环下去
     x++;
 }
 ```  
+  
+省略一个条件：   
 
+```
+var i = 0;
+for(;i<10;i++){console.log(i)}
+```    
+  
 <h3 id="6">Map和Set</h3>  
 **ES6**新数据类型 Map是一组键值对的结构，具有极快的查找速度。      
 
@@ -597,6 +809,13 @@ foo(1);
 rest参数只能写在最后，前面用...标识，从运行结果可知，传入的参数先绑定a、b，多余的参数以数组形式交给变量rest。    
 所以，不再需要arguments我们就获取了全部参数。    
 *注意：return语句，由于js引擎在行末自动添加分号的机制，return不要单独一行。*    
+
+函数里return的也可以判断。如：    
+
+```
+function a(n){return n === 2}
+a(2) //true
+```   
 
 <h3 id="10">变量作用域与解构赋值</h3> 
 
@@ -1232,7 +1451,14 @@ var s = new String('str'); // 'str',生成了新的包装类型
 
 typeof操作符可以判断出number、boolean、string、function和undefined；   
  
-判断Array要使用Array.isArray(arr)；   
+判断Array要使用Array.isArray(arr)；//兼容ie9及以上   
+
+判断数组，不兼容ie6   
+
+```
+var arr = ({}).toString.call(area) === "[object Array]"
+var arr = Object.prototype.toString.call(area) === "[object Array]"
+```   
 
 判断null请使用myVar === null；   
 
@@ -1249,6 +1475,15 @@ null和undefined没有toString()方法
 (123).toString(); // '123'
 ```   
 
+instanceof通过返回一个布尔值来指出，这个对象是否是这个特定类或者是它的子类的一个实例:   
+  
+判断对象，一切皆对象   
+`(a.instanceof Object)&&!(a.instanceof Array)&&!(a instanceof Function)`    
+判断数组：   
+`(a.instanceof Object)&&(a.instanceof Array)`    
+判断函数：    
+`(a.instanceof Object)&&(a.instanceof Function)`    
+  
 <h3 id="17">Date</h3>   
 
 获取系统当前时间，用：   
@@ -1304,7 +1539,8 @@ if (Date.now) {
 
 <h3 id="18">JSON</h3>    
 
-JSON定死了字符集必须是UTF-8，为了统一解析，JSON的字符串规定必须用双引号""，Object的键也必须用双引号""   
+JSON定死了字符集必须是UTF-8，json里的key要加引号，value也不能是function     
+json有两种表示结构 对象和数组。[验证json](http://www.bejson.com/)   
 
 JSON.stringify()序列化：          
 把小明这个对象序列化成JSON格式的字符串   
@@ -1323,12 +1559,13 @@ var s = JSON.stringify(xiaoming);
 console.log(s);
 ```   
 
-第二个参数用于控制如何筛选对象的键值，如果我们只想输出指定的属性，可以传入Array   
-要输出得好看一些，可以加上参数，按缩进输出:    
+第二个参数用于控制如何筛选对象的键值，可以是数组也可以是函数。    
+如果我们只想输出指定的属性，可以传入Array        
+要输出得好看一些，可以加上参数，控制结果中的缩进和空白符:    
 
 `JSON.stringify(xiaoming, ['name', 'skills'], '  ');`   
 
-还可以传入一个函数，这样对象的每个键值对都会被函数先处理：    
+传入一个函数，这样对象的每个键值对都会被函数先处理：    
 
 ```
 function convert(key, value) {
@@ -1342,6 +1579,7 @@ JSON.stringify(xiaoming, convert, '  ');
 ```   
 
 如果我们还想要精确控制如何序列化小明，可以给xiaoming定义一个toJSON()的方法，直接返回JSON应该序列化的数据：    
+调用toJSON且能通过它取到有效值，第二个参数就无效了。        
 
 ```
 var xiaoming = {
@@ -1363,6 +1601,7 @@ JSON.stringify(xiaoming); // '{"Name":"小明","Age":14}'
 ```   
 
 JSON.parse() 反序列化:    
+把json字符串解析为原生js值        
 
 拿到一个JSON格式的字符串，我们直接用JSON.parse()把它变成一个JavaScript对象： 
 
@@ -1385,10 +1624,64 @@ var obj = JSON.parse('{"name":"小明","age":14}', function (key, value) {
 console.log(JSON.stringify(obj)); // {name: '小明同学', age: 14}
 ```   
 
+在将日期字符串转换成Date对象时用：     
+
+```
+var obj = {
+	'a':1,
+	'b':2,
+	'c':[3,4,5,6],
+	'rel':new Date(2016,5,19)	
+}
+
+var str = JSON.stringify(obj) //"{"a":1,"b":2,"c":[3,4,5,6],"rel":"2016-06-18T16:00:00.000Z"}"
+
+var objtext = JSON.parse(str,function(key,value){
+	if(key == "rel"){
+		return new Date(value)
+	}else{return value}
+}) //{a: 1, b: 2, c: [3,4,5,6], rel: Sun Jun 19 2016 00:00:00 GMT+0800}
+
+console.log(objtext.rel.getFullYear()) //2016
+```   
+
+eval()把json字符串转换为对象    
+
+```
+var str = "{name:'json'}"
+var obj = eval("("+str+")")
+```   
+      
 <h2 id="19">面向对象编程</h2>   
 
 <h3 id="20">创建对象和原型继承</h3>   
 
+原型链和constructor    
+
+```
+var Person = function(name){this.name = name}
+Person.prototype.getName = function(){return this.name}
+var zyf = new Person('zheng')
+zyf.getName() //zheng
+```   
+
+js创建对象的时候，都有一个_proto_的内置对象，用于指向创建他的函数的原型对象prototype,我们把这个由_proto_串起来直到    
+Object.prototype._proto_为null的链条叫做原型链。    
+
+```
+zyf._proto_ === Person.prototype //true
+Person.prototype._proto_ === Object.prototype //true
+Object.prototype._proto_ === null //true
+```   
+  
+原型对象prototype中都有个预定义的constructor属性，用来引用他的函数对象，这是循环引用    
+
+```
+Person.prototype.constructor === Person //true
+Function.prototype.constructor === Function //true
+zyf.prototype === undefined //普通对象没有prototype但有_proto_属性。
+```   
+  
 javaScript对每个创建的对象都会设置一个原型，指向它的原型对象。   
 
 当我们用obj.xxx访问一个对象的属性时，js引擎先在当前对象上查找该属性，如果没有找到，就到其原型对象上找。    
@@ -1600,7 +1893,9 @@ PrimaryStudent.prototype.getGrade = function () {
 JavaScript的原型继承实现方式就是：   
 定义新的构造函数，并在内部用call()调用希望“继承”的构造函数，并绑定this；   
 借助中间函数F实现原型链继承，最好通过封装的inherits函数完成；   
-继续在新的构造函数的原型上定义新方法。   
+继续在新的构造函数的原型上定义新方法。    
+
+*取消原型对象上的某个属性：*`delete Object.prototype.name`
 
 <h3 id="21">class继承</h3>   
 
@@ -1652,11 +1947,19 @@ PrimaryStudent已经自动获得了父类Student的hello方法，我们又在子
 
 <h2 id="22">浏览器</h2>   
 
-<h3 id="23">浏览器对象</h3>
-
+<h3 id="23">浏览器对象</h3>   
+   
+页面加载顺序，从上到下，从外到内。   
+先打印head再打印body的加载顺序   
+  
 window对象有innerWidth和innerHeight属性,获取浏览器窗口的内部宽度和高度。     
 内部宽高是指除去菜单栏、工具栏、边框等占位元素后，用于显示网页的净宽高。   
 
+window.onload 等价于 $(window).load(function(){})   
+页面包含图片，所有元素加载完毕才执行，不能编写多个。   
+   
+$(function(){}) DOM结构绘制完毕执行，不必等加载完毕。可编写多个   
+   
 outerWidth和outerHeight属性，可以获取浏览器窗口的整个宽高   
 
 navigator.appName：浏览器名称；   
@@ -1668,7 +1971,9 @@ navigator.userAgent：浏览器设定的User-Agent字符串。
 *注意：navigator的信息可以很容易地被用户修改，所以JavaScript读取的值不一定是正确的*     
 
 screen.width：屏幕宽度，以像素为单位；   
-screen.height：屏幕高度，以像素为单位；   
+screen.height：屏幕高度，以像素为单位；  
+offsetWidth获取元素宽度，包括宽度和内边距和边框，得到的是一个数值，需要自己加单位。    
+offsetLeft就是这个元素离左边的距离     
 
 location对象表示当前页面的URL信息。例如，一个完整的URL：   
 
@@ -1684,21 +1989,48 @@ location.pathname; // '/path/index.html'
 location.search; // '?a=1&b=2'   
 location.hash; // 'TOP'
 ```   
-   
+       
 要加载一个新页面，可以调用location.assign()。如果要重新加载当前页面，调用location.reload()方法非常方便。    
 
 document对象表示当前页面。由于HTML在浏览器中以DOM形式表示为树形结构，document对象就是整个DOM树的根节点。   
-document的title属性是从HTML文档中的title标签读取的，但是可以动态改变document.title = '努力学习JavaScript!';   
-
-用document对象提供的getElementById()和getElementsByTagName()可以按ID获得一个DOM节点和按Tag名称获得一组DOM节点   
-JavaScript可以通过document.cookie读取到当前页面的Cookie   
+document的title属性是从HTML文档中的title标签读取的，但是可以动态改变   
+`document.title = '努力学习JavaScript!'; `    
+   
+`document.URL` 获取url   
+`document.referrer`  返回载入当前文档的url   
+`document.cookie` 读取到当前页面的Cookie    
 
 由于JavaScript能读取到页面的Cookie，而用户的登录信息通常也存在Cookie中，这就造成了巨大的安全隐患。   
 这是因为在HTML页面中引入第三方的JavaScript代码是允许的。   
 为了解决这个问题，服务器在设置Cookie时可以使用httpOnly，设定了httpOnly的Cookie将不能被JavaScript读取。    
 这个行为由浏览器实现，主流浏览器均支持httpOnly选项，IE从IE6 SP1开始支持。    
 为了确保安全，服务器端在设置Cookie时，应该始终坚持使用httpOnly。    
+     
+滚动条滚走距离兼容：        
+*clientWidth和clientHeight同理*       
+`var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;`     
 
+求得一个div的宽度。   
+`var num = Math.floor(document.documentElement.clientWidth/iPinW)`   
+   
+自动刷新：    
+
+```
+<meta http-equiv="refresh" content="20;http://baidu.com">
+
+function ref(){window.location.reload()}
+setTimeout(ref,1000)
+```   
+
+防止别人把页面iframe嵌走：     
+
+```
+if(this != this.parent){
+	top.location.href = "http://baidu.com"
+	//top.location.href = window.location.href
+}
+```  
+  
 <h3 id="24">操作DOM</h3>    
 
 获取DOM：    
@@ -1706,14 +2038,23 @@ JavaScript可以通过document.cookie读取到当前页面的Cookie
 在操作一个DOM节点前，我们需要通过各种方式先拿到这个DOM节点:     
 document.getElementById()和document.getElementsByTagName()，以及CSS选择器document.getElementsByClassName()。   
 
-使用querySelector()和querySelectorAll()，需要了解selector语法，然后使用条件来获取节点，更加方便：   
+使用querySelector()和querySelectorAll()，需要了解selector语法，然后使用条件来获取节点，更加方便：    
 
 通过querySelector获取ID为q1的节点：   
 `var q1 = document.querySelector('#q1');`
 
-通过querySelectorAll获取q1节点内的符合条件的所有节点：   
-`var ps = q1.querySelectorAll('div.highlighted > p');`   
+通过querySelectorAll获取q1节点内的符合条件的所有节点。结果是NodeList：   
+`var ps = q1.querySelectorAll('div.highlighted > p');`    
 
+关于转义：    
+
+```
+document.querySelector('.foo\\:bar')
+<div class="foo:bar"></div>
+document.querySelector('.foo\\\\bar')
+<div class="foo\bar"></div>
+```    
+  
 *注意：ie8以下版本不支持querySelector和querySelectorAll。IE8仅有限支持*   
    
 更新DOM：   
@@ -1762,6 +2103,12 @@ removed === self; // true
 HTML5新增了大量标准控件，常用的包括date、datetime、datetime-local、color等。     
 它们都使用input标签。不支持HTML5的浏览器无法识别新的控件，会把它们当做type="text"来显示    
 
+form表单默认method="get"    
+post请求传递数据大，慢    
+get请求浏览器地址栏都能看到    
+get从服务器获取数据，能被缓存，可以添加书签，有长度限制。    
+post提交数据给服务器，不能被缓存，不能添加书签，没有长度限制。    
+    
 JavaScript可以以两种方式来处理表单的提交（不算ajax）   
 
 方式一是通过form元素的submit()方法提交一个表单     
@@ -2426,6 +2773,12 @@ var dirDom = div.get(0) //取第一个DOM元素
 var another = $(divDom) //重新把DOM包为jq对象
 ```    
 
+jquery创建和加入：    
+
+`var o = $('<div>').addClass('abc').appendTo($('#main'))`    
+  
+jq里outerWidth()是包含内边距和边距的    
+   
 <h3 id="30">$.ajax()</h3>    
 
 jQuery在全局对象jQuery（也就是$）绑定了ajax()函数，可以处理AJAX请求。     
@@ -2932,8 +3285,10 @@ while( j-- ){...}
 
 var k = items.length-1;
 do{...} while( k-- );
-```  
-  
+```   
+
+*while循环没退出条件，或打断点没打好一直运行，都有可能把浏览器搞挂了。*      
+   
 达夫设备：一种限制迭代次数的模式   
 
 forEach()遍历一个数组的所有成员：    
@@ -3201,8 +3556,14 @@ Math.PI // π常量值
 Math.SQRT2 // 2的平方根   
 Math.abs(num) // 返回num的绝对值   
 Math.sqrt(num) // 返回num的平方根   
+Math.random() 方法可返回介于 0 ~ 1 之间的一个随机数。
 ```   
 
+生成n到m的随机数      
+`Math.random()*(m-n)+n | 0`       
+要想到m就是     
+`Math.random()*(m-n+1)+n | 0`      
+   
 <h3 id="40">构建并部署高性能js应用</h3>   
 
 合并多个js文件减少http请求数。   
@@ -3553,6 +3914,10 @@ var result31 = 'cainiao gaoshou'.replace(/(\w+)\s(\w+)/,'$$ $$')
 alert(result31) // 想要用$这个字符的话，需要写成$$
 ```   
 
+把里边的数字都替换成加1的。如果是9就变成0：      
+`'312355902'.replace(/\d/g,function(k){return ((k|0)+1)%10})  //如果想9变10，就去掉对10取余`   
+求余就是a除以b看余多少。如果a小于b。余数就是a本身。 一个整数对2取余，不是1就是0     
+
 search方法 str.search(reg); 返回正则表达式第一次匹配的位置。    
 
 ```
@@ -3629,6 +3994,87 @@ var abc = /;$/.test(str)
 var abc = str.charAt( str.length-1 ) == ';'//要快于正则
 ```   
 
+<h2 id="42">事件</h2>   
+
+事件就是文档或浏览器窗口中发生的一些特定的交互瞬间    
+js与html之间交互便是通过事件实现的   
+
+```
+<input type="text" onclick="showValue()">
+function showValue(){alert(this.value)} 
+
+//结果是undefined,因为this指向的是window。可以改写下
+
+<input type="text" onclick="showValue(this)">
+function showValue(obj){alert(obj.value)}
+```   
+DOM0级事件处理程序    
+传统方式，比如btn.onclick=function(){}       
+取消btn的onclick事件：`abc.onclick = null`    
+   
+DOM2级事件处理程序    
+addEventListener() attachEvent()多个的时候执行顺序不同。    
+addEventListener()先绑定的先执行    
+attachEvent()先执行最近绑定的，并且this指向window   
+还有区别就是是否加on，参数个数    
+attachEvent()不支持捕获，addEventListener()第三个参数true时支持   
+attachEvent绑定，想恢复this指向，用call       
+
+addEventListener()第二个参数是函数名，不加()。并且还允许把有handleEvent方法的对象作为参数：  
+removeEventListener()参数要和绑定一致      
+
+```
+var obj = {
+	name:'foo',
+	handleEvent:function(){
+		alert('click'+this.name)
+	}
+}
+document.body.addEventListener('click',obj,false)
+
+var obj = {
+	bind:function(){document.body.addEventListener('click',this,false)},
+	handleEvent:function(){alert('123')}	
+}
+obj.bind()
+```   
+
+在触发DOM上的某个事件的时候，会产生一个事件对象event。里边包含所有事件有关的信息    
+兼容写法：   
+
+```
+event?event:window.event
+event.target || event.srcElement
+```  
+     
+DOM3级事件处理程序    
+如焦点事件，鼠标事件，键盘事件等    
+
+鼠标事件：    
+客户端坐标事件：event.clientX event.clientY     
+该位置为鼠标相对于客户端视口的位置，不包括页面滚动的距离，不表示鼠标在页面上的位置。    
+     
+页面坐标位置：event.pageX evnet.pageY    
+获取页面位置，此坐标为页面本身，而非视口左边与顶边计算的。    
+在没有滚动条的时候，与client的值相等。    
+*注意page在ie8和以下不兼容，可通过client和滚动信息计算出来。 scrollLeft scrollTop*    
+
+```
+if(event.pageX === undefined){
+	event.pageX = event.clientX + ( document.body.scrollLeft || document.docuementElement.scrollLeft )
+}
+```   
+   
+屏幕坐标位置screenX screenY    
+   
+keydown keyup事件event对象的keyCode属性中包含一个代码显示所按的键盘键     
+     
+DOMContentLoaded事件，html5事件，和jq的ready()事件一样，jq也是这么做的，兼容就用，不兼容用其他方法实现    
+    
+对于列表项点击触发，可以逐一对li进行处理事件绑定，但一旦li较多，就会有性能问题，可用事件委托绑定到ul上，event中的target判断来执行代码。    
+   
+从文档中删除带有事件处理程序的元素时，可通过纯粹的DOM操作，比如removeChild，replaceChild方法。    
+但更多是用innerHTML替换页面中的一部分，如果用innerHTML来删除，那么原来的事件处理程序极有可能无法垃圾回收。    
 
 <h3 id="100">参考书籍</h3>   
 
