@@ -27,6 +27,7 @@
 * [4. 面向对象编程](#19)
     * [4.1 创建对象和原型继承](#20)
     * [4.2 class继承](#21)
+    * [4.3 设计模式](#43)
 * [5. 浏览器](#22)
     * [5.1 浏览器对象](#23)
     * [5.2 操作DOM](#24)
@@ -46,6 +47,7 @@
     * [8.5 快速响应用户界面](#38)
     * [8.6 编程实践](#39)
     * [8.7 构建并部署高性能js应用](#40)
+    * [8.8 js书写优化](#44)
 * [9. 正则表达式](#41)
 * [10. 事件](#42)
 * [参考书籍](#100)
@@ -1945,6 +1947,222 @@ class PrimaryStudent extends Student {
 PrimaryStudent需要通过super(name)来调用父类的构造函数，否则父类的name属性无法正常初始化。   
 PrimaryStudent已经自动获得了父类Student的hello方法，我们又在子类中定义了新的myGrade方法*    
 
+<h3 id="43">设计模式</h3>     
+
+策略模式：   
+定义一系列的算法，把它们一个个封装起来，并且使它们可以相互替换。    
+
+策略模式利用组合，委托等技术和思想，有效的避免很多if条件语句。   
+策略模式提供了开放-封闭原则，使代码更容易理解和扩展。    
+策略模式中的代码可以复用。    
+   
+计算奖金：   
+
+```
+var calculateBouns = function(salary,level) {
+    if(level === 'A') {
+        return salary * 4;
+    }
+    if(level === 'B') {
+        return salary * 3;
+    }
+    if(level === 'C') {
+        return salary * 2;
+    }
+};
+// 调用如下：
+console.log(calculateBouns(4000,'A')); // 16000
+console.log(calculateBouns(2500,'B')); // 7500
+```   
+
+以上代码缺点如下：    
+calculateBouns 函数包含了很多if-else语句。    
+calculateBouns 函数缺乏弹性，假如还有D等级的话，那么我们需要在calculateBouns 函数内添加判断等级D的if语句；    
+算法复用性差，如果在其他的地方也有类似这样的算法的话，但是规则不一样，我们这些代码不能通用。     
+
+使用策略模式计算奖金：   
+
+```
+var obj = {
+        "A": function(salary) {
+            return salary * 4;
+        },
+        "B" : function(salary) {
+            return salary * 3;
+        },
+        "C" : function(salary) {
+            return salary * 2;
+        } 
+};
+var calculateBouns =function(level,salary) {
+    return obj[level](salary);
+};
+console.log(calculateBouns('A',10000)); // 40000
+```   
+
+策略模式指的是定义一系列的算法，并且把它们封装起来。    
+策略模式不仅仅只封装算法，还可以用来封装一系列的业务规则，只要这些业务规则目标一致，我们就可以使用策略模式来封装它们     
+
+策略模式表单效验：    
+
+```
+<form action="http://www.baidu.com/s" id="registerForm" method="post">
+    <p>
+        <label>请输入用户名：</label>
+        <input type="text" name="userName"/>
+    </p>
+    <p>
+        <label>请输入密码：</label>
+        <input type="text" name="password"/>
+    </p>
+    <p>
+        <label>请输入手机号码：</label>
+        <input type="text" name="phoneNumber"/>
+    </p>
+    <input type="submit" value="确定">
+</form>
+
+// 策略对象
+var strategys = {
+    isNotEmpty: function(value,errorMsg) {
+        if(value === '') {
+            return errorMsg;
+        }
+    },
+    // 限制最小长度
+    minLength: function(value,length,errorMsg) {
+        if(value.length < length) {
+            return errorMsg;
+        }
+    },
+    // 手机号码格式
+    mobileFormat: function(value,errorMsg) {
+        if(!/(^1[3|5|8][0-9]{9}$)/.test(value)) {
+            return errorMsg;
+        }
+    } 
+};
+
+var Validator = function(){
+    this.cache = [];  // 保存效验规则
+};
+
+Validator.prototype.add = function(dom,rules) {
+    var self = this;
+    for(var i = 0, rule; rule = rules[i++]; ){
+        (function(rule){
+            var strategyAry = rule.strategy.split(":");
+            var errorMsg = rule.errorMsg;
+            self.cache.push(function(){
+                var strategy = strategyAry.shift();
+                strategyAry.unshift(dom.value);
+                strategyAry.push(errorMsg);
+                return strategys[strategy].apply(dom,strategyAry);
+            });
+        })(rule);
+    }
+};
+
+Validator.prototype.start = function(){
+    for(var i = 0, validatorFunc; validatorFunc = this.cache[i++]; ) {
+    var msg = validatorFunc(); // 开始效验 并取得效验后的返回信息
+    if(msg) {
+        return msg;
+    }
+    }
+};
+
+// 代码调用
+var registerForm = document.getElementById("registerForm");
+var validateFunc = function(){
+    var validator = new Validator(); // 创建一个Validator对象
+    /* 添加一些效验规则 */
+    validator.add(registerForm.userName,[
+        {strategy: 'isNotEmpty',errorMsg:'用户名不能为空'},
+        {strategy: 'minLength:6',errorMsg:'用户名长度不能小于6位'}
+    ]);
+    validator.add(registerForm.password,[
+        {strategy: 'minLength:6',errorMsg:'密码长度不能小于6位'},
+    ]);
+    validator.add(registerForm.phoneNumber,[
+        {strategy: 'mobileFormat',errorMsg:'手机号格式不正确'},
+    ]);
+    var errorMsg = validator.start(); // 获得效验结果
+    return errorMsg; // 返回效验结果
+};
+
+// 点击确定提交
+registerForm.onsubmit = function(){
+    var errorMsg = validateFunc();
+    if(errorMsg){
+        alert(errorMsg);
+        return false;
+    }
+}
+```   
+     
+访问者模式：    
+事件监听就是一个访问者模式，一个典型的访问者模式可以这么实现：     
+首先定义一个Input的类，初始化它的访问者列表：    
+
+```
+function Input(inputDom) {
+  this.visitiors = {
+    'click': [],
+    'change': [],
+    'special': []
+  };
+  this.inputDom = inputDom
+}
+```    
+    
+然后提供一个对外的添加访问者的接口：     
+
+```
+Input.prototype.on = function (eventType, callback) {
+  if (typeof this.visitiors[eventType] !== 'undefined') {
+    this.visitiors[eventType].push(callback)
+  }
+};
+
+```   
+   
+使用者调用on。传递两个参数，一个是事件类型，即访问类型。另一个是具体的访问者，这里是回调函数。     
+同时Input提供了一个删除访问者的接口：    
+
+```
+Input.prototype.off = function (eventType,callback) {
+  var visitors = this.visitiors[eventType];
+  if(typeof visitors !== 'undefined'){
+    var index = visitors.indexOf(callback);
+    if(index > 0){
+      visitors.splice(index,1)
+    }
+  }
+};
+```   
+  
+这样Input就和访问者建立起了关系。    
+或者说访问者已经成功的向接受者订阅了消息，一旦接收者收到了消息，会向他的访问者意义传递     
+
+```
+Input.prototype.trigger = function (eventType,event) {
+  var visitor = this.visitiors[eventType];
+  var eventFormat = processEvent(event);
+  if(typeof visitor !== 'undefined'){
+    for(var i = 0;i<visitor.length;i++){
+      visitor[i](eventFormat)
+    }
+  }
+}
+```
+   
+trigger可能是用户调用的，也可能是底层的控件调用的。一旦有人触发trigger，接收者就会一一下发消息。    
+
+事件还可以直接用于两个模块或者组件间的通信，当两个模块关系比较紧密，共同完成一个功能时，可以require进来。    
+当两个模块功能比较独立，每个模块完成自己的功能，完成后需要通知另一个模块相应地做修改，那么就可以用事件的机制通知其他模块做修改      
+即一个模块trigger一个自定义事件，另外一个模块监听这个事件。    
+    
 <h2 id="22">浏览器</h2>   
 
 <h3 id="23">浏览器对象</h3>   
@@ -3606,6 +3824,107 @@ window的load事件触发的时刻，表示DOM准备就绪后所有外部资源�
 chrome控制台开发人员工具：     
 http://user.qzone.qq.com/47935982/blog/1440062099    
    
+<h3 id="44">js书写优化</h3>   
+  
+按强类型风格写代码：   
+定义变量的时候要指明类型：   
+
+```
+var num = 0,
+    str = '',
+    obj = null;
+```   
+
+不要随意改变变量的类型：    
+
+```
+var num = 5;
+num = '-' + num;
+```   
+
+第一行是一个整数，第二行变成了一个字符串。好的做法是再定义一个字符串变量：   
+
+```
+var num = 5;
+var sign = '-' + num;
+```   
+   
+函数的返回类型应该是确定的，不应该是：    
+
+```
+function getPrice(count){
+    if( count < 0 ){
+        return ''
+        }else{
+            return count * 100;
+        }
+}
+```   
+ 
+可以return ''修改为return -1 如果类型确定，解释器也不用做一些额外工作。否则可能触发“优化回滚”   
+优化回滚，即编译器已经给这个函数编译成一个函数了，突然发现类型变了，又得回滚到通用的状态，再重新生成新函数。      
+
+减少作用域查找：    
+不要让代码暴露在全局作用域下：   
+
+```
+<script>
+var map = document.querySelector('#my-map');
+map.style.height = '600px';
+</script>
+```   
+
+在一个script标签里边，代码的上下文都是全局作用域，查找属性相对比较慢。map变量第二行使用的时候，需要在全局作用域查找变量。     
+假设map是在一个循环里使用，那就会涉及效率问题。应把它处理成一个局部作用域：    
+
+```
+<script>
+!function(){
+var map = document.querySelector('#my-map');
+map.style.height = '600px';
+}()
+</script>
+```    
+    
+需要频繁使用某个全局变量，可以用一个局部变量缓存一下：    
+
+```
+var url = '';
+var location = window.location;
+if( location.protocal === 'https:' ){
+    url = 'wss://xxx.com' + location.pathname + location.search;
+}
+```   
+   
+避免 == 的使用：   
+代码中的比较在用 === 的时候都是false:     
+
+```
+null == undefined
+'' == 0
+0 == ''
+0 == '0'
+'\t\r\n' == 0
+new String('abc') == 'abc'
+new Boolean(true) == true
+true == 1
+```     
+    
+合并表达式：    
+用三目运算符取代简单的if-else：   
+
+```
+function getPrice(count){
+    return count < 0 ? -1 : count * 100
+}
+```   
+    
+使用ES6简化代码：   
+使用箭头函数取代小函数     
+使用class    
+字符串拼接     
+块级作用域变量     
+            
 <h2 id="41">正则表达式</h2>    
 
 正则表达式通常被用来检索、替换那些符合某个模式(规则)的文本      
@@ -4084,4 +4403,7 @@ DOMContentLoaded事件，html5事件，和jq的ready()事件一样，jq也是这
 
 [ES6标准入门](https://github.com/ruanyf/es6tutorial)    
   
-[高性能JavaScript](https://humanwhocodes.com/)  
+[高性能JavaScript](https://humanwhocodes.com/)     
+    
+[Web高效编程与优化实践](https://book.douban.com/subject/30170670/)
+
