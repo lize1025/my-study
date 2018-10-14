@@ -50,6 +50,7 @@
     * [8.8 js书写优化](#44)
 * [9. 正则表达式](#41)
 * [10. 事件](#42)
+* [11. 页面优化](#45)
 * [参考书籍](#100)
 
 <h2 id="1">快速入门</h2>       
@@ -4059,7 +4060,7 @@ console.log(a) // abc<div>啊啊啊</div>
 
 ```
 var str = '<p>1</p><div>啊</div><p>2</p><div>啊啊</div><p>3</p><div>啊啊啊</div>'
-var reg = /<p>.*?<\/p>/
+var reg = /<picture>.*?<\/p>/
 var a = str.replace(reg,'abc')
 console.log(a) //abc<div>啊</div><p>2</p><div>啊啊</div><p>3</p><div>啊啊啊</div>
 ```   
@@ -4393,8 +4394,220 @@ DOMContentLoaded事件，html5事件，和jq的ready()事件一样，jq也是这
 对于列表项点击触发，可以逐一对li进行处理事件绑定，但一旦li较多，就会有性能问题，可用事件委托绑定到ul上，event中的target判断来执行代码。    
    
 从文档中删除带有事件处理程序的元素时，可通过纯粹的DOM操作，比如removeChild，replaceChild方法。    
-但更多是用innerHTML替换页面中的一部分，如果用innerHTML来删除，那么原来的事件处理程序极有可能无法垃圾回收。    
+但更多是用innerHTML替换页面中的一部分，如果用innerHTML来删除，那么原来的事件处理程序极有可能无法垃圾回收。      
 
+<h3 id="45">页面优化</h3>    
+      
+避免页面卡顿：     
+
+失帧和帧率FPS：    
+window系统刷新率，60HZ就是帧率fps，即一秒钟60帧。一秒钟的动画是由60幅静态图片连在一起的。60fps是动画播放比较理想和基础的要求。            
+所以卡了，就是失帧或掉帧了。这可能是因为在渲染某些帧所花的时间比较长，导致停留在这些帧的时间较长，所以画面停顿了。      
+   
+页面渲染流程：    
+60fps就要求1帧的时间为1s/60=16.67ms。浏览器显示页面的时候，要处理js逻辑，还要做渲染。每个执行片断不能超过16.67ms。    
+实际上，浏览器自身支撑体系运行也需要消耗时间。所以留给我们差不多只有10ms。
+在这10ms里浏览器做一些事情：     
+
+`JavaScript => style => Layout => paint => composite`     
+    
+首先js做一些逻辑，触发样式变化，style把应用的样式规则计算好，把响应到的页面元素进行重新布局layout    
+再把它画到内存的一个画布里，paint成了像素，最后把这个画布刷新到页面上，叫做composite。形成一帧。     
+假设一帧花了50ms，name此时的帧率就为1s/50ms=20fps     
+
+掉帧分析：Chrome的timeline标签，勾上js profile和paint选项，单击记录按钮。 新版是Performance标签。自动记录。    
+   
+优化：减少layout，如能用transform就不使用postiton/width/height做动画，另外，减少layout的影响范围。     
+简化DOM结构。另外，使用flex比使用float在重绘方面会有优势，flex需要重绘的元素比float少，使用flex布局做动画更流畅。     
+   
+加快页面打开速度：    
+评价一个页面打开速度，可以用两个指标描述：一个是ready的时间，一个是load的时间。可以从Chrome的Network看到    
+     
+例如百度首页某一时刻：     
+一共加载90.4kb。ready时间只有621ms。 就是说621ms之后这个页面就是布局完整可交互的了。finish时间比load长，是因为load完之后又去动态加载了其他js           
+    
+`67 requests | 90.4KB transferred | Finish:3.5s | DOMContentLoaded:621ms | Load:847ms`     
+
+减少渲染堵塞：   
+
+避免head标签js堵塞：所有放在head标签的css和js都会堵塞渲染。可以给script加defer属性。但只是异步加载，      
+执行还是会在readystatechange变为Interactive后按顺序依次执行。另外，dafer在老浏览器上表现行为不一致，有兼容问题。     
+所以一般把js放在body后面就行了。    
+    
+减少head标签里的css资源：      
+不要放太多的base64在css里：例如一张3k的图片转成base64体积变成了4k。    
+    
+原始图片是svg格式，hover图片和字体变色，如下代码，会导致hover的时候才去加载blue.svg，第一次hover的时候要等待图片下载后变蓝,    
+但如果把svg变成内联，会导致html体积过大，同时对缓存也不利。可以考虑用图标字体，将svg转成字体icon：                
+
+```
+.img{
+    background:url(black.svg) 0 0 no-repeat;
+}
+.img:hover{
+    background:url(blue.svg) 0 0 no-repeat;
+}
+```   
+   
+把css写成内联的：    
+如果css只有10k或者20k。写成内联也未尝不可。谷歌搜索和淘宝PC版就是这么干的。      
+这样虽然对缓存不利，但对首次加载有很大作用。因为如果把css放到CDN上，为了得到这个css，首先需要域名解析，然后建立     
+http/https连接，其次才是下载。做这些的时候可能早已把html中的css下载完了。     
+究竟哪个更好，可以再Chrome控制台查看。具体问题具体分析。     
+
+使用响应式图片：     
+
+```
+<picture>
+source srcset="banner_w1000.jpg" media="(min-width:801px)">
+source srcset="banner_w800.jpg" media="(max-width:800px)">
+<img src="banner_w800.jpg" alt="">
+</picture>
+```   
+
+以上代码如果是用js动态插进去的，mac上的chrome会加载两张图，只有写在html里面，初始化页面才会只加载一张。     
+可以用js判断浏览器支不支持srcset。如果支持就不写src属性了，不支持就不用写srcset了。    
+picture必须下img标签，否则无法显示。对picture的操作也都是在img上。      
+
+延迟加载图片：     
+渲染页面的时候别把图片地址放到src上，放到一个data的属性中：    
+
+```
+<picture>
+<source data-srcset="photo_w350.jpg 1x,photo_w640.jpg 2x">
+<img data-src="photo_w350.jpg" src="about:blank" alt="">
+</picture>
+```
+    
+接下来位置判断，监听scroll事件，回调函数如下：     
+
+```
+showImage(leftSpace = 500){
+    var scrollTop = $window.scrollTop();
+    var $containers = this.$imgContainers,
+for(var i = 0; i < $containers.length; i++){
+        //如果快要滑到图片的位置了
+        var $container = $containers.eq(i);        
+        if($container.offset().top - scrollPosition < leftSpace){
+            this.ensureImgSrc($container);
+        }   
+    }   
+}
+```    
+   
+ensureImgSrc函数把图片放出来     
+
+```
+ensureImgSrc($container){
+   var $source = $container.find("source");   
+   if($source.length && !$source.attr("srcset")){
+        $source.attr("srcset", $source.data("srcset"));
+    }   
+    var $img = $container.find("img:not(.loading)");   
+    if($img.length && $img.attr("src").indexOf("//") < 0){ 
+        $img.attr("src", $img.data("src"));
+        this.shownCount++;
+    }
+}
+```   
+    
+并记录已经放出来的个数，这样可以做个优化，当图片全部都加载或者开始加载了，把scroll事件取消掉：     
+
+```
+init(){
+    //初始化
+    var leftSpace = 0;
+    this.showImage(leftSpace);
+    //滑动
+    $window.on("scroll", this, this.throttleShow);
+}
+
+ensureImgSrc($container){
+    //如果全部显示，off掉window.scroll    
+    if(this.shownCount >= this.allCount){
+        $window.off("scroll", this.throttleShow);
+    }
+}
+```    
+    
+HTTP/2是HTTP协议的的第二个主要版本，使用于万维网。HTTP/2是HTTP协议自1999年HTTP 1.1发布后的首个更新，主要基于SPDY协议:     
+优点在于对于一个域只建立一次TCP连接，使用多路复用传输多个资源，这样就不用使用雪碧图，合并js/css等技术减少请求数了。      
+
+DNS预读取：    
+一个网站可能会加载多个域的东西，例如使用了三个自己的子域名的服务，再使用了两个第三方CDN，再使用了百度统计，谷歌统计的代码。使用别的网站图片。     
+可以用DNS预读取技术，加快打开速度，方法是在head标签里写几个link：     
+
+```
+<link rel="dns-prefecth" href="https://www.google.com">
+<link rel="dns-prefecth" href="https://connect.facebook.net">
+<link rel="dns-prefecth" href="https://staticxx.facebook.com">
+```
+   
+如上，对以上几个网站提前解析DNS，由于它是并行的，不会堵塞页面渲染。可以缩短资源加载的时间。    
+     
+增强用户体验：      
+Loading效果：     
+Ajax请求只有0和100%的状态，所以只能做一个假的进度条，每次都先到60-80%的一个随机位置，请求回来之后再100%    
+上传文件的进度条，上传文件能够返回上传进度，这个是Ajax2的特性，所以可以做一个真的进度条。    
+
+单击和输入：
+用户单击提交的时候，可以给按钮做一个效果，让人感觉按钮被按下去：     
+
+```
+button{
+    background:#249bff; /*普通的蓝色*/
+}
+button:active{
+    padding-top:3px;
+    background:#3491df; /*更深的蓝色*/
+}
+```    
+   
+记住用户使用习惯：    
+可以用本地存储实现，如果用户开了隐身模式，本地存储被禁掉。可以改成cookie，为此做一个兼容：     
+
+```
+setLocalData:function(key,value){
+    if(Data.hasLocalStorage){
+        window.localStorage[key] = value;
+    }else{
+        util.setCookie(key,value);
+    }
+}
+```   
+    
+检查没有用的css/js:     
+Chrome打开控制台-->点击‘Sources’-->ctrl+shift+p-->在命令窗口输入coverage-->在下边新出现的窗口中点击左上角刷新按钮。      
+
+使用chrome 浏览器自带截屏:      
+
+方法一（鼠标拉框选择截图）    
+ctrl+shift+c      
+按住ctrl 后拖动鼠标     
+
+方法二      
+F12     
+ctrl+shift+p     
+输入“capture”     
+选择以下任意          
+capture full size screenshot【整个网页】            
+capture node screenshot【节点网页】          
+capture screenshot【当前屏幕】           
+    
+检查内存泄漏：   
+只要存在一个引用就不会进行GC回收，有些DOM节点没有append到DOM中，但是存在引用指向它，它就是一个分离的DOM节点。     
+这个时候就发生了DOM内存泄漏：    
+
+```
+var detached = null;
+button.on('click',function(){
+    detached = document.createElement('div');
+})
+```   
+    
+这个时候可以拍一张内存堆的快照，Chrome会把这些分离DOM节点用黄色标出来    
+切到Memory标签-->profiles选择heap snapshot 点take snapshot 在summary里写detached
+       
 <h3 id="100">参考书籍</h3>   
 
 [廖雪峰官网教程](https://www.liaoxuefeng.com/wiki/001434446689867b27157e896e74d51a89c25cc8b43bdb3000/001434499763408e24c210985d34edcabbca944b4239e20000)   
