@@ -426,13 +426,562 @@ img兼容性比embed稍差，缺点是由于是一个外链，没法用css控制
 
 ie不支持外链，可以通过插件[SVG for Everybody](https://github.com/jonathantneal/svg4everybody)让ie支持。     
 highCharts和d3js也使用了SVG           
+     
+###实现前端剪裁压缩图片：     
+支持拖拽    
+压缩    
+剪裁编辑    
+上传和上传进度显示    
 
+拖拽显示图片：     
+读取用户拖过来的图片并把它转成base64以在本地显示：     
 
+```
+var handler={
+    init:function($container){
+        //需要把dragover的默认行为禁掉，不然会跳页
+        $container.on("dragover",function(event){
+            event.preventDefault();
+        });
+        $container.on("drop",function(event){
+            event.preventDefault();
+            //这里获取拖过来的图片文件，为一个File对象
+            var file=event.originalEvent.dataTransfer.files[0];
+            handler.handleDrop($(this),file);
+        });
+     }
+}
+```   
+    
+如果使用input，则监听input的change事件。获取File对象，同样传给handleDrop进行处理：     
 
+```
+$container.on("change","input[type=file]",function(event){
+            if(!this.value)return;
+            var file=this.files[0];
+            handler.handleDrop($(this).closest(".container"),file);
+            this.value="";
+        });
+```
+   
+在handleDrop函数里，读取file的内容，并把它转成base64的格式：    
 
+```
+handleDrop:function($container,file){
+    var $img = $container.find("img");
+    handler.readImgFile(file,$img,$container);
+},
+```   
 
+在readImgFile里面读取图片文件内容：    
 
+```
+readImgFile:function(file,$img,$container){
+    var reader = newFileReader(file);
+    //检验用户是否选则是图片文件
+    if(file.type.split("/")[0]!=="image"){
+        util.toast("You should choose an image file");
+        return;
+    }  
+    reader.onload=function(event){
+        var base64 = event.target.result;
+        handler.compressAndUpload($img,base64,file,  $container);
+    }  
+    reader.readAsDataURL(file);
+}
+```      
+   
+FileReader读取文件内容，调的是readAsDataURL，这个api能够把二进制图片内容转成base64的格式。     
+读取完之后会触发onload事件，在onload里面进行显示和上传：     
+
+```
+//获取图片base64内容
+var base64 = event.target.result;
+//如果图片大于1MB，将body置半透明
+if(file.size>ONE_MB){
+    $("body").css("opacity",0.5);
+}
+//因为这里图片太大会被卡一下，整个页面会不可操作
+$img.attr("src",baseUrl);
+//还原
+if(file.size>ONE_MB){
+    $("body").css("opacity",1);
+}
+//然后再调一个压缩和上传的函数
+handler.compressAndUpload($img,file,$container);
+```
+   
+如果图片有几个Mb的，在上面第8行展示的时候被卡一下，采取了一个补偿措施：通过把页面变虚告诉用户现在在处理之中，页面不可操作，稍等一会    
+
+这里还会有一个问题，就是ios系统拍摄的照片，如果不是横着拍的，展示出来的照片旋转角度会有问题:     
+竖着拍的照片不管你怎么拍，ios实际存的图片都是横着放的，因此需要用户自己手动去旋转。     
+旋转的角度放在了exif的数据结构里面，把这个读出来就知道它的旋转角度了，用一个[EXIF](https://github.com/exif-js/exif-js)的库读取：       
+
+```
+readImgFile:function(file,$img,$container){
+    EXIF.getData(file,function(){
+        varorientation=this.exifdata.Orientation,
+            rotateDeg=0;
+        //如果不是ios拍的照片或者是横拍的，则不用处理，直接读取
+        if(typeoforientation==="undefined"||orientation===1){
+            //原本的readImgFile，添加一个rotateDeg的参数
+            handler.doReadImgFile(file,$img,$container,rotateDeg);
+        }  
+        //否则用canvas旋转一下
+        else{
+            rotateDeg=orientation===6?90*Math.PI/180:
+                            orientation===8?-90*Math.PI/180:
+                            orientation===3?180*Math.PI/180:0;
+            handler.doReadImgFile(file,$img,$container,rotateDeg);
+        }  
+    });
+}
+```
+   
+知道角度之后，就可以用canvas处理了，在下面的压缩图片进行说明，因为压缩也要用到canvas    
+
+压缩图片:     
+canvas可以很方便地实现压缩，其原理是把一张图片画到一个小的画布，然后再把这个画布的内容导出base64，就能够拿到一张被压小的图片了：      
+
+```
+//设定图片最大压缩宽度为1500px
+var maxWidth = 1500;
+var resultImg=handler.compress($img[0],maxWidth,file.type);
+```   
+   
+compress函数进行压缩，在这个函数里首先创建一个canvas对象，然后计算这个画布的大小：     
+
+```
+compress:function(img,maxWidth,mimeType){
+    //创建一个canvas对象
+    var cvs = document.createElement('canvas');
+    var width = img.naturalWidth,
+        height = img.naturalHeight,
+        imgRatio=width/height;
+    //如果图片维度超过了给定的maxWidth 1500，
+    //为了保持图片宽高比，计算画布的大小
+    if(width>maxWidth){
+        width=maxWidth;
+        height=width/imgRatio;
+    }  
+    cvs.width=width;
+    cvs.height=height;
+}
+```
+   
+接下来把大的图片画到一个小的画布上，再导出：     
+
+```
+//把大图片画到一个小画布
+    var ctx = cvs.getContext("2d").drawImage(img,0,0,img.naturalWidth,img.naturalHeight,0,0,width,height);
+    //图片质量进行适当压缩
+    var quality = width>=1500?0.5:
+                  width>600?0.6:1;
+    //导出图片为base64
+    var newImageData = cvs.toDataURL(mimeType,quality);
+ 
+    var resultImg=newImage();
+    resultImg.src=newImageData;
+    return resultImg;
+```   
+  
+这里需要注意，有的浏览器把base64赋值给new出来的Image的src时，是异步操作，特别是safari    
+所以要监听onload才能对图片进行下一步处理：    
+
+```
+var img = new Image();
+img.onload = function(){
+    canvas.draw(img,...);
+}
+img.src = base64;
+```
+   
+ios竖着拍的照片需要旋转，在压缩的时候可以一起处理，在canvas上面旋转：    
+
+```
+var ctx = cvs.getContext("2d");
+var destX = 0,
+    destY = 0;
+if(rotateDeg){
+    ctx.translate(cvs.width/2,cvs.height/2);
+    ctx.rotate(rotateDeg);
+    destX=-width/2,
+    destY=-height/2;
+}
+ctx.drawImage(img,0,0,img.naturalWidth,img.naturalHeight,destX,destY,width,height);
+
+```
+       
+需要先把canvas的原点移到画布中心，然后再旋转，默认原点是在左上角。     
+这样就解决了ios图片旋转的问题，得到一张旋转和压缩调节过的图片之后，再用它进行裁剪和编辑    
+    
+裁剪图片：     
+裁剪图片，用到了一个插件[cropper](https://fengyuanchen.github.io/cropper/)      
+支持裁剪、旋转、翻转，但是它并没有对图片真正的处理，只是记录了用户做了哪些变换，然后你自己再去处理。      
+可以把变换的数据传给后端，让后端去处理。前端处理在此不兼容IE8：     
+
+把一张图片，旋转了一下，同时翻转了一下得到插件信息：     
+
+```
+{
+    height:319.2000000000001,
+    rotate:45,
+    scaleX:-1,
+    scaleY:1,
+    width:319.2000000000001
+    x:193.2462838120872
+    y:193.2462838120872
+}
+```
+       
+通过这些信息就知道了：图片被左右翻转了一下，同时顺时针转了45度，还知道裁剪选框的位置和大小。通过这些完整的信息就可以做一对一的处理      
+在展示的时候，插件使用的是img标签，设置它的css的transform属性进行变换。真正的处理还是要借助canvas      
+
+假设用户没有进行旋转和翻转，只是选了简单地选了下区域裁剪了一下，那就简单很多。     
+最简单的办法就是创建一个canvas，它的大小就是选框的大小，然后根据起点x、y和宽高把图片相应的位置画到这个画布，再导出图片就可以了。      
+由于考虑到需要翻转，所以用第二种方法：      
+创建一个和图片一样大小的canvas，把图片原封不动地画上去，然后把选中区域的数据imageData存起来，重新设置画布的大小为选中框的大小，再把imageData画上去，最后再导出就可以了：      
+
+```
+var cvs = document.createElement('canvas');
+var img = $img[0];
+var width = img.naturalWidth,
+    height = img.naturalHeight;
+
+cvs.width=width;
+cvs.height=height;
+ 
+var ctx = cvs.getContext("2d");
+var destX = 0,
+    destY = 0;
+ctx.drawImage(img,destX,destY);
+ 
+//通过插件给的数据，把选中框里的图片内容存起来
+var imageData = ctx.getImageData(cropOptions.x,cropOptions.y,cropOptions.width,cropOptions.height);
+cvs.width=cropOptions.width;
+cvs.height=cropOptions.height;
+//然后再画上去
+ctx.putImageData(imageData,0,0);
+```
+   
+如果用户做了翻转，用上面的结构很容易可以实现，只需要在第11行drawImage之前对画布做一下翻转变化
+其它的都不用变，就可以实现上下左右翻转了：       
+
+```
+//fip
+if(cropOptions.scaleX===-1||cropOptions.scaleY===-1){
+    destX=cropOptions.scaleX===-1?width*-1:0;      // Set x position to -100% if flip horizontal
+    destY=cropOptions.scaleY===-1?height*-1:0;     // Set y position to -100% if flip vertical
+    ctx.scale(cropOptions.scaleX,cropOptions.scaleY);
+}
+ctx.drawImage(img,destX,destY);
+```   
+       
+两种变换叠加没办法直接通过变化canvas的坐标，一次性drawImage上去。      
+还是有两种办法，第一种是用imageData进行数学变换，计算一遍得到imageData里面，从第一行到最后一行每个像素新的rgba值是多少，然后再画上去；        
+第二种办法，就是创建第二个canvas，第一个canvas作翻转，把它的结果画到第二个canvas，然后再旋转，最后导到。第二种办法相对比较简单     
+
+在第一个canvas画完之后,实现旋转、翻转结合：      
+
+```
+ctx.drawImage(img,destX,destY);
+//rotate
+if(cropOptions.rotate!==0){
+    var newCanvas = document.createElement("canvas"),
+        deg = cropOptions.rotate/180*Math.PI;
+    //旋转之后，导致画布变大，需要计算一下
+    newCanvas.width=Math.abs(width*Math.cos(deg))+Math.abs(height*Math.sin(deg));
+    newCanvas.height=Math.abs(width*Math.sin(deg))+Math.abs(height*Math.cos(deg));
+    varnewContext=newCanvas.getContext("2d");
+    newContext.save();
+    newContext.translate(newCanvas.width/2,newCanvas.height/2);
+    newContext.rotate(deg);
+    destX=-width/2,
+    destY=-height/2;
+    //将第一个canvas的内容在经旋转后的坐标系画上来
+    newContext.drawImage(cvs,destX,destY);
+    newContext.restore();
+    ctx=newContext;
+    cvs=newCanvas;
+}
+```
       
+将第二步的代码插入第一步，再将第三步的代码插入第二步，就是一个完整的处理过程了。     
+
+文件上传和上传进度：     
+
+文件上传只能通过表单提交的形式，编码方式为multipart/form-data     
+可以通过写一个form标签进行提交，也可以模拟表单提交的格式     
+
+```
+var xhr = newXMLHttpRequest();
+xhr.open('POST',upload_url,true);
+var boundary='someboundary';
+xhr.setRequestHeader('Content-Type','multipart/form-data; boundary='+boundary);
+
+```
+
+并设置编码方式，然后拼表单格式的数据进行上传：     
+
+```
+vardata=img.src;
+data=data.replace('data:'+file.type+';base64,','');
+xhr.sendAsBinary([
+    //name=data
+    '--'+boundary,
+        'Content-Disposition: form-data; name="data"; filename="'+file.name+'"',
+        'Content-Type: '+file.type,'',
+        atob(data),'--'+boundary,
+    //name=docName
+    '--'+boundary,
+        'Content-Disposition: form-data; name="docName"','',
+        file.name,
+    '--'+boundary+'--'
+].join('\r\n'));
+```
+
+表单数据不同的字段是用boundary的随机字符串分隔的。拼好之后用sendAsBinary发出去。     
+上传功能参考JIC插件，但这个API已经废弃，不推荐使用这种方式。      
+
+调这个函数之前先监听它的事件：    
+
+```
+xhr.upload.onprogress=function(event){
+    if(event.lengthComputable){
+        duringCallback((event.loaded/event.total)*100);
+    }
+};
+```    
+
+这里凋duringCallback的回调函数，给这个回调函数传了当前进度的参数，用这个参数就可以设置进度条的过程了。     
+进度条可以自己实现，或者直接上网找一个。      
+
+对成功和失败做一些反馈处理：    
+
+```
+xhr.onreadystatechange=function(){
+    if(this.readyState==4){
+        if(this.status==200){
+            successCallback(this.responseText);
+        }elseif(this.status>=400){
+            if(errorCallback&&  errorCallback instanceofFunction){
+                errorCallback(this.responseText);
+            }      
+        }      
+    }
+};
+```     
+
+至此整个功能就拆解说明完了，上面的代码可以兼容到IE10，FileReader的api到IE10才兼容         
+
+### Service Worker做一个PWA离线网页应用：     
+
+PWA和Service Worker的关系：     
+
+PWA (Progressive Web Apps) 可以把她理解为一种模式，一种通过应用一些技术将 Web App 在安全、性能和体验等方面带来渐进式的提升的一种 Web App的模式。      
+Service Worker 是一个独立于js主线程的一种 Web Worker 线程， 一个独立于主线程的 Context，      
+但是面向开发者来说 Service Worker 的形态其实就是一个需要开发者自己维护的文件，我们假设这个文件叫做 sw.js。      
+通过 service worker 我们可以代理 webview 的请求相当于是一个正向代理的线程      
+在特定路径注册 service worker 后，可以拦截并处理该路径下所有的网络请求，进而实现页面资源的可编程式缓存，在弱网和无网情况下带来流畅的产品体验，      
+所以 service worker 可以看做是实现pwa模式的一项技术实现。      
+
+Service Worker是谷歌发起的实现PWA的一个关键角色，PWA是为了解决传统Web APP的缺点：      
+没有桌面入口     
+无法离线使用     
+没有Push推送     
+
+注意事项：
+service worker 是一种JS工作线程，无法直接访问DOM, 该线程通过postMessage接口消息形式来与其控制的页面进行通信;      
+
+service worker 广泛使用了Promise;        
+
+目前并不是所有主流浏览器支持 service worker, 可以通过 navigator && navigator.serviceWorker 来进行特性探测;        
+*苹果官方消息：iOS 11.3 与 macOS 10.13.4 将默认支持Service Workers*       
+
+在开发过程中，可以通过 localhost 使用服务工作线程，如若上线部署，必须要通过https来访问注册服务工作线程的页面，     
+但有种场景是我们的测试环境可能并不支持https，这时就要通过更改host文件将localhost指向测试环境ip来巧妙绕过该问题      
+（例如：192.168.22.144 localhost）;     
+
+生命周期：         
+    
+service worker的生命周期完全独立于网页，要为网站安装服务工作线程，我们需要在页面业务js代码中注册，     
+浏览器从指定路径下载并解析服务工作线程脚本进而浏览器将会在后台启动安装步骤，      
+在安装过程中，我们通常会缓存静态资源，如果所有文件都成功缓存，那么服务工程线程就安装完毕，      
+如果任何文件下载失败或缓存失败，那么安装步骤将会失败，当然也不会被激活。安装后就进入激活步骤，这里是管理旧缓存的绝佳机会。      
+激活后service worker将开始对其作用域内的所有页面实施控制。      
+首次注册service worker线程的页面需要再次加载才会受其控制。在成功安装完成并处于激活状态之前，服务工程线程不会收到fetch和push事件;      
+
+工作流程：注册-安装-激活-监听   
+
+注册：    
+Service Worker对象是在window.navigator里面：      
+
+```
+window.addEventListener("load", function() {
+    console.log("Will the service worker register?");
+    navigator.serviceWorker.register('/sw-3.js')
+    .then(function(reg){
+        console.log("Yes, it did.");
+    }).catch(function(err) {
+        console.log("No it didn't. This happened: ", err)
+    }); 
+});
+```
+
+在页面load完之后注册，注册的时候传一个js文件给它，这个js文件就是Service Worker的运行环境,如果不能成功注册的话就会抛异常，在catch里面处理。       
+在load事件启动,因为要额外启动一个线程，启动之后你可能还会让它去加载资源，这些都是需要占用CPU和带宽的，      
+我们应该保证页面能正常加载完，然后再启动我们的后台线程，不能与正常的页面加载产生竞争，这个在低端移动设备意义比较大。      
+
+安装：     
+注册完之后，Service Worker就会进行安装，这个时候会触发install事件，在install事件里面可以缓存一些资源，如下sw-3.js：     
+
+```
+const CACHE_NAME = "fed-cache";
+this.addEventListener("install", function(event) {
+    this.skipWaiting();
+    console.log("install service worker");
+    // 创建和打开一个缓存库
+    caches.open(CACHE_NAME);
+    // 首页
+    let cacheResources = ["https://fed.renren.com/?launcher=true"];
+    //let cacheResources = [
+        //'/dist/index.html',
+        //'/dist/js/index_async_bundle.js'
+    //];
+    event.waitUntil(
+        // 请求资源并添加到缓存里面去
+        caches.open(CACHE_NAME).then(cache => {
+            cache.addAll(cacheResources);
+        })
+    );
+});
+```    
+
+通过上面的操作，创建和添加了一个缓存库叫fed-cache,上面在安装Service Worker的时候就把首页的请求给缓存起来了。      
+在Service Worker的运行环境里面它有一个caches的全局对象，这个是缓存的入口，还有一个常用的clients的全局对象，一个client对应一个标签页。       
+
+激活：     
+install完之后，就会触发Service Worker的active事件     
+监听activate事件的回调函数中常见的任务是管理缓存，      
+因为如果在安装步骤中清理了旧缓存，由于旧的服务工作线程仍旧控制着页面，将无法从缓存中提取文件，      
+但是在 activate 时旧服务工作线程已经终止了页面控制权，所在在这里清理旧缓存再合适不过:           
+
+```
+// 新的service worker线程被激活（其实和离线包一样存在"二次生效"的机理）
+this.addEventListener('activate', function (event) {
+    console.log('service worker: run into activate');
+    event.waitUntil(caches.keys().then(function (cacheNames) {
+        return Promise.all(cacheNames.map(function (cacheName) {
+            // 注意这里cacheVersion也可以是一个数组
+            if(cacheName !== cacheVersion){
+                console.log('service worker: clear cache' + cacheName);
+                return caches.delete(cacheName);
+            }
+        }));
+    }));
+});
+```
+
+当刷新页面的时候虽然又调了一次注册，但并不会重新注册，它发现”sw-3.js”这个已经注册了，就不会再注册了，进而不会触发install和active事件，      
+因为当前Service Worker已经是active状态了。当需要更新Service Worker时，如变成”sw-4.js”，或者改变sw-3.js的文本内容，就会重新注册，     
+新的Service Worker会先install然后进入waiting状态，等到重启浏览器时，老的Service Worker就会被替换掉，新的Service Worker进入active状态，      
+如果不想等到重新启动浏览器可以像上面一样在install里面调skipWaiting：     
+
+`this.skipWaiting();`    
+   
+监听：   
+通过监听fetch事件来代理响应，进而实现自定义前端资源缓存;      
+在event.respondWith()中传入来自caches.match()的一个promise,此方法拦截请求并从服务工作线程所创建的任何缓存中查找缓存结果，      
+如若发现匹配的响应则返回缓存的值，否则，将会调用fetch以代理发出网络请求，并将从网络中检索的数据作为结果返回;     
+如果希望连续性缓存新的请求，则注意注释的代码部分，其通过cache.put来将请求的响应添加到缓存来实现;     
+在fetch请求中添加对then()的回调，获得响应后执行检查，并clone响应，注意这样处理的原因是该响应是stream,主体只能使用一次，      
+我们需要返回能被浏览器使用的响应，还要传递到缓存以供使用，因此需要克隆一份副本;     
+
+```
+// 拦截请求并响应
+this.addEventListener('fetch', function (event) {
+    console.log('service worker: run into fetch');
+    event.respondWith(caches.match(event.request).then(function (response) {
+        // 发现匹配的响应缓存
+        if(response){
+            console.log('service worker 匹配并读取缓存：' + event.request.url);
+            return response;
+        }
+        console.log('没有匹配上：' + event.request.url);
+        return fetch(event.request);
+        /*var fetchRequest = event.request.clone();
+        return fetch(fetchRequest).then(function(response){
+            if(!response || response.status !== 200 || response.type !== 'basic'){
+                return response;
+            }
+            var responseToCache = response.clone();
+            caches.open(cacheVersion).then(function (cache) {
+                console.log(cache);
+                cache.put(fetchRequest, responseToCache);
+            });
+            return response;
+        });*/
+    }));
+});
+```      
+
+项目快速接入service worker:     
+service worker可以帮助我们解决资源缓存问题，有缓存就必须要有更新的机制，     
+service-worker.js本身也会被浏览器缓存，后续产品迭代过程中如何解决该文件自身的更新问题，否则其他资源的缓存更新也就无从谈起      
+无可厚非每次构建部署时service-worker.js需要携带版本号（例如?v=201801021721）,      
+当然也可以在服务器运维层控制该文件的cache-control: no-cache从而规避浏览器缓存问题，但这样太麻烦；      
+
+在业务代码中通过register的方式引入service-worker.js, 我们可以通过sw-register-webpack-plugin来解决该问题，     
+其思路是将服务工作线程的注册放在一个单独的文件中（sw-register.js），      
+然后自动在页面入口（例如index.html）写入一段JS脚本来动态加载sw-register.js文件，     
+这里sw-3.js的加载路径是带有实时时间戳的，而生成的sw-3.js文件内容中注册service-worker.js的位置自动携带构建版本号参数     
+
+```
+let SwRegisterWebpackPlugin = require('sw-register-webpack-plugin')
+...
+plugins: [
+    new SwRegisterWebpackPlugin({
+        filePath: path.resolve(__dirname, '../src/sw-register.js')
+    })
+]
+```     
+
+处理后，sw-3.js文件就不会被浏览器缓存，也即每次刷新会多一次sw-3.js的文件请求，      
+由于它只是用来做注册的工作，体量不会太大，可以接受，关键是前端可以自行控制     
+
+已缓存资源文件更新:      
+上述插件只是解决了sw-3.js文件本身的更新的问题（保证每次构建部署后会新启一个服务工作线程），     
+但对于sw-3.js文件中定义的cacheFiles而言，当我们修改了已缓存文件后如何来更新缓存呢，     
+我的项目是基于vue.js + webpack，打包后的JS文件是[name].[hash].[ext]格式,不可能每次构建后都手动去调整sw-3.js文件内容中cacheFiles的路径值，     
+应该是将构建后的文件名（包括路径）直接放到service-worker.js内容中，     
+sw-precache-webpack-plugin,该插件会自动在dist目录下生成service-worker.js文件，供给service worker运行，      
+也就是说service-worker.js文件本身不需要我们手动添加了。     
+自定义需要缓存的文件：     
+
+```
+new SwPrecacheWebpackPlugin({
+    cacheId: 'attendance-mobile-cache',
+    filename: 'service-worker.js',
+    minify: true,
+    dontCacheBustUrlsMatching: false,
+    staticFileGlobs: [
+        'dist/static/js/manifest.**.*',
+        'dist/static/js/vendor.**.*',
+        'dist/static/js/app.**.*'
+    ],
+    stripPrefix: 'dist/'
+})
+```
+      
+[使用了service worker网站例子：人人网FED博客](https://fed.renren.com/)      
+[使用 Service Worker 做一个 PWA 离线网页应用](http://web.jobbole.com/92659/)       
+[service worker在移动端H5项目的应用](https://segmentfault.com/a/1190000012701843)    
+[使用 Service Workers](https://developer.mozilla.org/zh-CN/docs/Web/API/Service_Worker_API/Using_Service_Workers)      
+
+
+
+
+    
 ## PS知识点    
 
 在移动工具 v下，按住Ctrl 查看各个图层之间间距    
