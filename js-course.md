@@ -51,11 +51,17 @@
 * [9. 正则表达式](#41)
 * [10. 事件](#42)
 * [11. 页面优化](#45)
+* [12.前端与计算机基础](#46)
+    * [12.1 理解WebSocket和TCP/IP](#47)
+    * [12.2 0.1+0.2不等于0.3](#48)
+    * [12.3 WebAssembly与程序编译](#49)
+    * [12.4 js与多线程](#50)
+    * [12.5 前端算法与数据结构](#51)
 * [参考书籍](#100)
 
-<h2 id="1">快速入门</h2>       
-    
-<h3 id="new2">基本语法和数据类型</h3>    
+<h2 id="1">快速入门</h2>          
+     
+<h3 id="new2">基本语法和数据类型</h3>      
 
 typeof typeof 任何 返回string    
 
@@ -353,7 +359,22 @@ var s = 'hello, world';
 s.indexOf('world'); // 返回7
 s.indexOf('World'); // 没有找到指定的子串，返回-1
 ```   
+    
+indexOf()数组去重：     
 
+```
+function uniqueArray(arr){
+    var retArray = [];
+    for(var i=0;i<arr.length;i++){
+        if(retArray.indexOf(arr[i])<0){
+            retArray.push(arr[i]);
+        }
+    }
+    return retArray
+}
+uniqueArray([1,1,1,1,1,2,3,4,5,6,7,3,4,5,])
+```   
+   
 charAt() 方法可返回指定位置的字符:  
 如果参数 index 不在 0 与 string.length 之间，该方法将返回一个空字符串    
 
@@ -456,8 +477,26 @@ arr; // ['Microsoft', 'Apple', 'Oracle']
 ```
 arr.splice(2, 0, 'Google', 'Facebook'); // 返回[],因为没有删除任何元素
 arr; // ['Microsoft', 'Apple', 'Google', 'Facebook', 'Oracle']
-```   
+```    
 
+splice()数组去重：    
+
+```
+function uniqueArray(arr){
+    for(var i=0; i<arr.length; i++){
+        for(var j=i+1; j<arr.length; j++){
+            if(arr[i]==arr[j]){
+                arr.splice(j,1);
+                j--;
+            }
+        }
+    }
+    return(arr);
+    }
+
+uniqueArray([1,2,2,3,3,3,3,1,2,3,5,4,2])
+```
+    
 concat()方法把当前的Array和另一个Array连接起来，并返回一个新的Array：    
 *concat()也可用于合并字符串,返回合并后的结果。*       
 
@@ -1657,6 +1696,63 @@ var obj = eval("("+str+")")
       
 <h2 id="19">面向对象编程</h2>   
 
+面向对象三个主要特点：封装继承和多态    
+
+研究下狗，关注它的咬人和叫。封装狗的类：      
+
+```
+class Dog{
+    //狗会叫
+    bark(){
+        music.paly('wang')
+    }
+    //狗会咬人
+    bite(man){}
+    constructor(age){
+        //每只狗有年龄
+        this.age = age
+    }
+}
+```
+
+然后研究哈士奇，继承了狗这个类，有父类的行为，也有自己的行为：     
+
+```
+class Husky extends Dog{
+    constructor(age){
+        super(age)
+    }
+    //显示奇怪的表情
+    showSpecialFace(){
+        show()
+    }
+}
+
+var aHusky = new Husky(3)
+aHusky.bite('you')
+```
+
+哈士奇也会叫，但有自己的独特声音，同样是叫的行为，哈士奇有自己的特点，这个就是多态：     
+
+```
+class Husky extends Dog{
+    //有自己独特的声音
+    bark(){
+        music.play('wolf')
+    }
+    constructor(age){
+        super(age)
+    }
+    //显示奇怪的表情
+    showSpecialFace(){
+        show()
+    }
+}
+
+var aHusky = new Husky(3);
+aHusky.bark(); // wolf
+```
+
 <h3 id="20">创建对象和原型继承</h3>   
 
 原型链和constructor    
@@ -1950,7 +2046,8 @@ PrimaryStudent已经自动获得了父类Student的hello方法，我们又在子
 
 <h3 id="43">设计模式</h3>     
 
-策略模式：   
+策略模式：      
+
 定义一系列的算法，把它们一个个封装起来，并且使它们可以相互替换。    
 
 策略模式利用组合，委托等技术和思想，有效的避免很多if条件语句。   
@@ -2103,6 +2200,7 @@ registerForm.onsubmit = function(){
 ```   
      
 访问者模式：    
+   
 事件监听就是一个访问者模式，一个典型的访问者模式可以这么实现：     
 首先定义一个Input的类，初始化它的访问者列表：    
 
@@ -2163,6 +2261,68 @@ trigger可能是用户调用的，也可能是底层的控件调用的。一旦�
 事件还可以直接用于两个模块或者组件间的通信，当两个模块关系比较紧密，共同完成一个功能时，可以require进来。    
 当两个模块功能比较独立，每个模块完成自己的功能，完成后需要通知另一个模块相应地做修改，那么就可以用事件的机制通知其他模块做修改      
 即一个模块trigger一个自定义事件，另外一个模块监听这个事件。    
+
+单例模式：     
+
+例如定义一个Task类，实现他的单例，因为全局只有一个数组存放Task，如果有任务都放到列队里，按顺序执行：      
+
+```
+class Task{
+    constructor(){
+        this.tasks = []
+    }
+    draw(){
+        var that = this;
+        window.requestAnimationFrame(function(){
+            if(that.tasks.length){
+                var task = that.tasks.shift();
+                task()
+            }
+        })
+    }
+    addTask(task){
+        this.tasks.push(task);
+    }
+}
+```
+
+实现他的单例：     
+
+```
+var mapTask = {
+    get:function(){
+        if(!mapTask.aTask){
+            mapTask.aTask = new Task();
+            mapTask.aTask.draw();
+        }
+        return this.aTask;
+    },
+    add:function(task){
+        mapTask.get().addTask(task)
+    }
+}
+```
+
+可以拥有不同业务的Task，不同业务互不影响。还可以再写个searchTask等。     
+         
+工厂模式：     
+
+把创建交给一个工厂，使用者无需关心创建细节：     
+
+```
+var taskCreator = {
+    createTask:function(type){
+        switch(type){
+            case 'map':
+            return new MapTask();
+            case 'search':
+            return new SearchTask();
+        }
+    }
+}
+
+var mapTask = taskCreator.createTask('map');
+```
     
 <h2 id="22">浏览器</h2>   
 
@@ -4607,7 +4767,425 @@ button.on('click',function(){
     
 这个时候可以拍一张内存堆的快照，Chrome会把这些分离DOM节点用黄色标出来    
 切到Memory标签-->profiles选择heap snapshot 点take snapshot 在summary里写detached
-       
+          
+<h2 id="46">前端与计算机基础</h2>         
+     
+<h3 id="47">理解WebSocket和TCP/IP</h3> 
+
+一个完整的HTTP请求过程：    
+域名解析 —>     
+与服务器建立连接(TCP连接) —>     
+发起HTTP请求 —>     
+服务器响应HTTP请求，浏览器得到html代码 —>        
+浏览器解析html代码，并请求html代码中的资源（如js、css、图片） —>      
+浏览器对页面进行渲染呈现给用户     
+
+域名解析：     
+以Chrome浏览器为例：      
+首先会搜索浏览器自身的DNS缓存（缓存时间比较短，大概只有1分钟，且只能容纳1000条缓存）     
+看自身的缓存中是否有https://www.cnblogs.com 对应的条目，而且没有过期，如果有且没有过期则解析到此结束。     
+使用 chrome://net-internals/#dns 来进行查看自身缓存      
+
+如果浏览器自身的缓存里面没有找到对应的条目，那么Chrome会搜索操作系统自身的DNS缓存,如果找到且没有过期则停止搜索解析到此结束。     
+在命令行下使用 ipconfig /displaydns 来进行查看操作系统自身缓存      
+
+如果在Windows系统的DNS缓存也没有找到，那么尝试读取hosts文件（位于C:\Windows\System32\drivers\etc），看看这里面有没有该域名对应的IP地址，如果有则解析成功。       
+
+如果在hosts文件中也没有找到对应的条目，浏览器就会发起一个DNS的系统调用，      
+就会向本地配置的首选DNS服务器（一般是电信运营商提供的，也可以使用像Google提供的DNS服务器）发起域名解析请求       
+
+TCP连接的建立：      
+客户端的请求到达服务器，首先就是建立TCP连接，三次握手：         
+
+Client首先发送一个连接试探，ACK=0 表示确认号无效，SYN = 1 表示这是一个连接请求或连接接受报文，同时表示这个数据报不能携带数据，     
+seq = x 表示Client自己的初始序号（seq = 0 就代表这是第0号包），这时候Client进入syn_sent状态，表示客户端等待服务器的回复       
+
+Server监听到连接请求报文后，如同意建立连接，则向Client发送确认。      
+TCP报文首部中的SYN 和 ACK都置1 ，ack = x + 1表示期望收到对方下一个报文段的第一个数据字节序号是x+1，同时表明x为止的所有数据都已正确收到      
+（ack=1其实是ack=0+1,也就是期望客户端的第1个包），seq = y 表示Server 自己的初始序号（seq=0就代表这是服务器这边发出的第0号包）。      
+这时服务器进入syn_rcvd，表示服务器已经收到Client的连接请求，等待client的确认。       
+
+Client收到确认后还需再次发送确认，同时携带要发送给Server的数据。      
+ACK 置1 表示确认号ack= y + 1 有效（代表期望收到服务器的第1个包），Client自己的序号seq= x + 1（表示这就是我的第1个包，相对于第0个包来说的），      
+一旦收到Client的确认之后，这个TCP连接就进入Established状态，就可以发起http请求了。     
+
+发起HTTP请求：    
+Http是属于应用层的协议，配合TCP/IP使用。    
+Http使用TCP作为它的支撑运输协议。HTTP客户机发起一个与服务器的TCP连接，一旦连接建立，浏览器（客户机）和服务器进程就可以通过套接字接口访问TCP。         
+
+Client向Server发送请求命令   
+
+一个HTTP请求报文由请求行（request line）、请求头部（header）、空行和请求数据4个部分组成：    
+请求行分为三个部分：请求方法、请求地址和协议版本     
+HTTP/1.1 定义的请求方法有8种：GET、POST、PUT、DELETE、PATCH、HEAD、OPTIONS、TRACE。     
+
+请求地址URL：组成：<协议>：//<主机>：<端口>/<路径>/<参数> 注：端口和路径有时可以省略（HTTP默认端口号是80）有时会带参数，GET请求
+
+协议版本的格式为：HTTP/主版本号.次版本号，有HTTP/1.0和HTTP/1.1和HTTP2.0    
+  
+请求头部为请求报文添加了一些附加信息，由“名/值”对组成，每行一对，名和值之间使用冒号分隔。如：User-Agent 发送请求的应用程序名称        
+
+请求数据，可选部分，比如GET请求就没有请求数据。      
+下面是一个POST方法的请求报文：    
+
+```
+POST 　/index.php　HTTP/1.1 　　 请求行 
+Host: localhost     请求头 
+User-Agent: Mozilla/5.0 (Windows NT 5.1; rv:10.0.2) Gecko/20100101 Firefox/10.0.2　　
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,/;q=0.8 
+Accept-Language: zh-cn,zh;q=0.5 
+Accept-Encoding: gzip, deflate 
+Connection: keep-alive 
+Referer: http://localhost/ 
+Content-Length：25 
+Content-Type：application/x-www-form-urlencoded 
+　　空行 
+username=aa&password=1234　　请求数据
+```   
+    
+服务器响应HTTP请求，浏览器得到html代码:      
+
+负载均衡:接收到HTTP请求之后，负载均衡位于网站的最前端，把短时间内较高的访问量分摊到不同机器上处理。负载均衡方案有软件、硬件两种     
+
+HTTP响应报文主要由状态行、响应头部、空行以及响应数据组成。   
+
+状态行由3部分组成，分别为：协议版本，状态码，状态码描述。       
+其中协议版本与请求报文一致，状态码描述是对状态码的简单描述              
+[常见的HTTP状态码](https://blog.csdn.net/dufufd/article/details/53112184):     
+1开头：信息类，表示收到web浏览器请求，正在进一步处理    
+2开头：（请求成功）表示成功处理了请求的状态代码。        
+3开头 （请求被重定向）表示要完成请求，需要进一步操作         
+4开头 （请求错误）这些状态代码表示请求可能出错，妨碍了服务器的处理           
+5开头（服务器错误）这些状态代码表示服务器在尝试处理请求时发生内部错误。 这些错误可能是服务器本身的错误，而不是请求出错。           
+
+例：访问http://www.baidu.com,自动转到https    
+后端做的重定向，通常用Nginx的rewrite或者return规则，返回3开头的状态码让浏览器重定向，如307    
+
+响应头部:与请求头部类似，为响应报文添加了一些附加信息。如：Content-Type响应正文的类型      
+
+响应数据：用于存放需要返回给客户端的数据信息。      
+
+下面是一个响应报文的实例：     
+
+```
+HTTP/1.1 200 OK　　状态行 
+Date: Sun, 17 Mar 2013 08:12:54 GMT　　响应头部 
+Server: Apache/2.2.8 (Win32) PHP/5.2.5 
+X-Powered-By: PHP/5.2.5 
+Set-Cookie: PHPSESSID=c0huq7pdkmm5gg6osoe3mgjmm3; path=/ 
+Expires: Thu, 19 Nov 1981 08:52:00 GMT 
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0 
+Pragma: no-cache 
+Content-Length: 4393 
+Keep-Alive: timeout=5, max=100 
+Connection: Keep-Alive 
+Content-Type: text/html; charset=utf-8 
+　　空行 
+　　响应数据 
+
+HTTP响应示例 
+
+
+Hello HTTP! 
+```
+    
+浏览器解析html代码，并请求html代码中的资源:     
+
+浏览器拿到index.html文件后，就开始解析其中的html代码，遇到js/css/image等静态资源时，就向服务器端去请求下载      
+会使用多线程下载，每个浏览器的线程数不一样，这个时候就用上keep-alive特性了，建立一次HTTP连接，可以请求多个资源，      
+下载资源的顺序就是按照代码里的顺序，但是由于每个资源大小不一样，而浏览器又多线程请求请求资源，所以查看显示的顺序并不一定是代码里面的顺序。       
+
+浏览器在请求静态资源时（在未过期的情况下），向服务器端发起一个http请求（询问自从上一次修改时间到现在有没有对资源进行修改），      
+如果服务器端返回304状态码（告诉浏览器服务器端没有修改），那么浏览器会直接读取本地的该资源的缓存文件。      
+
+最后，浏览器利用自己内部的工作机制，把请求到的静态资源和html代码进行渲染，渲染之后呈现给用户。        
+    
+客户端和服务器通过三次握手建立了TCP连接以后，当数据传送完毕，四次挥手：      
+
+第一次挥手：主机1（可以使客户端，也可以是服务器端），设置Sequence Number，向主机2发送一个FIN报文段；       
+此时，主机1进入FIN_WAIT_1状态；这表示主机1没有数据要发送给主机2了；      
+   
+第二次挥手：主机2收到了主机1发送的FIN报文段，向主机1回一个ACK报文段，Acknowledgment Number为Sequence Number加1；      
+主机1进入FIN_WAIT_2状态；主机2告诉主机1，我“同意”你的关闭请求；      
+
+第三次挥手：主机2向主机1发送FIN报文段，请求关闭连接，同时主机2进入LAST_ACK状态；      
+
+第四次挥手：主机1收到主机2发送的FIN报文段，向主机2发送ACK报文段，然后主机1进入TIME_WAIT状态；     
+主机2收到主机1的ACK报文段以后，就关闭连接；此时，主机1等待2MSL后依然没有收到回复，则证明Server端已正常关闭，那好，主机1也可以关闭连接了。      
+
+目前在Internet中所有的传输都是通过TCP/IP进行的，HTTP协议作为TCP/IP模型中应用层的协议也不例外，      
+TCP是一个端到端的可靠的面向连接的协议，所以HTTP基于传输层TCP协议不用担心数据的传输的各种问题。       
+                 
+TCP/IP协议：    
+
+TCP/IP协议模型，包含了一系列构成互联网基础的网络协议，是Internet的核心协议。      
+TCP/IP协议簇是一组不同层次上的多个协议的组合，通常被认为是一个四层协议系统。HTTP协议就是基于TCP/IP协议模型来传输信息的。      
+
+物理层：    
+通常包括操作系统中的设备驱动程序和计算机中对应的网络接口卡。它们一起处理与电缆（或其他任何传输媒介）的物理接口细节。      
+每个网卡都有全球唯一的物理地址。路由器向同一局域网的所有主机发送收到的数据包，本机网卡比较包里知名物理地址和自己的是否一致，一致接收不一致丢弃。     
+
+网络层：    
+处理分组在网络中的活动，例如分组的选路。在TCP/IP协议族中，网络层协议包括IP协议，ICMP协议，以及IGMP协议。      
+Ping：     
+Ping一下127.0.0.1可以看下本机网络协议是否工作正常     
+Ping一下某个服务器，看这个服务器有没有开    
+Ping一下某个域名，看它的ip地址是多少     
+
+传输层：     
+主要为两台主机上的应用程序提供端到端的通信。     
+在TCP/IP协议族中，有两个互不相同的传输协议：TCP（传输控制协议）和UDP（用户数据报协议）。     
+
+应用层：      
+决定了向用户提供应用服务时通信的活动。      
+TCP/IP 协议族内预存了各类通用的应用服务。包括 HTTP，FTP文件传输协议，DNS域名系统服务。       
+
+WebSocket：     
+
+WebSocket是HTML5开始提供的一种在单个 TCP 连接上进行全双工通讯的协议。      
+它的最大特点就是，服务器可以主动向客户端推送信息，客户端也可以主动向服务器发送信息，是真正的双向平等对话，属于服务器推送技术的一种。      
+在WebSocket API中，浏览器和服务器只需要完成一次握手，两者之间就直接可以创建持久性的连接，并进行双向数据传输。        
+
+其他特点包括：
+建立在 TCP 协议之上，服务器端的实现比较容易。
+与 HTTP 协议有着良好的兼容性。默认端口也是80和443，并且握手阶段采用 HTTP 协议，因此握手时不容易屏蔽，能通过各种 HTTP 代理服务器。       
+数据格式比较轻量，性能开销小，通信高效。     
+可以发送文本，也可以发送二进制数据。     
+没有同源限制，客户端可以与任意服务器通信。      
+协议标识符是ws（如果加密，则为wss），服务器网址就是 URL。     
+
+很多网站为了实现推送技术，所用的技术都是 Ajax 轮询。     
+轮询是在特定的时间间隔（如每1秒），由浏览器对服务器发出HTTP请求，然后由服务器返回最新的数据给客户端的浏览器。     
+这种传统的模式带来很明显的缺点：     
+即浏览器需要不断的向服务器发出请求，然而HTTP请求可能包含较长的头部，其中真正有效的数据可能只是很小的一部分，显然这样会浪费很多的带宽等资源。      
+
+WebSocket 协议本质上是一个基于 TCP 的协议。     
+为了建立一个 WebSocket 连接，客户端浏览器首先要向服务器发起一个 HTTP 请求，     
+这个请求和通常的 HTTP 请求不同，包含了一些附加头信息，其中附加头信息"Upgrade: WebSocket"表明这是一个申请协议升级的 HTTP 请求，       
+服务器端解析这些附加的头信息然后产生应答信息返回给客户端，客户端和服务器端的 WebSocket 连接就建立起来了，      
+双方就可以通过这个连接通道自由的传递信息，并且这个连接会持续存在直到客户端或者服务器端的某一方主动的关闭连接。      
+
+[客户端的简单示例](http://www.ruanyifeng.com/blog/2017/05/websocket.html):      
+
+```
+var ws = new WebSocket("wss://echo.websocket.org");
+
+ws.onopen = function(evt) { 
+  console.log("Connection open ..."); 
+  ws.send("Hello WebSockets!");
+};
+
+ws.onmessage = function(evt) {
+  console.log( "Received Message: " + evt.data);
+  ws.close();
+};
+
+ws.onclose = function(evt) {
+  console.log("Connection closed.");
+};      
+```
+    
+一个典型的Websocket握手请求如下：     
+
+客户端请求    
+
+```
+GET / HTTP/1.1
+Upgrade: websocket
+Connection: Upgrade
+Host: example.com
+Origin: http://example.com
+Sec-WebSocket-Key: sN9cRrP/n9NdMgdcy2VJFQ==
+Sec-WebSocket-Version: 13
+```
+
+服务器回应     
+
+```
+HTTP/1.1 101 Switching Protocols
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Accept: fFBooB7FAkLlXgRSz0BT3v4hq5s=
+Sec-WebSocket-Location: ws://example.com/
+```    
+
+<h3 id="48">0.1+0.2不等于0.3</h3>     
+
+在控制台输入0.1+0.2将得到0.30000000000000004     
+
+解决0.1+0.2等于0.3：
+设置一个误差范围值，通常称为”机器精度“，而对于Javascript来说，这个值通常是2^-52。      
+ES6中，已经为我们提供了这样一个属性：Number.EPSILON，而这个值正等于2^-52。       
+这个值非常非常小，在底层计算机已经帮我们运算好，并且无限接近0，但不等于0,。这个时候我们只要判断(0.1+0.2)-0.3<Number.EPSILON       
+在这个误差的范围内就可以判定0.1+0.2===0.3为true。     
+
+```
+Number.EPSILON=(function(){     //解决兼容性问题
+                return Number.EPSILON?Number.EPSILON:Math.pow(2,-52);
+            })();
+
+function numbersequal(a,b){  
+        return Math.abs(a-b)<Number.EPSILON;
+    }
+
+var a=0.1+0.2, b=0.3;
+console.log(numbersequal(a,b));  //这里就为true了
+```
+     
+<h3 id="49">WebAssembly与程序编译</h3>    
+
+[WebAssembly 现状与实战](https://www.ibm.com/developerworks/cn/web/wa-lo-webassembly-status-and-reality/index.html)
+
+JavaScript 的问题：     
+语法太灵活导致开发大型 Web 项目困难；     
+性能不能满足一些场景的需要。     
+针对以上两点缺陷，近年来出现了一些 JS 的代替语言，例如：     
+
+微软的 TypeScript 通过为 JS 加入静态类型检查来改进 JS 松散的语法，提升代码健壮性；     
+谷歌的 Dart 则是为浏览器引入新的虚拟机去直接运行 Dart 程序以提升性能；     
+火狐的 asm.js 则是取 JS 的子集，JS 引擎针对 asm.js 做性能优化。    
+以上尝试各有优缺点，其中：    
+
+TypeScript 只是解决了 JS 语法松散的问题，最后还是需要编译成 JS 去运行，对性能没有提升；    
+Dart 只能在 Chrome 预览版中运行，无主流浏览器支持，用 Dart 开发的人不多；     
+asm.js 语法太简单、有很大限制，开发效率低。     
+三大浏览器巨头分别提出了自己的解决方案，互不兼容，这违背了 Web 的宗旨；     
+
+WebAssembly 是一种新的字节码格式，主流浏览器都已经支持 WebAssembly。      
+和JS需要解释执行不同的是，WebAssembly字节码和底层机器码很相似可快速装载运行，因此性能相对于 JS 解释执行大大提升。      
+也就是说WebAssembly并不是一门编程语言，而是一份字节码标准，     
+需要用高级编程语言编译出字节码放到WebAssembly虚拟机中才能运行,浏览器厂商需要做的就是根据 WebAssembly 规范实现虚拟机。      
+
+目前能编译成 WebAssembly 字节码的高级语言有：     
+AssemblyScript:语法和 TypeScript 一致，对前端来说学习成本低，为前端编写 WebAssembly 最佳选择；     
+c\c++:官方推荐的方式，详细使用见文档;     
+Rust:语法复杂、学习成本高，对前端来说可能会不适应。详细使用见文档;     
+Kotlin:语法和 Java、JS 相似，语言学习成本低，详细使用见文档;     
+Golang:语法简单学习成本低。但对 WebAssembly 的支持还处于未正式发布阶段，详细使用见文档。     
+     
+<h3 id="50">js与多线程</h3>
+    
+html5引入了Web Worker，让js支持多线程，做一个斐波那契计算     
+worker.js:      
+
+```
+function fibonacci(num){
+    if(num <=0){ return 0;}
+    if(num === 1 || num === 2){ return 1;}
+    var fn = 1,
+        fn1 = 1,
+        fn2 = fn + fn1;
+    for(var i = 4;i <= num;i++){
+        fn = fn1;
+        fn1 = fn2;
+        fn2 = fn + fn1;
+    }
+    return fn2;
+}
+
+//message函数里边监听接收主线程的数据
+message = function(event){
+    //主线程的数据通过event.data传进来
+    var num = event.data;
+    var result = fibonacci(num);
+    //计算完结果，给主线程发消息
+    postMessage(result);
+}
+```
+
+主线程先启动一个worker，把数据发给它。同时监听onmessage，取到子线程传回的结果。     
+main.js:      
+
+```
+var worker = new Worker(worker.js);
+worker.onmessage = function(event){
+    console.log(`recieve result: ${event.data}`);
+};
+var num = 1000;
+worker.postMessage(num);
+```
+   
+js的多线程是真的多线程，一口气创建500个线程，操作系统会一下子多出500个线程。js的多线程是调用系统API创建的多线程。     
+js的多线程无法操作DOM，没有window对象，每个线程的数据都是独立的。     
+js单线程里边的特例，如异步回调，是chrome自己的io线程处理的，每发一个请求必须要有一个线程跟着，限制了同一个域最多同时发6个请求。     
+
+chrome的多线程：     
+
+每开一个tab，就会创建一个进程，进程是线程的容器。如点击鼠标click事件：     
+用户单击鼠标，浏览器的ui线程收到之后，把消息数据封装成一个鼠标事件发送给io线程。     
+io线程再分配给具页面的渲染线程。其中io线程和ui线程是浏览器的线程，渲染线程是每个页面自己的线程。   
+
+如果执行一段耗时的js代码，渲染线程的render线程将会被堵塞，而main线程继续接收io线程发过来的消息并排队。等待render线程处理。     
+也就是说当页面卡住的时候不断单击鼠标，等页面空闲了，单击的事件会再继续触发。    
+
+Node.js的单线程模型：      
+
+Node.js也是单线程的，但是由于数据库连接本来就是多线程，调用操作系统的io文件读取也是多线程，所以node的异步是借助于数据库和io多线程。     
+
+<h3 id="51">前端算法与数据结构</h3>  
+
+递归就是自己调自己，如：    
+
+```
+var ids = [34112,98325,68125];
+(function sendRequest(){
+    var id = ids.shift();
+    if(id){
+        $.ajax({url:'/get'data:{id}}).always(function(){
+            console.log('finished');
+            sendRequest();
+        })
+    }else{
+        console.log('all finished')
+    }
+})()
+```
+
+递归实现一个查DOM的功能：    
+
+```
+function getElementById(node,id){
+    if(!node){return null}
+    if(node.id === id){return node}
+    for(var i=0;i<node.childNodes.length;i++){
+        var found = getElementById(node.childNodes[i],id);
+        if(found){return found}
+    }
+    return null;
+}
+getElementById(document,'d-cal');
+```
+
+chrome浏览器的查DOM是使用非递归实现的：     
+
+```
+function getElementById(node,id){
+    while(node){
+        if(node.id === id){return node}
+        node = nextElement(node)
+    }
+    return null
+}
+
+function nextElement(node){
+    if(node.children.length){
+        return node.children[0]
+    }
+    if(node.nextElementSibling){
+        return node.nextElementSibling
+    }
+    while(node.parentNode){
+        if(node.parentNode.nextElementSibling){
+            return node.parentNode.nextElementSibling
+        }
+        node = node.parentNode
+    }
+    return null;
+}
+```
+
+
+
 <h3 id="100">参考书籍</h3>   
 
 [廖雪峰官网教程](https://www.liaoxuefeng.com/wiki/001434446689867b27157e896e74d51a89c25cc8b43bdb3000/001434499763408e24c210985d34edcabbca944b4239e20000)   
