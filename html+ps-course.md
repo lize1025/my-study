@@ -772,8 +772,426 @@ xhr.onreadystatechange=function(){
 };
 ```     
 
-至此整个功能就拆解说明完了，上面的代码可以兼容到IE10，FileReader的api到IE10才兼容         
+至此整个功能就拆解说明完了，上面的代码可以兼容到IE10，FileReader的api到IE10才兼容           
 
+###前端本地文件操作与上传       
+
+FormData对象：     
+提供一种简单的方式创建一个包含键值对的form表单结构，可以用XMLHttpRequest.send()方法很方便的提交用FormData创建的form表单数据。     
+可以通过new 的方式创建一个FormData对象:     
+
+`var fm=new FormData();`    
+
+`FormData.append(name,value);`添加一条数据到FormData对象中如果添加的数据key值已经存在，append方法会在key值对应的values末尾添加value值     
+
+使用form表单初始化一个FormData对象     
+可以用一个已有的 form 元素来初始化 FormData 对象，只需要把这个 form 元素作为参数传入 FormData 构造函数即可：    
+
+```
+var formElement = document.getElementById("myFormElement");
+var oReq = new XMLHttpRequest();
+oReq.open("POST", "submitform.php");
+oReq.send(new FormData(formElement));
+```
+
+前端无法像原生APP一样直接操作本地文件，需要通过用户触发，用户可通过以下三种方式操作触发：     
+通过input type="file" 选择本地文件       
+通过拖拽的方式把文件拖过来      
+在编辑框里面复制粘贴     
+
+第一种是最常用的手段，通常还会自定义一个按钮，然后盖在它上面，因为type="file"的input不好改变样式。如下代码写一个选择控件，并放在form里面：       
+
+```
+<form>
+    <input type="file" id="file-input" name="fileContent">
+</form>
+```
+      
+然后就可以用FormData获取整个表单的内容：      
+
+```
+$("#file-input").on("change", function() {
+    console.log(`file name is ${this.value}`);
+    let formData = new FormData(this.form);
+    formData.append("fileName", this.value);
+    console.log(formData);
+});
+```    
+    
+在浏览器无法获取到文件的真实存放位置。同时FormData打印出来是一个空的Objet,      
+但并不是说它的内容是空的，只是它对前端开发人员是透明的，无法查看、修改、删除里面的内容，只能append添加字段。      
+    
+FormData无法得到文件的内容，而使用FileReader可以读取整个文件的内容。用户选择文件之后，input.files就可以得到用户选中的文件：     
+
+```
+$("#file-input").on("change", function() {
+    let fileReader = new FileReader(),
+        fileType = this.files[0].type;
+    fileReader.onload = function() {
+        if (/^image\/[jpeg|png|gif]/.test(fileType)) {
+            // 读取结果在fileReader.result里面
+            $(`<img src="${this.result}">`).appendTo("body");
+        }
+    }
+    // 打印原始File对象
+    console.log(this.files[0]);
+    // base64方式读取
+    fileReader.readAsDataURL(this.files[0]);    
+});
+```
+
+使用FileReader除了可读取为base64之外，还能读取为以下格式：     
+
+```
+// 按base64的方式读取，结果是base64，任何文件都可转成base64的形式
+fileReader.readAsDataURL(this.files[0]);
+
+// 以二进制字符串方式读取，结果是二进制内容的utf-8形式，已被废弃了
+fileReader.readAsBinaryString(this.files[0]);
+
+// 以原始二进制方式读取，读取结果可直接转成整数数组
+fileReader.readAsArrayBuffer(this.files[0]);
+
+```    
+
+其它的主要是能读取为ArrayBuffer，它是一个原始二进制格式的结果。它对前端开发人员也是透明的，不能够直接读取里面的内容，      
+但可以通过ArrayBuffer.length得到长度，还能转成整型数组，就能知道文件的原始二进制内容了：      
+
+```
+let buffer = this.result;
+// 依次每字节8位读取，放到一个整数数组
+let view = new Uint8Array(buffer);
+console.log(view);
+```
+
+第二种拖拽的方式，读取文件:      
+
+```
+<div class="img-container">
+    drop your image here
+</div>
+
+```   
+
+然后监听它的拖拽事件：     
+
+```
+$(".img-container").on("dragover", function (event) {
+    event.preventDefault();
+})
+
+.on("drop", function(event) {
+    event.preventDefault();
+    // 数据在event的dataTransfer对象里
+    let file = event.originalEvent.dataTransfer.files[0];
+
+    // 然后就可以使用FileReader进行操作
+    fileReader.readAsDataURL(file);
+
+    // 或者是添加到一个FormData
+    let formData = new FormData();
+    formData.append("fileContent", file);
+})
+```   
+    
+数据在drop事件的event.dataTransfer.files里面，拿到这个File对象之后就可以和输入框进行一样的操作了，      
+即使用FileReader读取，或者是新建一个空的formData，然后把它append到formData里面。     
+
+第三种粘贴的方式，通常是在一个编辑框里操作，如把div的contenteditable设置为true：     
+
+```
+ <div contenteditable="true">
+      hello, paste your image here
+ </div>
+```
+   
+粘贴的数据是在event.clipboardData.files里面：     
+
+```
+$("#editor").on("paste", function(event) {
+    let file = event.originalEvent.clipboardData.files[0];
+});
+```    
+
+但是Safari的粘贴不是通过event传递的，它是直接在输入框里面添加一张图片,它新建了一个img标签，并把img的src指向一个blob的本地数据。       
+[blob对象详解](https://www.cnblogs.com/hhhyaaon/p/5928152.html)         
+
+blob是一种类文件的存储格式，它可以存储几乎任何格式的内容，如json：    
+
+```
+let data = {hello: "world"};
+let blob = new Blob([JSON.stringify(data)],
+  {type : 'application/json'});
+
+```
+
+为了获取本地的blob数据，我们可以用ajax发个本地的请求:    
+
+```
+$("#editor").on("paste", function(event) {
+    // 需要setTimeout 0等图片出来了再处理
+    setTimeout(() => {
+        let img = $(this).find("img[src^='blob']")[0];
+        console.log(img.src);
+        // 用一个xhr获取blob数据
+        let xhr = new XMLHttpRequest();
+        xhr.open("GET", img.src);
+        // 改变mime类型
+        xhr.responseType = "blob";
+        xhr.onload = function () {
+            // response就是一个Blob对象
+            console.log(this.response);
+        };
+        xhr.send();
+    }, 0);
+});
+```
+
+能得到它的大小和类型，但是具体内容也是不可见的，和File一样，可以使用FileReader读取它的内容：      
+
+```
+function readBlob(blobImg) {
+    let fileReader = new FileReader();
+    fileReader.onload = function() {
+        console.log(this.result);
+    }
+    fileReader.onerror = function(err) {
+        console.log(err);
+    }
+    fileReader.readAsDataURL(blobImg);
+}
+
+readBlob(this.response);
+```
+
+它有一个slice的方法，可用于切割大文件   
+网盘的断点续传有一种方法是使用blob分隔文件大小：     
+
+```
+let fileReader = new FileReader(),
+    file = this.files[0];
+console.log(`总共发送${file.size}字节`);
+const ONE_MB = 1024 * 1024;
+let sendedBytes = 0;
+fileReader.onload = function(){
+    //发送分隔的片断
+    xhr.open(),xhr.send(this.result);
+    sendedBytes += ONE_MB;
+    if(sendedBytes < file.size){
+        //fie的slice方法继承与blob
+        let blob = file.slice(sendedBytes,sendedBytes + ONE_MB);
+        fileReader.readAsArrayBuffer(blob)
+    }
+}
+let blob = file.slice(0,ONE_MB)
+consloe.log(blob instanceof Blob); //true
+fileReader.readAsArrayBuffer(blob;)
+```
+
+
+
+除此，还能使用window.URL读取，这是一个新的API，经常和Service Worker配套使用，因为SW里面常常要解析url。如下代码：     
+
+```
+function readBlob(blobImg) {
+    let urlCreator = window.URL || window.webkitURL;
+    // 得到base64结果
+    let imageUrl = urlCreator.createObjectURL(this.response);
+    return imageUrl;
+}
+
+readBlob(this.response);
+```
+
+关于src使用的是blob链接的，除了上面提到的img之外，另外一个很常见的是video标签，如youtobe的视频就是使用的blob    
+这种数据不是直接在本地的，而是通过持续请求视频数据，然后再通过blob这个容器媒介添加到video里面，它也是通过URL的API创建的：     
+
+```
+let mediaSource = new MediaSource();
+video.src = URL.createObjectURL(mediaSource);
+let sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
+sourceBuffer.appendBuffer(buf);
+```
+
+上面，我们使用了三种方式获取文件内容，最后得到：    
+FormData格式     
+FileReader读取得到的base64或者ArrayBuffer二进制格式    
+
+如果直接就是一个FormData了，那么直接用ajax发出去就行了，不用做任何处理：     
+
+```
+let form = document.querySelector("form"),
+    formData = new FormData(form),
+formData.append("fileName", "photo.png");
+
+let xhr = new XMLHttpRequest();
+// 假设上传文件的接口叫upload
+xhr.open("POST", "/upload");
+xhr.send(formData);
+```
+
+如果用jQuery的话，要设置两个属性为false：    
+
+```
+$.ajax({
+    url: "/upload",
+    type: "POST",
+    data: formData,
+    processData: false,  // 不处理数据
+    contentType: false   // 不设置内容类型
+});
+```
+
+因为jQuery会自动把内容做一些转义，并且根据data自动设置请求mime类型，这里告诉jQuery直接用xhr.send发出去就行了。    
+这是一种区别于用&连接参数的方式，它的编码格式是multipart/form-data，就是上传文件form表单写的enctype：     
+
+```
+<form enctype="multipart/form-data" method="post">
+    <input type="file" name="fileContent">
+</form>
+```
+
+如果xhr.send的是FormData类型话，它会自动设置enctype，如果你用默认表单提交上传文件的话就得在form上面设置这个属性     
+
+如果读取结果是ArrayBuffer的话，也是可以直接用xhr.send发送出去的，但是一般我们不会直接把一个文件的内容发出去，而是用某个字段名等于文件内容的方式。    
+如果你读取为ArrayBuffer的话再上传的话其实作用不是很大，还不如直接用formData添加一个File对象的内容，     
+因为上面三种方式都可以拿到File对象。如果一开始就是一个ArrayBuffer了，那么可以转成blob然后再append到FormData里面。     
+
+使用比较多的应该是base64，因为前端经常要处理图片，读取为base64之后就可以把它画到一个canvas里面，然后就可以做一些处理，如压缩、裁剪、旋转等。    
+最后再用canvas导出一个base64格式的图片，上传base64格式:     
+
+第一种是拼一个表单上传的multipart/form-data的格式，再用xhr.sendAsBinary发出去:    
+
+```
+let base64Data = base64Data.replace(/^data:image\/[^;]+;base64,/, "");
+let boundary = "----------boundaryasoifvlkasldvavoadv";
+xhr.sendAsBinary([
+    // name=data
+    boundary,
+        'Content-Disposition: form-data; name="data"; filename="' + fileName + '"',
+        'Content-Type: ' + "image/" + fileType, '',
+        atob(base64Data), boundary,
+    //name=imageType
+    boundary,
+        'Content-Disposition: form-data; name="imageType"', '',
+        fileType,
+    boundary + '--'
+].join('\r\n'));
+```   
+
+上面代码使用了window.atob的api，它可以把base64还原成原始内容的字符串表示     
+btoa是把内容转化成base64编码，而atob是把base64还原。在调atob之前，需要把表示内容格式的不属于base64内容的字符串去掉，即上面代码第一行的replace处理。      
+Base64转码的对象只能是字符串      
+字符串“Hello World!”已被Base64编码和解码。但是，atob和btoa不能编码Unicode字符和不支持ie10以下：        
+*叫[atob和btoa编码Unicode字符和支持ie9](https://my.oschina.net/itblog/blog/1613977)*           
+
+```
+var string = 'Hello World!';
+
+var encodedString = btoa(string);
+console.log(encodedString); // Outputs: "SGVsbG8gV29ybGQh"
+
+var decodedString = atob(encodedString);
+console.log(decodedString); // Outputs: "Hello World!"
+```
+
+使用window.encodeURIComponent和window.decodeURIComponent叫转码支持汉字:      
+
+```
+var str = "China，中国";
+window.btoa(window.encodeURIComponent(str))
+//"Q2hpbmElRUYlQkMlOEMlRTQlQjglQUQlRTUlOUIlQkQ="
+ 
+window.decodeURIComponent(window.atob('Q2hpbmElRUYlQkMlOEMlRTQlQjglQUQlRTUlOUIlQkQ='))
+//"China，中国"
+```
+
+这样就和使用formData类似了，但是由于sendAsBinary已经被deprecated了，所以新代码不建议再使用这种方式。    
+可以把base64转化成blob，然后再append到一个formData里面，下面的函数（来自b64-to-blob）可以把base64转成blob：     
+
+```
+function b64toBlob(b64Data, contentType, sliceSize) {
+    contentType = contentType || '';
+    sliceSize = sliceSize || 512;
+
+    var byteCharacters = atob(b64Data);
+    var byteArrays = [];
+
+    for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+      var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+      var byteNumbers = new Array(slice.length);
+      for (var i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+
+      var byteArray = new Uint8Array(byteNumbers);
+
+      byteArrays.push(byteArray);
+    }
+
+    var blob = new Blob(byteArrays, {type: contentType});
+    return blob;
+}
+```   
+
+然后就可以append到formData里面,这样就不用自己去拼一个multipart/form-data的格式数据了:          
+
+```
+let blob = b64toBlob(b64Data, "image/png"),
+    formData = new FormData();
+formData.append("fileContent", blob);
+```
+
+上面处理和上传文件的API可以兼容到IE10+，如果要兼容老的浏览器可以借助一个iframe      
+原理是默认的form表单提交会刷新页面，或者跳到target指定的那个url，     
+但是如果把ifrmae的target指向一个iframe，那么刷新的就是iframe，返回结果也会显示在ifame，然后获取这个ifrmae的内容就可得到上传接口返回的结果:       
+
+```
+let iframe = document.createElement("iframe");
+iframe.display = "none";
+iframe.name = "form-iframe";
+document.body.appendChild(iframe);
+// 改变form的target
+form.target = "form-iframe";
+
+iframe.onload = function() {
+    //获取iframe的内容，即服务返回的数据
+    let responseText = this.contentDocument.body.textContent 
+            || this.contentWindow.document.body.textContent;
+};
+
+form.submit();
+```
+
+form.submit会触发表单提交，当请求完成（成功或者失败）之后就会触发iframe的onload事件，     
+然后在onload事件获取返回的数据，如果请求失败了的话，iframe里的内容就为空，可以用这个判断请求有没有成功。     
+
+使用iframe没有办法获取上传进度，使用xhr可以获取当前上传的进度，这个是在XMLHttpRequest 2.0引入的：      
+
+```
+xhr.upload.onprogress = function (event) {
+    if (event.lengthComputable) {
+        // 当前上传进度的百分比
+        duringCallback ((event.loaded / event.total)*100);
+    }
+};
+```
+
+这样就可以做一个真实的loading进度条。    
+
+3种交互方式的读取方式:      
+通过input控件在input.files可以得到File文件对象，     
+通过拖拽的是在drop事件的event.dataTransfer.files里面，     
+而通过粘贴的paste事件在event.clipboardData.files里面，      
+
+Safari这个怪胎是在编辑器里面插入一个src指向本地的img标签，可以通过发送一个请求加载本地的blob数据，然后再通过FileReader读取，      
+或者直接append到formData里面。得到的File对象就可以直接添加到FormData里面，      
+
+如果需要先读取base64格式做处理的，那么可以把处理后的base64转化为blob数据再append到formData里面。      
+
+对于老浏览器，可以使用一个iframe解决表单提交刷新页面或者跳页的问题。       
+   
 ### Service Worker做一个PWA离线网页应用：     
 
 PWA和Service Worker的关系：     

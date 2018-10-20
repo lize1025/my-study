@@ -2660,9 +2660,158 @@ XMLHttpRequest对象的open()方法有3个参数：
 如果这个请求耗时10秒，那么10秒内你会发现浏览器处于“假死”状态。*   
 
 最后调用send()方法才真正发送请求。     
-GET请求不需要参数，POST请求需要把body部分以字符串或者FormData对象传进去。     
+GET请求不需要参数，POST请求需要把body部分以字符串或者FormData对象传进去。      
 
-安全限制：跨域    
+AJAX2:     
+
+[XMLHttpRequest Level 2 使用指南](http://www.ruanyifeng.com/blog/2012/09/xmlhttprequest_level_2.html)
+AJAX老版本存在以下问题，从而导致了ajax2的出现：     
+
+只支持文本数据的传送，无法用来读取和上传二进制文件。    
+传送和接收数据时，没有进度信息，只能提示有没有完成。      
+受到"同域限制"（Same Origin Policy），只能向同一域名的服务器请求数据。      
+
+ajax2的新特性：      
+
+可以设置HTTP请求的时限。     
+可以使用FormData对象管理表单数据。     
+可以上传文件。         
+可以请求不同域名下的数据（跨域请求）。            
+可以获取服务器端的二进制数据。            
+可以获得数据传输的进度信息。       
+
+ajax操作往往用来传递表单数据。为了方便表单处理，HTML 5新增了一个FormData对象，可以模拟表单:      
+
+```
+//首先，新建一个FormData对象:     
+`var formData = new FormData();`     
+
+//然后，为它添加表单项:     
+formData.append('username', '张三');
+formData.append('id', 123456);
+
+//最后，直接传送这个FormData对象。这与提交网页表单的效果，完全一样
+xhr.send(formData);
+```
+
+FormData对象也可以用来获取网页表单的值:    
+
+```
+var form = document.getElementById('myform');
+var formData = new FormData(form);
+formData.append('secret', '123456'); // 添加一个表单项
+xhr.open('POST', form.action);
+xhr.send(formData);
+```
+
+新版XMLHttpRequest对象，不仅可以发送文本信息，还可以上传文件     
+假定files是一个"选择文件"的表单元素（input[type="file"]），我们将它装入FormData对象:      
+
+```
+var formData = new FormData();
+for (var i = 0; i < files.length;i++) {
+    formData.append('files[]', files[i]);
+}
+//然后，发送这个FormData对象。
+xhr.send(formData);
+```
+
+接收二进制数据（方法A：改写MIMEType）:     
+
+老版本的XMLHttpRequest对象，只能从服务器取回文本数据，新版则可以取回二进制数据。        
+这里又分成两种做法。较老的做法是改写数据的MIMEType，将服务器返回的二进制数据伪装成文本数据，并且告诉浏览器这是用户自定义的字符集:      
+
+`xhr.overrideMimeType("text/plain; charset=x-user-defined");`    
+
+然后，用responseText属性接收服务器返回的二进制数据:     
+
+`var binStr = xhr.responseText;`     
+
+由于这时，浏览器把它当做文本数据，所以还必须再一个个字节地还原成二进制数据:     
+
+```
+for (var i = 0, len = binStr.length; i < len; ++i) {
+    var c = binStr.charCodeAt(i);
+    var byte = c & 0xff;
+}
+```   
+
+最后一行的位运算"c & 0xff"，表示在每个字符的两个字节之中，只保留后一个字节，将前一个字节扔掉。      
+原因是浏览器解读字符的时候，会把字符自动解读成Unicode的0xF700-0xF7ff区段。       
+
+接收二进制数据（方法B：responseType属性）:       
+
+从服务器取回二进制数据，较新的方法是使用新增的responseType属性。     
+如果服务器返回文本数据，这个属性的值是"TEXT"，这是默认值。较新的浏览器还支持其他值，也就是说，可以接收其他格式的数据。        
+
+可以把responseType设为blob，表示服务器传回的是二进制对象:       
+
+```
+var xhr = new XMLHttpRequest();
+xhr.open('GET', '/path/to/image.png');
+xhr.responseType = 'blob';
+```     
+
+接收数据的时候，用浏览器自带的Blob对象即可:    
+
+`var blob = new Blob([xhr.response], {type: 'image/png'});`     
+
+注意，是读取xhr.response，而不是xhr.responseText。        
+还可以将responseType设为arraybuffer，把二进制数据装在一个数组里:      
+
+```
+var xhr = new XMLHttpRequest();
+xhr.open('GET', '/path/to/image.png');
+xhr.responseType = "arraybuffer";
+```
+
+接收数据的时候，需要遍历这个数组:     
+
+```
+var arrayBuffer = xhr.response;
+
+if (arrayBuffer) {
+    var byteArray = new Uint8Array(arrayBuffer);
+    for (var i = 0; i < byteArray.byteLength; i++) {
+　　}
+}
+```
+    
+进度信息:     
+新版本的ajax还增加了progress事件              
+它分成上传和下载两种情况。下载的progress事件属于XMLHttpRequest对象，上传的progress事件属于XMLHttpRequest.upload对象。      
+先定义progress事件的回调函数：      
+
+```
+xhr.onprogress = updateProgress;
+xhr.upload.onprogress = updateProgress;
+```    
+
+然后，在回调函数里面，使用这个事件的一些属性:      
+
+```
+function updateProgress(event) {
+　　　　if (event.lengthComputable) {
+　　　　　　var percentComplete = event.loaded / event.total;
+　　　　}
+　　}
+```
+
+上面的代码中，event.total是需要传输的总字节，event.loaded是已经传输的字节。如果event.lengthComputable不为真，则event.total等于0。      
+
+还有其他与之相关的五个事件，可以查看进度信息，请求时限：         
+progress事件:正在传输事件。        
+load事件：传输成功完成。          
+abort事件：传输被用户取消。                
+error事件：传输中出现错误。                 
+loadstart事件：传输开始。               
+loadEnd事件：传输结束，但是不知道成功还是失败。      
+    
+同源策略：    
+
+限制不同源的读，不限制不同源的写。限制读即浏览器拦截请求结果。    
+   
+跨域：         
 
 默认情况下，JavaScript在发送AJAX请求时，URL的域名必须和当前页面完全一致：     
 域名要相同（www.example.com和example.com不同），     
@@ -2677,6 +2826,7 @@ GET请求不需要参数，POST请求需要把body部分以字符串或者FormDa
 
 第二种是通过在同源域名下架设一个代理服务器来转发，JavaScript负责把请求发送到代理服务器：    
 '/proxy?url=http://www.sina.com.cn'     
+因为跨域请求只有在浏览器才会限制，其他的运行环境是不会有这个限制的。所以     
 代理服务器再把结果返回，这样就遵守了浏览器的同源策略。这种方式麻烦之处在于需要服务器端额外做开发。    
 
 第三种方式称为JSONP，它有个限制，只能用GET请求，并且要求返回JavaScript。     
@@ -2713,11 +2863,73 @@ function getPrice() {
 ```   
 
 如果浏览器支持HTML5，那么就可以一劳永逸地使用新的跨域策略：CORS了。    
+*ie9以上支持cors*   
 CORS全称Cross-Origin Resource Sharing，是HTML5规范定义的如何跨域访问资源。     
 
 假设本域是my.com，外域是sina.com，只要响应头Access-Control-Allow-Origin为  http://my.com  或者是*，本次请求就可以成功。    
-可见，跨域能否成功，取决于对方服务器是否愿意给你设置一个正确的Access-Control-Allow-Origin    
+可见，跨域能否成功，取决于对方服务器是否愿意给你设置一个正确的Access-Control-Allow-Origin     
 
+子域跨父域：    
+
+子域跨父域是支持的，但是需要显示的将子域的域名改成父域的    
+子域mail.mysite.com访问mysite.com  在mail.mysite.com写入：     
+
+`document.domain = 'mysite.com';`   
+
+这样就可以和父域进行交互。但向父域发请求还是会跨域，因为这种更改domain只支持client side，并不是 client to server的。         
+
+iframe跨父窗口：    
+
+父域无法直接读取不同源的iframe的DOM内容以及监听事件，但iframe可以调用父窗口提供的API。     
+iframe通过window.parent得到父窗口的window对象，父窗口定义一个全局对象供iframe调用。    
+
+父窗口通过window.postMessage可以向不同源的iframe传递东西，iframe监听消息事件。     
+*window.postMessage也适用于window.open打开的子窗口*     
+
+父窗口http://localhost:8000向iframe http://server.com:9000/ 传递：     
+
+```
+window.onload = function(){
+    //传递两个参数，第一个数据，第二个目标窗口即iframe地址
+    window.frames[0].postMessage('hello',http://server.com:9000/);
+}
+```    
+
+同时iframe即9000端口的页面监听message事件：      
+
+```
+window.addEventListener('message',receiveMessage);
+
+function receiveMessage(event){
+    var origin = event.origin || event.originalEvent.origin;
+    if(origin !== 'http://localhost:8000') { retrun }
+    console.log('receiveMessage' + event.data);
+}
+```   
+
+第三方授权登录：     
+
+例如FB的第三方授权登录，引入它的sdk.js，然后监听单击事件调一下它的FB.login的API，传一个回调函数给它。     
+然后它会调用window.open弹出一个让用户授权的页面，点同意后，sdk会执行你的回调把用户的数据返还给你，     
+拿到用户id等信息就可以去自己的后端发登录或者注册的请求。      
+
+使用window.open弹出的跨域的子页面的数据传递：     
+
+```
+var ga = function ha(){
+    ea.postMessage('_FB_' + fa + ca,da);
+};
+if(o.ie() == 8 || o.ieCompatibilityMode()){
+    setTimeout(ga,0)
+}else{
+    ga()
+}
+```   
+
+FB还提供第二种方法，用重定向方式，重定向到FB的授权页面时带上返回的参数，用户同意后再重定向到自己的页面。      
+同样把相关数据党参数带到自己页面。    
+在弹一个新窗口的同时，它会发一个请求，根据cookie的token查询用户是否授权过了，如授权了使用jsonp的方法直接执行回调。      
+    
 高性能Ajax包括:      
    
 了解项目具体需求，选择正确的数据格式和与之匹配的传输技术。    
