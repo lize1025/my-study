@@ -1,6 +1,8 @@
 # css知识点   
 
-[css验证](http://jigsaw.w3.org/css-validator/)   
+[css验证](http://jigsaw.w3.org/css-validator/)     
+
+查看浏览器兼容性，[icanuse](https://caniuse.com/)
 
 支持css3媒体查询： respond.js mediaqueries.js  polyfill  
    
@@ -175,7 +177,7 @@ word-break:break-all;
 width:300px;
 ```   
       
-div垂直居中：   
+div定高垂直居中：   
 
 ```
 #box {
@@ -188,7 +190,105 @@ div垂直居中：
 	left: 50%;
 	top: 50%;
 }
+```     
+
+div不定高垂直居中：    
+
+```
+.box {
+	background-color: #666;
+	width: 400px;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%,-50%);
+```    
+
+flex垂直水平居中：       
+[Flex 布局语法教程](https://www.runoob.com/w3cnote/flex-grammar.html)     
+*注意，设为Flex布局以后，子元素的float、clear和vertical-align属性将失效。*
+
+```
+.box{
+			display:flex;
+			justify-content:center; /*水平居中*/
+			align-items:center; /*垂直居中*/
+			background:#0099cc
+		}
+		h1{
+			color:#fff;
+			border: 1px solid #000;
+			width: 33.3%;
+		}
+
+<div class="box">
+    <h1>flex弹性布局</h1>
+    <h1>flex弹性布局</h1>
+    <h1>flex弹性布局</h1>
+</div>
+```
+
+左右栏宽度固定，中间栏宽度自适应的布局float:     
+
+```
+.left{float: left;width: 100px;background: #abcccc;}
+.right{float: right;width: 100px;background: #ccc;}
+.middle{margin:0 110px;background: #abcdef;}
+
+<div class="left">左边内容左边内容左边内容左边内容左边内容左边内容</div>
+<div class="right">右边内容右边内容右边内容右边内容右边内容右边内容</div>
+<div class="middle">中间内容中间</div>
+```
+
+左右栏宽度固定，中间栏宽度自适应的布局table:      
+*三栏高度统一*
+
+```
+table{width: 100%;}
+.middle{background: #abcdef;margin:0 10px;padding: 0 10px;}
+.left{background: #abcccc;width: 100px;}
+.right{background: #ccc;width: 100px;}
+
+<table>
+	<tr>
+		<td class="left">左边</td>
+		<td class="middle">不能对单元格td设置margin属性来调整单元格与单元格之间的距离不能对单元格td设置margin属性来调整单元格与单元格之间的距离不能对单元格td设置margin属性来调整单元格与单元格之间的距离不能对单元格td设置margin属性来调整单元格与单元格之间的距离不能对单元格td设置margin属性来调整单元格与单元格之间的距离</td>
+		<td class="right">右边</td>
+	</tr>
+</table>
 ```   
+
+左右栏宽度固定，中间栏宽度自适应的布局grid：       
+*三栏高度统一*       
+[grid布局](http://www.css88.com/archives/8506)
+
+```
+.middle{background: #abcdef;margin: 0 10px;}
+.left{background: #abcccc;}
+.right{background: #ccc;}
+
+<div style="display: grid;grid-template-columns: 100px auto 100px;">
+<div class="left">左边内容</div>
+<div class="middle">网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局网格布局</div>
+<div class="right">右边内容右边内容右边内容右边内容右边内容右边内容右边内容</div>
+</div>
+```
+
+左右栏宽度固定，中间栏宽度自适应的布局flex:      
+*三栏高度统一*      
+
+```
+.wrapper{display: flex;width: 100%;}
+.middle{background: #abcdef;flex:1;margin:0 10px;}
+.left{background: #abcccc;width: 100px;}
+.right{background: #ccc;width: 100px;}
+
+<div class="wrapper">
+	<div class="left">苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果苹果</div>
+	<div class="middle">香蕉香蕉香蕉香蕉香蕉</div>
+	<div class="right">水蜜桃水蜜桃水蜜桃水蜜桃水蜜桃水蜜桃水蜜桃水蜜桃水蜜桃水蜜桃水蜜桃水蜜桃水蜜桃</div>
+</div>
+```
 
 /* 禁止换行 */   
 `.nowrap{word-break:keep-all;white-space:nowrap;}`   

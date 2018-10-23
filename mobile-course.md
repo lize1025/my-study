@@ -1,7 +1,7 @@
 # 移动端知识点   
 
 移动端常用技术：    
-[css3图片帧动画](#3)，[拍照](https://www.cnblogs.com/apanly/p/5731086.html)，[地理定位](https://www.cnblogs.com/moyuling/p/8965192.html)，手势识别，音频支持，重力感应，canvas图形，多屏互动，vr虚拟实现技术3d全景绑定陀螺仪。    
+[css3图片帧动画](#3)，[拍照](https://www.cnblogs.com/apanly/p/5731086.html)，[地理定位](https://www.cnblogs.com/moyuling/p/8965192.html)，手势识别，音频支持，[重力感应](https://blog.csdn.net/tangxiujiang/article/details/78080090)，canvas图形，多屏互动，vr虚拟实现技术3d全景绑定陀螺仪。    
        
 [移动端动画优化](#1)	   
 [移动端常见bug](#2)
@@ -360,6 +360,19 @@ ios禁止用户选中文字-webkit-user-select:none;可能导致个别android无
 用fastclick.js     
 用touchend代替tap事件，并阻止掉默认e.preventDefault()    
 用延时处理，加定时器320 setTimeout()    
+
+click300ms延时：     
+2014年的chrome32版本，ie，firefox/safari ios9.3已经把延时去掉了，如果viewport设置成设备实际像素，就不会有延时：     
+
+`<meta name="viewport" content="width=device-width">`    
+
+或者设置css取消掉延时：    
+
+`html{touch-action:manipulation;}`    
+
+click最后触发：     
+
+touchstart-touchend-mouseover-mousedown-mouseup-click     
     
 鬼点击：点击一次执行两次。     
 解决：在touchend处阻止默认事件`e.preventDefault()`        

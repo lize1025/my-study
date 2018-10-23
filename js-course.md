@@ -21,6 +21,8 @@
     * [2.5 闭包](#13)
     * [2.6 箭头函数](#14)
     * [2.7 generator](#15)
+    * [2.8 惰性载入函数](#52)
+    * [2.9 防抖和节流](#53)
 * [3. 标准对象](#16)
     * [3.1 Date](#17)
     * [3.2 JSON](#18)
@@ -48,6 +50,7 @@
     * [8.6 编程实践](#39)
     * [8.7 构建并部署高性能js应用](#40)
     * [8.8 js书写优化](#44)
+    * [8.9 单元测试](#54)
 * [9. 正则表达式](#41)
 * [10. 事件](#42)
 * [11. 页面优化](#45)
@@ -61,7 +64,7 @@
 
 <h2 id="1">快速入门</h2>          
      
-<h3 id="new2">基本语法和数据类型</h3>      
+<h3 id="new2">基本语法和数据类型</h3>                                                                         
 
 typeof typeof 任何 返回string    
 
@@ -587,6 +590,31 @@ var o1 = new f1()
 var o2 = {}
 var o3 = new Object()
 ```    
+
+防止篡改对象：    
+
+Object.seal防止新增和删除属性：    
+
+```
+let person = {
+    name:'yu'
+};
+Object.seal(person);
+delete person.name //不能删
+person.name // yu
+person.age = 18 //不能加
+person.age //undefined
+```
+
+Object.freeze冻结对象，不能改属性：     
+
+```
+let person = {
+    name:'yu'
+};
+person.name = 'yuyu'
+person.name // yu
+```
 
 <h3 id="5">条件判断</h3>
 js把null、undefined、0、NaN和空字符串''视为false，其他值一概视为true     
@@ -1459,8 +1487,66 @@ try {
 catch (err) {
     handle(err);
 }
-```   
+```     
 
+<h3 id="52">惰性载入函数</h3>       
+
+有时需要在一些兼容判断，或一些UA的判断，如：      
+
+```
+getUAType:function(){
+    let ua = window.navigator.userAgent;
+    if(ua.match(/renten/i)){
+        return 0;
+    }else if(ua.match(/MicroMessenger/i)){
+        return 1
+    }else if(ua.match(/weibo/i)){
+        return 2
+    }
+    return -1
+}
+```
+
+这个函数判断用户是在哪个环境打开网页。一般结果都是死的，不管都少次判断都是一样结果。      
+所以为了优化，有了惰性函数一说，可以改写：      
+
+```
+getUAType:function(){
+    let ua = window.navigator.userAgent;
+    if(ua.match(/renten/i)){
+        pageData.getUAType = () => 0;
+        return 0;
+    }else if(ua.match(/MicroMessenger/i)){
+        pageData.getUAType = () => 1;
+        return 1
+    }else if(ua.match(/weibo/i)){
+        pageData.getUAType = () => 2;
+        return 2
+    }
+    return -1
+}
+```
+
+在每次判断之后，把getUaType函数重新赋值，以后每次获取就不用判断了。     
+上边例子更简单实现，直接用变量存起来就好了，缺点是没使用到getUAType函数也会执行一次判断：      
+
+```
+let ua = window.navigator.userAgent;
+left UAType = ua.match(/renten/i) ? 0 :
+              ua.match(/MicroMessenger/i) ? 1 :
+              ua.match(/weibo/i) ? 2 : -1
+```   
+   
+[函数柯里化](https://blog.csdn.net/shunfa888/article/details/80013170)     
+假如一个函数只能收一个参数，那么这个函数怎么实现加法呢。因为高阶函数是可以当参数传递和返回值的，所以问题就简化为：       
+写一个只有一个参数的函数，而这个函数返回一个带参数的函数，这样就实现了能写两个参数的函数了。这就是所谓的柯里化。      
+也可以理解为一种在处理函数过程中的逻辑思维方式。      
+
+<h3 id="53">防抖和节流</h3>       
+
+[函数节流与函数防抖的区别](https://blog.csdn.net/qq_35585701/article/details/81392174)         
+防抖是只执行重复操作的最后一次，节流是每多少单位时间内只执行一次。          
+    
 <h2 id="16">标准对象</h2>   
 
 typeof操作符获取对象的类型，它总是返回一个字符串：   
@@ -1495,7 +1581,8 @@ typeof操作符可以判断出number、boolean、string、function和undefined�
  
 判断Array要使用Array.isArray(arr)；//兼容ie9及以上   
 
-判断数组，不兼容ie6   
+判断数组，不兼容ie6：     
+*在iframe里判断父窗口的变量是否为一个数组时，就不能用instanceof，要用以下方法*   
 
 ```
 var arr = ({}).toString.call(area) === "[object Array]"
@@ -4297,6 +4384,15 @@ function getPrice(count){
 使用class    
 字符串拼接     
 块级作用域变量     
+
+<h3 id="54">单元测试</h3>     
+
+[浅谈前端单元测试](https://yq.aliyun.com/articles/610101#),[一步一步实现现代前端单元测试](https://blog.csdn.net/Frank_YLL/article/details/79058616)
+
+前端测试：为检测特定的目标是否符合标准而采用专用的工具或者方法进行验证，并最终得出特定的结果。         
+    
+对于前端开发过程来说，这里的特定目标就是指我们写的代码，而工具就是我们需要用到的测试框架(库)、测试用例等。      
+检测处的结果就是展示测试是否通过或者给出测试报告，这样才能方便问题的排查和后期的修正。       
             
 <h2 id="41">正则表达式</h2>    
 
