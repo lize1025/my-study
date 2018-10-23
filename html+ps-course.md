@@ -1,6 +1,36 @@
-# html+PS知识点    
+# html+PS知识点        
 
-## html:[w3c验证](http://validator.w3.org/)   
+* [1. HTML](#1)
+* [2. HTML5必会特性](#2)  
+    * [2.1 新元素](#3)
+    * [2.2 表单、音频和视频](#4)
+    * [2.3 定位当前地理位置](#5)
+    * [2.4 调用摄像头拍照](#6)
+    * [2.5 手机摇一摇](#7)
+    * [2.6 离线和存储--随手记](#8)
+    * [2.7 LocalStorage与SessionStorage](#9)
+    * [2.8 IndexedDB实现便签管理](#10)
+    * [2.9 Canvas、SVG、WebGL](#11)
+    * [2.10 PostMessage](#12)
+    * [2.11 XMLHttpRequest Level 2](#13)
+    * [2.12 Server Sent Event](#14)
+    * [2.13 WebSocket协议](#15)
+    * [2.14 WebRTC实时通讯](#16)
+    * [2.15 History与单页应用](#17)
+    * [2.16 Drag和Drop](#18)
+    * [2.17 Web Workers](#19)
+    * [2.18 Performance AIP 分析网站性能](#20)
+* [3. html5优化实践](#21)  
+    * [3.1 使用history改善AJAX列表请求体验](#22)
+    * [3.2 使用图标字体iconfont代替雪碧图](#23)  
+    * [3.3 实现前端剪裁压缩图片](#24)
+    * [3.4 前端本地文件操作与上传](#25)
+    * [3.5 Service Worker做一个PWA离线网页应用](#26)
+* [4. PS](#27)  
+                                                                             
+<h2 id="1">HTML</h2>          
+
+html:[w3c验证](http://validator.w3.org/)   
 
 支持html5标签：[html5.js](http://cdn.static.runoob.com/libs/html5shiv/3.7/html5shiv.min.js)   
 
@@ -107,11 +137,1400 @@ SWFObject利用Javascript 插入flash，不会出现IE6下的“单击此处以�
 swfobject.embedSWF("test.swf", "swfid", "300", "120", "9.0.0", "expressInstall.swf");
 </script>
 ```     
+        
+<h2 id="2">HTML5必会特性</h2>     
+
+<h3 id="3">新元素</h3>      
+
+布局采用div：      
+
+```
+<!--页头-->
+<div class="header"></div>
+
+<!--导航-->
+<div class="nav"></div>
+
+<!--主体内容-->
+<div class="main">
+    <!--文章-->
+    <div class="artical">
+        <!--节-->
+        <div class="section"></div>
+    </div>
+    <!--边栏-->
+    <div class="sidebar"></div>
+</div>
+
+<!--页脚-->
+<div class="footer"></div>
+```
     
-## html5优化实践    
+html5新元素实现上述布局：      
+
+```
+<header>介绍内容的容器或者一组导航链接</header>
+<nav>标签的内容主要用于导航</nav>
+<div>
+    <article> <--页面中的主体内容-->
+        <section>标记页面重要部分。</section>
+    </article>
+    <aside>和主要内容相关，但不是页面的一部分</aside>
+</div>
+<footer>文档章节页脚</footer>
+```    
+
+<h3 id="4">表单、音频和视频</h3>      
+
+input元素的type属性扩充：     
+
+search:呈现一个搜索框    
+
+tel：输入电话号码，可用pattern和maxlength限定输入格式：      
+`<input type="tel" name="tel" value="" placeholder="请输入手机号码" pattern="1[3-8][0-9]{9}" title="请输入11位手机号">`     
+
+url:输入URL地址    
+
+email：输入邮件地址    
+
+date：输入日期     
+`<input type="date">`    
+
+color:输入颜色     
+`<input type="color">`      
+
+number:输入数字     
+
+range：滑块输入      
+`<input type=range min=20 max=100 step=2>`     
+
+input元素属性：     
+
+placeholder:占位符，提示用户输入     
+
+required:input元素为必填      
+`<input type="text" placeholder="此项必填" required>`    
+
+autofocus:页面加载时，自动聚焦。
+`<input type="text" name="fname" autofocus="autofocus" />`     
+
+form:将input元素和特定的form表单关联     
+
+```
+<form action="/example/html5/demo_form.asp" method="get" id="form1"></form>
+
+<--位于 form 元素之外，但仍然是表单的一部分。-->
+<input type="text" name="lname" form="form1" />
+```
+
+datalist标签定义选项列表:      
+
+```
+<input id="myCar" list="cars" />
+<datalist id="cars">
+  <option value="BMW">
+  <option value="Ford">
+  <option value="Volvo">
+</datalist>
+```   
+
+progress元素表示进度条：    
+`<progress value="30" max="100"></progress>`    
+
+meter元素表示标尺：    
+`<meter value="3" min="0" max="10">3/10</meter>`     
+
+contenteditable属性：让普通元素可编辑      
+`<p contenteditable="true">这里的内容是可以编辑的</p>`     
+
+使用音频：    
+
+controls:是否显示标准音频控件     
+autoplay:是否自动播放，默认false     
+loop:是否循环，默认false    
+preload:预先加载方式。默认auto预加载整个音频。none不预加载。metadata只加载音频元数据。     
+volum:音量，0-1之间。     
+
+```
+<audio controls>
+    <source src="vincent.ogg" />
+    <source src="vincent.mp3" /> 你的浏览器不支持Audio标记
+</audio>
+
+<section>
+    <h3>自定义播放行为</h3>
+    <audio id="audio">
+        <source src="vincent.ogg" />
+        <source src="vincent.mp3" /> 你的浏览器不支持Audio标记
+    </audio>
+    <p>
+        <button id="btnPlay">Play</button>
+        <button id="btnPause">Pause</button>
+    </p>
+
+<script>
+    var audio = document.getElementById("audio")
+    document.getElementById("btnPlay").addEventListener("click", function(){
+        audio.play()
+    })
+    document.getElementById("btnPause").addEventListener("click", function(){
+        audio.pause()
+    })
+</script>
+</section>
+```
+
+使用视频：      
+
+```
+<video width="400" height="300" controls id="video">
+<source src="dizzy.mp4#t=,15" type="video/mp4">
+<source src="dizzy.webm" type="video/webm">
+<source src="dizzy.ogv" type="video/ogg">
+<p>你的浏览器不支持HTML5视频</p>
+</video>
+
+<p>
+<input type="number" name="time" value="10" id="time">
+<button id="btnSeek">GetInfo</button>
+</p>
+
+<script>
+    var video = document.getElementById("video")
+    var time = document.getElementById("time")
+    document.getElementById("btnSeek").addEventListener("click", function () {
+        //通过指定currentTime控制播放的位置,也可在source的url上指定起始和结束时间
+        //<source src="dizzy.mp4#t=5,10" type="video/mp4">
+        video.currentTime = time.value;
+    })
+
+    var sources =  video.querySelectorAll("source")
+    var lastSource = sources[sources.length - 1]
+    lastSource.addEventListener("error", function(){
+        alert('No source available')
+    })
+</script>
+```
+
+<h3 id="5">定位当前地理位置</h3>          
    
-### 使用history改善AJAX列表请求体验：    
-    
+根据用户的地理位置提供相关服务。     
+Geolocation API通过navigator.geolocation全局对象进行访问。初次访问浏览器会询问用户是否允许共享位置。         
+
+```
+function showPosition(position) {
+    var latlon = position.coords.latitude + ',' + position.coords.longitude;
+    var img_url = 'http://maps.googleapis.com/maps/api/staticmap?center='
+    + latlon + '&zoom=14&size=400x300&sensor=false';
+    document.getElementById('pos').innerHTML = latlon;
+    document.getElementById('map').innerHTML = '<img src="' + img_url + '" />';
+}
+
+function success(position){
+    console.log('获取位置成功：', position.coords);
+    showPosition(position);
+}
+
+function error(positionError){
+    console.log('获取位置失败：', positionError);
+}
+
+var options = {
+    enableHighAccuracy: false, //是否获取高精度的位置信息
+    timeout: 30000, //定位超时时间，单位毫秒。
+    maximumAge: 0 //用户位置信息缓存的最大时间。
+}
+
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(success, error, options);
+} else {
+    alert('您的浏览器不支持Geolocatioin!')
+}
+
+// var watchId = navigator.geolocation.watchPosition(success, error, options);  //用户位置变化，通过watchPosition方法监听
+// navigator.geolocation.clearWatch(watchId)  //取消监听
+```
+
+<h3 id="6">调用摄像头拍照</h3>          
+
+GetUserMedia API提供访问用户媒体设备能力。      
+起初版本：navigator.getUserMedia 最新标准：navigator.mediaDevices.getUserMedia     
+
+请求访问用户摄像头，并把视频流通过video元素显示出来。提供一个拍照按钮，通过canvas将video的画面截取并绘制：     
+
+```
+<video id="video" autoplay style="width:480px;height:320px"></video><!-- 显示MediaStream视频流 -->
+<div><button id="capture">拍照</button></div>
+<canvas id="canvas" width="480" height="320"></canvas>
+
+// 访问用户媒体设备的兼容方法
+function getUserMedia(constraints, success, error) {
+    if (navigator.mediaDevices.getUserMedia) {
+    // 最新的标准API
+    navigator.mediaDevices.getUserMedia(constraints)
+    .then(success).catch(error);
+    } else if (navigator.webkitGetUserMedia) {
+    // Webkit核心浏览器
+    navigator.webkitGetUserMedia(constraints, success, error);
+    } else 
+    if (navigator.mozGetUserMedia) {
+    // Firefox浏览器
+    navigator.mozGetUserMedia(constraints, success, error);
+    } else if (navigator.getUserMedia) {
+    // 旧版API
+    navigator.getUserMedia(constraints, success, error);
+    }
+}
+
+    var video = document.getElementById("video");// video元素
+    var canvas = document.getElementById("canvas");// canvas元素
+    var context = canvas.getContext("2d");
+
+// 成功的回调函数
+function success(stream) {
+    var CompatibleURL = window.URL || window.webkitURL
+    video.src = CompatibleURL.createObjectURL(stream);//将视频流设置为video元素的源
+    video.play();// 播放视频
+}
+
+// 异常的回调函数
+function error(error) {
+        console.log('访问用户媒体设备失败：', error.name, error.message);
+    }
+
+if (navigator.mediaDevices.getUserMedia || navigator.getUserMedia ||
+    navigator.webkitGetUserMedia || navigator.mozGetUserMedia) {
+    // 调用用户媒体设备，访问摄像头
+    getUserMedia({ video: { width: 480, height: 320 } }, success, error);
+    //移动设备上可指定使用前置摄像头video: { facingMode:'user'}
+} else {
+    alert('您的浏览器不支持访问用户媒体设备！');
+}
+
+// 绑定拍照按钮的点击事件
+    document.getElementById("capture").addEventListener("click", function () {
+        //在画布上定位图像，并规定图像的宽度和高度：context.drawImage(img,x,y,width,height);
+        context.drawImage(video, 0, 0, 480, 320);// 将video画面在canvas上绘制出来
+    });
+```
+
+<h3 id="7">手机摇一摇</h3>          
+
+手机在一定时间内移动了一定距离。    
+监听devicemotion事件后，判断设备x，y，z三个方向上移动的距离与前一次移动的距离差，并除以两次事件触发时间差。即为设备移动速度。      
+
+```
+<div>用力摇一摇你的手机</div>
+
+var SHAKE_SPEED_THRESHOLD = 300;// 摇动速度阈值
+var lastTime = 0;// 上次变化的时间
+var x = y = z = lastX = lastY = lastZ = 0;// 位置变量初始化
+
+function motionHandler(evt) {
+    var acceleration = evt.accelerationIncludingGravity;// 取得包含重力加速的位置信息
+    var curTime = Date.now();// 取得当前时间
+    if ((curTime - lastTime) > 120) {// 判断
+    var diffTime = curTime - lastTime;// 两次变化时间差
+    lastTime = curTime;// 保存此次变化的时间
+    x = acceleration.x;
+    y = acceleration.y;
+    z = acceleration.z;
+    var speed = Math.abs(x + y + z - lastX - lastY - lastZ) / diffTime * 1000;// 计算速度
+    if (speed > SHAKE_SPEED_THRESHOLD) {// 速度是否大于预设速度
+        alert("你摇动了手机");
+    }
+    lastX = x; // 保存此次变化的位置x
+    lastY = y; // 保存此次变化的位置y
+    lastZ = z; // 保存此次变化的位置z
+    }
+}
+
+if (window.DeviceMotionEvent) {
+    //devicemotion在设备位置发生变化时触发
+    window.addEventListener('devicemotion', motionHandler, false);
+} else {
+    alert('您的设备不支持位置感应');
+}
+```
+
+<h3 id="8">离线和存储--随手记</h3>          
+
+离线资源缓存：      
+通过浏览器机制，将在线资源缓存到本地，当用户离线访问时本地资源自动加载，从而让用户可以正常使用应用。     
+
+在线状态监测：         
+有些应用需要和服务器做数据交互，开发者需要知道浏览器是否处于在线状态。提供在线状态监测。      
+
+本地数据存储：        
+应用处于离线时，程序把数据存储到本地，以便在线时同步到服务器。      
+
+离线web比普通web应用多了一个描述文件。以备离线时使用。描述文件扩展名'.manifest'或'.appcache'。       
+描述文件的mime-type类型为'text/cache-manifest'，必须使用UTF-8编码      
+offline.appcache文件代码：            
+
+```
+CACHE MANIFEST
+#cache之后的资源都会被缓存
+CACHE:
+base.css
+main.js
+#network之后的资源不会被缓存，总是从线上获取
+NETWORK:
+index.css
+account/
+```
+
+在html标签上添加manifest属性后，浏览器就会自动下载offline.appcache文件并解析，然后缓存文件中那个指定的资源：      
+
+`<html manifest="./offline.appcache">`    
+
+入口index.html文件：     
+
+```
+<h2>随手记--实时保存</h2>
+<div>
+	<textarea id="content" cols="100" rows="20"></textarea>
+</div>
+<script src="main.js"></script>
+```  
+
+main.js文件：     
+
+```
+// 获取记录内容的文本域
+var el = document.querySelector('#content');
+
+// 为文本域DOM节点添加blur事件
+el.addEventListener('blur', function(){
+	// 获取文本域的内容
+	var data = el.innerHTML;
+	// 如果是在线状态，就直接保存到服务器
+	if(navigator.onLine){
+		saveOnline(data);
+	}else{
+		// 如果是离线状态，则保存到本地
+		localStorage.setItem('data', data);
+	}
+});
+
+// 监听上线事件
+window.online = function(){
+	// 从本地存储获取数据
+	var data = localStorage.getItem('data');
+	if(!!data){
+		// 如果数据存在，则保存到服务器
+		saveOnline(data);
+		// 同时，清空本地的存储
+		localStorage.removeItem('data');
+	}
+};
+
+// 保存内容的具体代码
+function saveOnline(data){
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', 'http://localhost:8000/savedata');
+	xhr.send('data='+data);
+}
+```
+
+离线之后资源更新--Service Worker     
+Service Worker主要功能：后台消息传递 网络代理 离线缓存 消息推送     
+通过手动的方式实现了两个静态资源的缓存：            
+
+```
+// main.js注册 service worker
+navigator.serviceWorker.register('sw.js').then(function(registration) {
+	console.log('Service Worker 注册成功');
+}).catch(function (err) {
+	console.log('Servcie Worker 注册失败：'+err);
+});
+
+//sw.js
+// 需要缓存的资源列表
+var cacheFiles = [
+    'style.css',
+    'main.js'
+];
+
+// 在install事件里缓存资源
+self.addEventListener('install', function (evt) {
+    evt.waitUntil(
+        caches.open('mycache').then(function (cache) {
+            return cache.addAll(cacheFiles);
+        })
+    );
+});
+```
+
+<h3 id="9">LocalStorage与SessionStorage</h3>          
+
+将数据存储到cookie有如下弊端：     
+大小受限，单个cookie允许大小是4KB     
+消耗性能，当前域下所有http请求都会携带这些cookie数据     
+
+html5本地存储为每个网站分配空间大小是5MB      
+本地存储只支持存储字符串类型数据，若要存储json数据，需要先将数据转换成字符串。     
+
+LocalStorage和SessionStorage两种API在使用上没有区别。      
+不过前者会一致存储在本地，直到手动删除，后者存活在当前页面生命周期中，一旦页面关闭就自动消失。     
+
+```
+// 存储数据
+localStorage.setItem('key', '需要存储的数据');
+
+// 获取数据
+var value = localStorage.getItem('key');
+
+// 删除数据
+localStorage.removeItem('key');
+```
+
+本地存储除了setItem和getItem，还可以使用索引和属性来操作：     
+
+```
+// 存储数据
+localStorage['key1'] = 'value1';
+localStorage.key2 = 'value2';
+
+// 获取数据
+var value1 = localStorage['key1'];
+var value2 = localStorage.key2;
+```
+
+遍历和清空：      
+
+```
+// 遍历所有存储的数据
+for(var i=0;i<localStorage.length;i++){
+	// 获取key
+	var key = localStorage.key(i);
+	// 获取value
+	var value = localStorage.getItem(key);
+	// 打印到控制台
+	console.log(key, value);
+}
+// 清空所有数据
+localStorage.clear();
+```
+
+将数据存储到本地，确保下次打开时数据仍然存在：    
+
+```
+<div>
+<textarea id="content" cols="100" rows="20"></textarea>
+</div>
+
+// 获取记录内容的文本域
+var el = document.querySelector('#content');
+
+// 页面载入时，从本地获取存储的数据
+el.value = localStorage.getItem('data') || '';
+
+// 为文本域DOM节点添加blur事件
+el.addEventListener('blur', function(){
+	// 获取文本域的内容
+	var data = el.value;
+	// 保存到本地
+	localStorage.setItem('data', data);
+});
+```
+
+<h3 id="10">IndexedDB实现便签管理</h3>             
+
+IndexedDB是一个事务型数据库系统，同时也是一个基于js的面向对象的数据库系统。     
+IndexedDB可以存储大量结构化的数据，并且使用基于索引的高效API检索。     
+
+页面加载后通过读取数据库现有的数据渲染便签列表。然后可以通过添加按钮添加新便签，也可删除按钮删除已有便签:            
+*可以在浏览器开发者工具Application选项卡中，展开IndexedDB找到创建的数据库'db1'*      
+
+```
+<!--创建一个便签容器-->
+<div class="notes">
+<!--添加按钮-->
+<div class="add">
+    <p class="ic_add">+</p>
+    <p>添加便签</p>
+</div>
+</div>
+
+<!--为了简化代码，基于jQuery开发-->
+<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+
+<!--自己封装的操作indexedDB的帮助类-->
+<script src="indexeddb.js"></script>
+
+<script>
+// 预先定义每一个便签的HTML代码
+var divstr = '<div class="note"><a class="close">X</a><textarea></textarea></div>';
+// 实例化一个便签数据库、数据表
+var db = new LocalDB('db1', 'notes');
+// 打开数据库
+db.open(function(){
+    // 页面初始化时，获取所有已有便签
+    db.getAll(function(data){
+        var div = $(divstr);
+        div.data('id', data.id);
+        div.find('textarea').val(data.content);
+        // 将便签插入到添加按钮前边
+        div.insertBefore(add);
+    });
+});
+// 为添加按钮注册点击事件
+var add = $('.add').on('click', function(){
+    var div = $(divstr);
+    div.insertBefore(add);
+    // 添加一条空数据到数据库
+    db.set({content:''}, function(id){
+        // 将数据库生成的自增id赋值到便签上
+        div.data('id', id);
+    });
+});
+// 监听所有便签编辑域的焦点事件
+$('.notes').on('blur', 'textarea', function(){
+    var div = $(this).parent();
+    // 获取该便签的id和内容
+    var data = { id: div.data('id'), content: $(this).val() };
+    // 写入数据库
+    db.set(data);
+})
+// 监听所有关闭按钮的点击事件
+.on('click', '.close', function(){
+    if(confirm('确定删除此便签吗？')){
+        var div = $(this).parent();
+        // 删除这条便签数据
+        db.remove(div.data('id'));
+        // 删除便签DOM元素
+        div.remove();
+    }
+});
+</script>
+```
+为了便于维护，对IndexedDB操作的逻辑封装在indexeddb.js中：     
+
+```
+// 声明一个数据库操作的构造函数
+function LocalDB(dbName, tableName) {
+	this.dbName = dbName;
+	this.tableName = tableName;
+	this.db = null;
+}
+
+// 在原型链上注册open方法，完成打开数据库的操作
+LocalDB.prototype.open = function (callback) {
+	var _this = this;
+    // 执行打开数据库的动作
+	var request = window.indexedDB.open(_this.dbName);
+    // 打开成功后的回调
+	request.onsuccess = function (event) {
+        // 获取打开结果：数据库实例
+		_this.db = request.result;
+        // 如果调用方有回调函数的话，就执行回调函数
+        callback && callback();
+	};
+    // 第一次创建数据库时触发该事件
+	request.onupgradeneeded = function (event) {
+        // 获取数据库实例
+		var db = request.result;
+        // 检查是否存在指定的表
+		if (!db.objectStoreNames.contains(_this.tableName)) {
+            // 如果不存在，则创建，并指定一个自增的id作为查询依据
+			db.createObjectStore(_this.tableName, {
+				keyPath: "id",
+                autoIncrement: true
+			});
+		}
+	};
+}
+
+// 获取数据表的实例
+LocalDB.prototype.getStore = function () {
+	var transaction = this.db.transaction(this.tableName, 'readwrite');
+	var objStore = transaction.objectStore(this.tableName);
+	return objStore;
+}
+
+// 保存一条数据：支持添加和修改
+LocalDB.prototype.set = function (data, callback) {
+	var objStore = this.getStore();
+	var request = data.id ? objStore.put(data) : objStore.add(data);
+	request.onsuccess = function (event) {
+		callback && callback(event.target.result);
+	};
+}
+// 获取一条数据
+LocalDB.prototype.get = function (id, callback) {
+	var objStore = this.getStore();
+	var request = objStore.get(id);
+	request.onsuccess = function (event) {
+		callback && callback(event.target.result);
+	}
+}
+
+// 获取表中所有的数据
+LocalDB.prototype.getAll = function (callback) {
+	var objStore = this.getStore();
+    // 打开数据游标
+	var request = objStore.openCursor();
+	request.onsuccess = function (event) {
+		var cursor = event.target.result;				
+		if (cursor) {
+            // 如果游标存在，执行回调并传入当前数据行
+			callback && callback(cursor.value);
+            // 继续下一行数据
+			cursor.continue();
+		}
+	}
+}
+
+// 删除一条数据
+LocalDB.prototype.remove = function (id) {
+	var objStore = this.getStore();
+	objStore.delete(id);
+}
+```
+
+以上代码基本包含了如下常用的数据库操作：      
+打开数据库：如果指定的数据库不存在，系统自动创建。      
+创建数据表：在首次打开数据库时检测表是否存在，不存在则创建。       
+保存一条数据：通过数据表对象的put和add方法实现。      
+获取一条数据库：利用索引获取指定id的数据行。      
+获取所有数据：使用游标机制遍历所有数据行。      
+删除一条数据：可以直接通过数据表对象的delete方法删除一条数据。       
+
+<h3 id="11">Canvas、SVG、WebGL</h3>          
+
+Canvas绘制饼图：     
+
+```
+<canvas class="pie-chart" width="850" height="500" style="transform: scale(0.5);transform-origin: 0 0"></canvas>
+<!-- canvas绘制的图像在一些设备devicePixelRatio不为1的Retina屏幕中显示会出现模糊，设置transform属性缩放原有canvas元素 -->
+
+//创建PieChart类，获取canvas的context环境
+    let PieChart = function(selector, options) {
+        let canvas = "string" === typeof selector ? document.querySelector(selector) : null;
+        if(canvas === null) return false;
+        let defaultOptions = {
+            radius: 200,
+            legendParms: {
+                font: "24px Arial",
+                x: 30,
+                y: 30,
+                margin: 50,
+                width: 40,
+                height: 24
+            }
+        }
+        this.context = canvas.getContext("2d");
+        this.width = canvas.getAttribute("width") || 300;
+        this.height = canvas.getAttribute("height") || 300;
+        this.options = Object.assign(defaultOptions, options);
+    };
+
+    //用于载入饼图使用的数据，并计算饼图的数据总量
+    PieChart.prototype.load = function(data) {
+        data.forEach(item => this.count ? this.count += item.value : this.count = item.value);
+        this.data = data;
+        return this;
+    };
+
+    //对饼图进行渲染
+    PieChart.prototype.render = function() {
+        let _generateLegend = (item, index) => {
+            this.context.fillRect(
+                this.options.legendParms.x, 
+                this.options.legendParms.y + index * this.options.legendParms.margin, 
+                this.options.legendParms.width, 
+                this.options.legendParms.height
+            );
+            this.context.font = this.options.legendParms.font;
+            this.context.fillText(
+                item.title, 
+                this.options.legendParms.y + this.options.legendParms.margin, 
+                (index + 1) * this.options.legendParms.margin
+            );
+        };
+        let temparc = 0;
+        this.data.forEach((item, index) => {
+            item.color = `#${('00000'+(Math.random()*0x1000000<<0).toString(16)).substr(-6)}`;
+            this.context.beginPath();
+            this.context.moveTo(this.width / 2, this.height / 2);
+            let startarc = temparc, endarc =  startarc + (item.value / this.count) * Math.PI * 2;
+            this.context.arc(
+                this.width / 2, 
+                this.height / 2, 
+                this.options.radius, 
+                startarc, 
+                endarc, 
+                false
+            );
+            this.context.closePath();
+            this.context.fillStyle = item.color;
+            this.context.fill();
+            temparc = endarc;
+            if (this.options.legend) {
+                _generateLegend(item, index);
+            }
+        });
+        return this;           
+    };
+
+    //引入需要绘制的数据创建饼图对象
+    const data = [
+        {title: "沪江网校", value: 1024}, 
+        {title: "沪江小D", value: 512}, 
+        {title: "沪江学习", value: 256}, 
+        {title: "开心词场", value: 920}
+    ];
+    let pie = new PieChart(".pie-chart", {legend: true});
+    pie.load(data).render();
+```  
+
+SVG实现奥运五环：      
+
+可缩放矢量图，基于xml，是用于描述二维矢量图形的一种图形格式。    
+
+```
+<svg width="450" height="300" xmlns="http://www.w3.org/2000/svg">
+    <g stroke-width="10" fill="none">
+        <circle stroke="#0085c7" r="50" cy="117" cx="105"/>
+        <circle stroke="#000000" r="50" cy="117" cx="220"/>
+        <circle stroke="#df0024" r="50" cy="117" cx="335"/>
+        <circle stroke="#f4c300" r="50" cy="172" cx="162"/>
+        <circle stroke="#009f3d" r="50" cy="172" cx="278"/>
+    </g>
+    <g stroke-width="10" fill="none">
+        <line stroke="#000000" x1="270" y1="116" x2="268" y2="132"/>
+        <line stroke="#0085c7" x1="156" y1="116" x2="153" y2="130"/>
+        <line stroke="#df0024" x1="317" y1="163" x2="335" y2="168"/>
+        <line stroke="#000000" x1="204" y1="165" x2="218" y2="168"/>        
+    </g>
+</svg>
+```
+
+WebGL带来了3D图像功能：    
+3D绘图协议。可以在canvas中绘制3D图形渲染。           
+
+three.js实现简单的正方体3D图形：    
+
+```
+<script src="./libs/three.js"></script>
+
+var renderer = new THREE.WebGLRenderer({
+    antialias:true
+});
+
+renderer.setSize(400, 300);
+
+document.body.appendChild(renderer.domElement);
+var camera = new THREE.PerspectiveCamera( 60, 400 / 300, 1, 5000 );
+camera.position.z = 500;
+var scene = new THREE.Scene();
+
+var cube = new THREE.Mesh(
+        new THREE.BoxGeometry( 200, 200, 200 ),
+        new THREE.MeshBasicMaterial( { color: 0x6699cc, wireframe: true } )
+);
+
+cube.rotation.x = 0.5;
+cube.rotation.y = 0.5;
+scene.add(cube);
+
+renderer.render( scene, camera );
+```
+
+<h3 id="12">PostMessage</h3>          
+
+PostMessage()允许来自不同源的脚本采用异步方式进行有限的通信，可以实现跨文本档、多窗口、跨域消息传递。     
+
+post_page.html数据发送:     
+
+```
+;(function() {
+			// 模拟数据
+			var messages = [
+				'今天天气不错',
+				'明天的会议大家不要迟到',
+				'今晚大家去吃一顿好的',
+				'打车记得拿发票',
+				'明天请假一天',
+				'这本书干货很多，大家好好看'
+			];
+			// 随机获取message信息，真实环境是从服务端获取数据
+			var getMessage = function() {
+				var index = Math.floor(Math.random() * 10);
+				// 如果数据不存在则返回null
+				return messages[index] || null;
+			};
+			var postMessageLoop = function() {
+				var randomTime = Math.floor(Math.random() * 10000);
+				setTimeout(function() {
+					var message = getMessage();
+					if(message !== null) {
+						// 如果消息不为null，则发送消息到父页面
+						window.parent.postMessage(message, 'http://localhost:8080');
+					}
+					postMessageLoop();
+				}, randomTime);
+			};
+			postMessageLoop();
+		}());
+```    
+
+receive_page.html数据接收：    
+
+```
+<h3>消息接收端</h3>
+<ul id="messageList"></ul>
+<iframe id="postWindow" src="post_page.html"></iframe>
+
+;(function(W) {
+    var doc = W.document;
+    var msgList = doc.querySelector('#messageList');
+
+    // 处理新的消息
+    var handler = function(msg) {
+        var li = doc.createElement('li');
+        li.innerText = msg;
+        // 把消息显示在消息列表中
+        msgList.appendChild(li);
+    };
+
+    // 监听postMessage发送的消息
+    W.addEventListener('message', function(evt) {
+        // 判断消息的来源是否正确
+        if(evt.origin === 'http://localhost:8080') {
+            // 处理新的消息
+            handler(evt.data);
+        }
+    }, false);
+}(window));
+```
+
+<h3 id="13">XMLHttpRequest Level 2</h3>          
+
+ajax2比ajax做了大幅改进，主要包括：     
+设置http请求超时    
+使用formData对象管理表单数据    
+用于上传文件    
+请求跨域，需浏览器支持并且服务器进行对应设置     
+获取服务端二进制数据     
+获得数据传输进度信息    
+
+基本用法：     
+客户端8080端口 部分代码：     
+
+```
+数据：<input /><button>获取</button> <!-- 数据获取显示 -->
+
+// 监听按钮点击事件
+document.querySelector('button')
+.addEventListener('click', function(e){
+    // 阻止按钮默认提交事件
+    e.preventDefault();
+    // 实例化XMLHttpRequest对象
+    var xhr = new XMLHttpRequest();
+    // 判断浏览器是否支持level 2
+    if(typeof xhr.withCredentials === undefined) {
+        console.log('浏览器不支持html5 XMLHttpRequest Level 2的跨域请求');
+    } else {
+        // 监听load事件
+        xhr.onload = function() {
+            // 将文本转化为json数据
+            var data = JSON.parse(xhr.responseText);
+            // 显示返回数据
+            document.querySelector('input').value = data.data;
+        }
+        // 监听错误事件
+        xhr.onerror = function(e) {
+            console.log(e);
+        }
+        // 请求地址和方法
+        xhr.open('GET', 'http://localhost:4412', true);
+        // 发送请求
+        xhr.send();
+    }
+});
+```   
+
+nodejs服务端代码：    
+
+```
+// 引用http模块，用于创建web服务器
+var http = require('http');
+
+// 创建新服务器
+http.createServer(function(req, res){
+	// 设置可以跨域的域名
+	res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8080');
+	// 服务器支持"GET POST"方法
+	res.setHeader('Access-Control-Allow-Methods', 'GET,POST');
+	// 设置接收数据编码格式为utf-8
+	req.setEncoding('utf8');
+	// 返回测试数据
+	res.end(JSON.stringify({data: 'Hello World!'}));
+}).listen(4412, function(){
+	console.log('listening on http://localhost:4412');
+});
+
+```
+
+<h3 id="14">Server Sent Event</h3>          
+
+服务端主动向客户端发送数据，并更新客户端信息，让用户始终看到最新信息。     
+*传统做法是客户端向服务器发送轮询请求，一旦有新数据，马上更新。*
+
+Server Sent Event技术优点：    
+轻量，相对简单。     
+单向传送数据（服务端向客户端传送）     
+基于HTTP协议    
+默认支持断线重连    
+自定义发送数据类型     
+
+创建客户端文件sse.html初始化server sent event，并监听message、open、error：    
+
+```
+// 监听load事件，页面load完成之后进行后续操作
+window.addEventListener("load", function() {
+    // 缓存DOM对象
+    var status = document.getElementById("status");
+    var output = document.getElementById("output");
+    var source;
+
+    function connect() {
+    // 向服务端建立连接,这里和sse_server.js里stream对应。
+    //也可是服务端吐出数据的接口。如:demo_sse.php。目前，EventSource在大多数浏览器端不支持跨域，因此它不是一种跨域的解决方案。
+    source = new EventSource("stream");
+
+    // 监听message事件，获取服务端发送的数据
+    source.addEventListener("message", function(event) {
+        output.textContent = event.data;
+    }, false);
+
+    // 监听open事件，判断连接是否进行中
+    source.addEventListener("open", function(event) {
+        status.textContent = "连接打开了!";
+    }, false);
+
+    // 监听error事件，处理连接错误的情况
+    source.addEventListener("error", function(event) {
+        if (event.target.readyState === EventSource.CLOSED) {
+        source.close();
+        status.textContent = "连接关闭了!";
+        } else {
+        status.textContent = "连接关闭了!未知错误！";
+        }
+    }, false);
+    }
+
+    // 判断浏览器是否支持Server Sent Event
+    if (!!window.EventSource) {
+        connect();
+    } else {
+        status.textContent = "对不起，你的浏览器不支持 server-sent events";
+    }
+    }, false);
+
+<span id="status">Connection closed!</span><br />
+<span id="output"></span>
+```
+
+创建服务端文件用于主动发信息，用Nodejs作为服务器每隔一秒更新数据sse_server.js：     
+
+```
+// 引入http模块，创建Web服务器
+var http = require("http");
+// 引入fs模块，操作文件
+var fs = require("fs");
+
+http.createServer(function (req, res) {
+  // 默认页面
+  var index = "./sse.html";
+  // 文件名
+  var fileName;
+  // 定时器
+  var interval;
+  // 判断url是什么
+  if (req.url === "/")
+    fileName = index;
+  else
+    fileName = "." + req.url;
+  // 如果是Server Sent Event建立连接，则设置相应头信息
+  if (fileName === "./stream") {
+    res.writeHead(200, {"Content-Type":"text/event-stream", "Cache-Control":"no-cache", "Connection":"keep-alive"});
+    // 过10000秒重试
+    res.write("retry: 10000\n");
+    // 首先发送一次时间信息
+    res.write("data: " + (new Date()) + "\n\n");
+    // 每隔1秒发送一次时间信息
+    interval = setInterval(function() {
+      res.write("data: " + (new Date()) + "\n\n");
+    }, 1000);
+    // 监听close事件，用于停止定时器
+    req.connection.addListener("close", function () {
+      clearInterval(interval);
+    }, false);
+  } else if (fileName === index) {
+    // 判断是否为页面请求，并找到相应文件返回页面
+    fs.exists(fileName, function(exists) {
+      if (exists) {
+        fs.readFile(fileName, function(error, content) {
+          if (error) {
+            // 文件查找失败返回500
+            res.writeHead(500);
+            res.end();
+          } else {
+            // 文件查找成功返回页面
+            res.writeHead(200, {"Content-Type":"text/html"});
+            res.end(content, "utf-8");
+          }
+        });
+      } else {
+        // 文件不存在返回404
+        res.writeHead(404);
+        res.end();
+      }
+    });
+  } else {
+    // 路径不存在返回404
+    res.writeHead(404);
+    res.end();
+  }
+
+}).listen(8080, "127.0.0.1");
+console.log("Server running at http://127.0.0.1:8080/");
+```
+
+<h3 id="15">WebSocket协议</h3>          
+
+基于TCP连接进行全双工通信。允许数据在两个方向上同时传输。可以用于开发即时聊天，互动游戏，股票信息等应用。     
+[WebSocket 详解教程](https://www.cnblogs.com/jingmoxukong/p/7755643.html)
+
+WebSocket 客户端:    
+WebSocket 对象作为一个构造函数，用于新建 WebSocket 实例：    
+
+`var ws = new WebSocket('ws://localhost:8080');`    
+
+提供多种事件用于监听数据传输：     
+
+```
+ws.onopen = function(evt) { 
+  console.log("Connection open ..."); 
+  ws.send("Hello WebSockets!");
+};
+
+ws.onmessage = function(evt) {
+  console.log( "Received Message: " + evt.data);
+  ws.close();
+};
+
+ws.onclose = function(evt) {
+  console.log("Connection closed.");
+};      
+```
+
+<h3 id="16">WebRTC实时通讯</h3>          
+
+为浏览器也移动端网页应用提供实时的语音或者视频通话功能    
+从用户摄像头和麦克风获取音视频数据，并进行播放：    
+
+```
+<video id="source" autoplay muted></video>		<!-- 显示摄像头的源视频 -->
+<video id="recorded" loop controls></video>	<!-- 显示已录制的视频 -->
+<div>
+	<button id="record" disabled>开始录制</button>	<!-- 播放按钮 -->
+</div>
+
+<!-- 提供各浏览器WebRTC相关API一致性的适配器 -->
+<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+
+<!-- 核心代码 -->
+<script src="main.js"></script>
+```
+
+main.js代码：     
+
+```
+var mediaSource = new MediaSource();	// 创建媒体数据源
+// 添加媒体数据源打开时的监听
+mediaSource.addEventListener('sourceopen', handleSourceOpen, false);
+var mediaRecorder, recordedBlobs, sourceBuffer;	// 声明变量
+var sourceVideo = document.getElementById('source');	// 源视频
+var recordedVideo = document.getElementById('recorded');	// 已录制视频
+var recordButton = document.getElementById('record');	// 录制按钮
+recordButton.onclick = toggleRecording;	// 设置录制按钮点击动作
+
+// 设置媒体约束，接收声音和视频，视频宽度为320像素
+var constraints = { audio: true, video: { width: 320 } };
+
+// 成功获取用户媒体
+function handleSuccess(stream) {
+	recordButton.disabled = false;	// 设置录制按钮可用
+	window.stream = stream;
+	sourceVideo.srcObject = stream;	// 将摄像头画面显示在sourceVideo上
+}
+
+// 获取用户媒体异常
+function handleError(error) {
+	console.log('获取用户媒体错误: ', error);
+}
+
+// 获取用户媒体
+navigator.mediaDevices.getUserMedia(constraints).
+		then(handleSuccess).catch(handleError);
+
+// 处理媒体源打开
+function handleSourceOpen(event) {
+	sourceBuffer = mediaSource.addSourceBuffer('video/webm; codecs="vp8"');
+}
+
+// 处理数据可用
+function handleDataAvailable(event) {
+	if (event.data && event.data.size > 0) {
+		recordedBlobs.push(event.data);	// 将数据追加到录制记录中
+	}
+}
+
+// 切换录制
+function toggleRecording() {
+	if (recordButton.textContent === '开始录制') {
+		startRecording();	// 开始录制
+	} else {
+		stopRecording();	// 停止录制
+		recordButton.textContent = '开始录制';
+	}
+}
+
+// 开始录制
+function startRecording() {
+	recordedBlobs = [];	// 数据记录初始化
+	var mimeTypes = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8',
+		'video/webm'];
+	// 查找支持的视频格式
+	var mimeType = mimeTypes.find(type=>MediaRecorder.isTypeSupported(type)) || '';
+	try {
+		// 创建媒体录制器
+		mediaRecorder = new MediaRecorder(window.stream, { mimeType });
+	} catch (e) {
+		alert('创建媒体录制器异常');
+		return;
+	}
+	recordButton.textContent = '停止录制';
+	mediaRecorder.ondataavailable = handleDataAvailable;
+	mediaRecorder.start(10);
+}
+
+// 停止录制
+function stopRecording() {
+	mediaRecorder.stop();
+	var buf = new Blob(recordedBlobs, { type: 'video/webm' });
+	// 设置已录制视频的源为录制好的视频
+	recordedVideo.src = window.URL.createObjectURL(buf);
+}
+```
+
+<h3 id="17">History与单页应用</h3>     
+
+单页应用SPA，可以无刷新在不同页面间切换，并且页面访问记录会被浏览器缓存，支持前进后退等。     
+html5的History对象上新增了pushState和replaceState API，配合window对象上新增的popState事件使用，实现单页应用功能     
+[添加和修改历史记录中的条目](https://developer.mozilla.org/zh-CN/docs/Web/API/History_API)     
+
+index.html：     
+
+```
+<div class="wrapper">
+    <ul class="navigator">
+      <li class="nav-item">
+        green
+      </li>
+      <li class="nav-item">
+        blue
+      </li>
+      <li class="nav-item">
+        red
+      </li>
+    </ul>
+    <div class="content">
+    </div>
+  </div>
+
+  <script type="text/javascript" src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+  <script type="text/javascript" src="/index.js"></script>
+```
+
+index.js:     
+
+```
+var menu = $("ul.navigator > li");
+var content = $("div.content");
+
+function initPage(page) { //根据当前url初始化页面
+  menu.removeClass("selected-item");
+  menu.filter(function(){
+	  return $(this).text().toLowerCase().trim() === page;
+  }).addClass("selected-item");
+  content.text("this is a " + page + " page");
+}
+
+initPage(location.pathname.substring(1));
+
+menu.on("click", function(){
+	var page = $(this).text().toLowerCase().trim();
+	initPage(page);
+	history.pushState("", page, page);
+});
+
+window.addEventListener("popstate", function(e) {
+    initPage(location.pathname.substring(1));
+});
+```
+
+<h3 id="18">Drag和Drop</h3>     
+
+实现拖放和拖拽效果。还支持桌面文件到浏览器的拖放   
+
+index.html：     
+
+```
+<div class="draggable">
+<div draggable="true">绿色</div>
+</div>
+<div class="text">
+<div>red</div>
+<div>green</div>
+</div>
+
+<script type="text/javascript" src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript" src="/index.js"></script>
+```   
+
+index.js:     
+
+```
+var draggableColor = $(".draggable > div");
+var redText = $(".text > div:nth-child(2)");
+
+draggableColor.on("dragstart", function(event){
+  event.dataTransfer.setData("ele", ".draggable > div");
+})
+
+redText.on("dragover", function(event){
+  event.preventDefault();
+}).on("drop", function(event){
+  var dragTarget = event.dataTransfer.getData("ele");
+  $(dragTarget).css("visibility", "hidden");
+  $(this).text("correct");
+})
+```
+
+<h3 id="19">Web Workers</h3>     
+
+赋予js多线程运行的能力，可以将耗时的操作放在Web Workers线程里运行，防止页面出现假死。     
+根据输入的值，计算对应的位置在斐波那契数列中的值，index.html:      
+
+```
+<div class="calc">
+    <input type="text" />
+    <input type="button" value="计算"／>
+  </div>
+  <div>
+    计算结果：
+    <div class="result"></div>
+  </div>
+
+  <script type="text/javascript" src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+  <script type="text/javascript" src="/index.js"></script>
+```
+
+index.js:     
+
+```
+var input = $("input[type='text']");
+var cal = $("input[type='button']");
+var result = $(".result");
+
+// cal.on("click", function(){
+//   console.log("clicked");
+//   var initValue = input.val();
+//   var resultValue = fibonacci(initValue);
+//   result.text(result.text() + resultValue + " ");
+// })
+
+cal.on("click", function(){
+  var initValue = input.val();
+  var w = new Worker("./worker.js");
+  w.postMessage(initValue);
+  w.onmessage = function(event) {
+    result.html(result.html() + initValue + " => " + event.data + "<br/>");
+  }
+})
+
+// function fibonacci(n) {
+//   return n < 2 ? n : fibonacci(n - 1) + fibonacci(n - 2);
+// }
+```
+
+worker.js:     
+
+```
+function fibonacci(n) {
+  return n < 2 ? n : fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+this.onmessage = function(event) {
+	var resultValue = fibonacci(event.data);
+	this.postMessage(resultValue);
+}
+```
+
+<h3 id="20">Performance AIP 分析网站性能</h3>     
+
+html5提供可以获取页面加载详细性能指标的Performance AIP，通过window.performance对象暴露给开发者。    
+
+打开页面，如百度首页，控制台输入window.performance.timing      
+window.performance.timing对象包含完整的网页加载性能数据：      
+
+页面加载的第一个时间点是navigationStart，表示上一个页面的unload事件触发，接下来时间点是fetchStart表示开始获取当前页面内容。     
+fetchStart和navigationStart时间差是浏览器内核为加载新页面做的一些准备工作耗时。       
+
+获取页面内容第一步是查询是否有跟页面有关的缓存，查询完毕后触发开始DNS解析的时间点domainLookupStart。它和fetchStart时间差是查询缓存消耗的时间。        
+
+DNS解析结束的时间点是domainLookupEnd。它和domainLookupStart的时间差是DNS解析消耗的时间。    
+
+DNS解析之后建立TCP连接。connectStart和connectEnd的时间差是建立TCP消耗的时间。      
+
+TCP建立之后开始发送请求内容到服务器端，这个时间点是requestStart。服务端接收到完整请求并处理完毕后，会响应结果返回给客户端，      
+开始发送响应结果的时间点为responseStart，浏览器收到之后，会触发responseEnd         
+
+*没有服务器端开始收到请求和收到完整请求的时间点，因为统计是在浏览器端进行，浏览器无法获取该时间*      
+
+浏览器接收到响应结果后，开始DOM树解析时间点是domLoading。DOM解析完成时间点是domInteractive。 解析完成指DOM树构建完成。      
+页面依赖的外部资源，如图片，css，js等还未开始加载。     
+
+*domLoading时间点不一定在responseEnd时间点之后，有可能浏览器只接收了部分相应数据就开始解析DOM树了*     
+
+DOM树解析完之后，开始按照顺序运行页面脚本和加载依赖外部资源。一旦脚本运行完毕，会触发DOMContentLoadedEnd事件。     
+时间点是domContentLoadedEventStart     
+
+DOMContentLoadedEnd事件执行完毕后，触发domContentLoadedEventEnd时间点。    
+
+当依赖的外部资源全部加载并解析完成之后，触发domComplete时间点，同时触发load事件。loadEventStart时间点表示load事件开始触发，      
+loadEventEnd时间点表示load事件上的脚本执行完毕。至此，整个页面加载的生命周期以及性能分析方式介绍完毕。      
+
+获取到所有依赖资源的加载性能：     
+`window.performance.getEntries()`
+
+
+
+
+
+
+
+
+
+<h2 id="21">html5优化实践</h2>      
+   
+<h3 id="22">使用history改善AJAX列表请求体验</h3>        
+       
 数据实现分页显示，最简单的做法是在网址后面加多个page的参数，点“下一页”时，让网页重定向到page+1的新地址。      
 例如[新浪的新闻网](https://news.sina.com.cn/roll/#pageid=153&lid=2509&k=&num=50&page=8)就是这么做的，通过改变网址实现。      
      
@@ -291,9 +1710,9 @@ safari里面的history.state是最近执行pushState传入的数据，因此这�
 关于支持性，参考[caniuse网站](https://caniuse.com/#search=history)：history IE10及以上支持，hashchange的支持性较好，IE8及以上都支持。      
 虽然hashchange的支持性较好，但是history的优点是可以传数据。对一些复杂的应用可能会有很大的发挥作用，hash这么用就不能做锚点定位了。     
 当想要用动态请求的同时改变浏览器的地址，并且支持前进后退，就可以用history。       
-   
-### 使用图标字体iconfont代替雪碧图：      
-   
+         
+<h3 id="23">使用图标字体iconfont代替雪碧图</h3>        
+    
 雪碧图缺点：高清屏会模糊，无法动态变化如hover时候反色。    
 在2×的设备像素比的屏幕上，如果达到和文字一样的清晰度，图片的宽度需要实际显示大小的两倍，否则看起来模糊。     
 例如iphone x 的分辨率1125*2436，所以为了高清屏，用雪碧图可能要准备多种规格的图片。     
@@ -416,7 +1835,7 @@ img兼容性比embed稍差，缺点是由于是一个外链，没法用css控制
 </svg>
 ```
    
-使用的时候通过外链jiangsvg引入，通过文件名id的方式：     
+使用的时候通过外链将svg引入，通过文件名id的方式：     
 
 ```
 <svg viewBox="0 0 100 100">
@@ -427,7 +1846,8 @@ img兼容性比embed稍差，缺点是由于是一个外链，没法用css控制
 ie不支持外链，可以通过插件[SVG for Everybody](https://github.com/jonathantneal/svg4everybody)让ie支持。     
 highCharts和d3js也使用了SVG           
      
-###实现前端剪裁压缩图片：     
+<h3 id="24">实现前端剪裁压缩图片</h3>          
+   
 支持拖拽    
 压缩    
 剪裁编辑    
@@ -773,9 +2193,9 @@ xhr.onreadystatechange=function(){
 ```     
 
 至此整个功能就拆解说明完了，上面的代码可以兼容到IE10，FileReader的api到IE10才兼容           
-
-###前端本地文件操作与上传       
-
+    
+<h3 id="25">前端本地文件操作与上传</h3>            
+    
 FormData对象：     
 提供一种简单的方式创建一个包含键值对的form表单结构，可以用XMLHttpRequest.send()方法很方便的提交用FormData创建的form表单数据。     
 可以通过new 的方式创建一个FormData对象:     
@@ -1192,8 +2612,8 @@ Safari这个怪胎是在编辑器里面插入一个src指向本地的img标签�
 
 对于老浏览器，可以使用一个iframe解决表单提交刷新页面或者跳页的问题。       
    
-### Service Worker做一个PWA离线网页应用：     
-
+<h3 id="26">Service Worker做一个PWA离线网页应用</h3>              
+     
 PWA和Service Worker的关系：     
 
 PWA (Progressive Web Apps) 可以把她理解为一种模式，一种通过应用一些技术将 Web App 在安全、性能和体验等方面带来渐进式的提升的一种 Web App的模式。      
@@ -1395,13 +2815,9 @@ new SwPrecacheWebpackPlugin({
 [使用 Service Worker 做一个 PWA 离线网页应用](http://web.jobbole.com/92659/)       
 [service worker在移动端H5项目的应用](https://segmentfault.com/a/1190000012701843)    
 [使用 Service Workers](https://developer.mozilla.org/zh-CN/docs/Web/API/Service_Worker_API/Using_Service_Workers)      
-
-
-
-
+     
+<h2 id="27">PS</h2>          
     
-## PS知识点    
-
 在移动工具 v下，按住Ctrl 查看各个图层之间间距    
 ctrl + shift + Alt+ N 新建图层   
 shift+ctrl+] 把图层放到最上边   
