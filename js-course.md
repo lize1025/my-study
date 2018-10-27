@@ -67,6 +67,13 @@
     * [13.2 CommonJS/AMD/CMD](#59)  
     * [13.3 ES6模块支持](#60)  
 * [14.Babel](#61)
+* [14.前端工程化](#62)
+    * [14.1 工程化必要性和发展史](#63)
+    * [14.2 Grunt开发简易相册](#64)
+    * [14.3 Gulp构建MarkDown编辑器](#65)
+    * [14.4 Gulp构建MarkDown编辑器](#65)
+    * [14.5 Webpack构建React应用](#66)
+                                                                                                                                               
 
   
 <h2 id="1">快速入门</h2>          
@@ -6257,4 +6264,776 @@ Babel只转换语法(如箭头函数)，可以使用 babel-polyfill 支持新的
 
 `npm install --save-dev babel-polyfill`      
 
-使用它时需要在你应用程序的入口点顶部或打包配置中引入。     
+使用它时需要在你应用程序的入口点顶部或打包配置中引入。       
+
+<h2 id="62">前端工程化</h2>          
+
+<h3 id="63">工程化必要性和发展史</h3>      
+
+必要性：     
+
+规范代码      
+进行js预处理     
+进行css预处理     
+自动编译     
+缩减文件体积     
+
+发展史：     
+
+石器时代：静态html代码提供基本浏览。偶尔表单提交js实现功能。      
+
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>php页面</title>
+</head>
+<body>
+<?php
+  echo 'hello'
+?>
+</body>
+</html>
+```
+
+铜器时代：    
+
+web开发的组件化和异步加载的实现。ajax打开新局面。     
+
+农业时代：     
+
+为提高页面加载速度，优化用户体验。模块加载规范应运而生。 AMD，CMD依次为基础，出现很多动态加载js代码框架。      
+实现AMD规范框架中，requirejs较知名。     
+
+工业时代：     
+
+功能日益复杂，开发难度也来越大，为降低开发难度，前端MVC，MVP，MVVM框架诞生。统称MV*框架     
+其中主流有Backbone，AngularJS，React，Vue等。    
+显而易见的好处：    
+前后端分离，合理的分层，让代码各司其职，降低复杂度。     
+
+同时，为提高开发效率，加强团队合作，出现很多自动化为目标的构建工具，如grunt，glup，webpack等。     
+压缩，编译，单元测试，代码检查，打包发布等重复性任务，可以使用自动化工具来降低劳动成本，简化开发者工作。     
+
+构建工具核心思想是通过一个配置文件来实现所有需要自动化的功能。     
+
+<h3 id="64">Grunt开发简易相册</h3>     
+
+Grunt 是基于 Node.js 的项目构建工具。它可以自动运行你所设定的任务。     
+[Grunt官网](https://gruntjs.com/)        
+[Grunt中文网](https://www.gruntjs.net/)       
+
+全局安装：    
+
+`npm install -g grunt-cli`     
+
+此时，grunt命令已经加入系统，但并不等于安装了grunt。   
+grunt-cli任务是调用与Gruntfile在同一目录的grunt。这样做好处是允许同一系统安装多个版本的grunt     
+
+Gruntfile是grunt中最重要文件，放在项目根目录，是一个有效的javascript或coffeescript文件。         
+主要作用有配置或定义任务task。加载grunt插件。      
+
+主要组成：     
+wrapper函数    
+项目与任务配置    
+加载grunt插件和任务   
+自定义任务   
+
+grunt使用插件：配置，加载，注册，执行。    
+前三项通过gruntfile文件定义。     
+
+项目文件夹初始化package.json：     
+
+`npm init`    
+
+在项目目录安装grunt和相关插件，package.json的devDependencies就会显示出插件：            
+
+`npm install grunt grunt-contrib-concat grunt-contrib-cssmin grunt-contrib-imagemin grunt-contrib-imagemin grunt-contrib-uglify grunt-inline --save-dev`      
+
+配置Gruntfile.js文件：      
+*grunt-contrib-imagemin略*     
+
+```
+//包装函数
+module.exports = function (grunt) {
+    //插件配置信息
+    grunt.initConfig({
+        // 内联图片文件的配置
+        inline: {
+            page: {
+                src: ['index.html']
+            }
+        },
+        // 压缩CSS和JavaScript文件的配置
+        uglify: {
+            dist: {
+                files: {
+                    'dist/js/album.min.js': ['src/js/album.js']
+                }
+            }
+        },
+        // 压缩CSS文件的配置
+        cssmin: {
+            dist: {
+                files: {
+                    'dist/css/reset.min.css': ['src/css/reset.css'],
+                    'dist/css/album.min.css': ['src/css/album.css']
+                }
+            }
+        },
+        // 合并多个文件的配置
+        concat: {
+            dist: {
+                src: ['dist/css/reset.min.css', 'dist/css/album.min.css'],
+                dest: 'dist/css/all.min.css'
+            }
+        }
+    });
+    // 加载这些任务
+    grunt.loadNpmTasks('grunt-inline');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-cssmin');
+    grunt.loadNpmTasks('grunt-contrib-concat');
+
+    // 默认执行的任务列表
+    grunt.registerTask('default', ['inline', 'uglify', 'cssmin', 'concat']);
+};
+```    
+
+通过grunt命令来执行任务。grunt.registerTask中的default是预设参数。也可以通过 grunt default grunt uglify执行。     
+
+目录结构：    
+grunt-album文件夹：    
+src文件夹：
+img文件夹      
+js文件夹     
+css文件夹       
+dist文件夹(没有自动创建):        
+img文件夹      
+js文件夹     
+css文件夹 
+         
+html文件：     
+
+```
+
+<html>
+<head>
+	<title>使用Grunt开发WEB相册</title>
+	<link rel="stylesheet" href="src/css/reset.css" />
+	<link rel="stylesheet" href="src/css/album.css" />
+</head>
+<body>
+    <div class="big-img-box">
+		<img class="big-img" src="src/img/img1.jpg" />
+	</div>
+	<div class="small-img-box">
+		<a href="#src/img/img1.jpg" class="hover"><img src="src/img/img1s.jpg"/></a>
+		<a href="#src/img/img2.jpg"><img src="src/img/img2s.jpg" /></a>
+		<a href="#src/img/img3.jpg"><img src="src/img/img3s.jpg" /></a>
+		<a href="#src/img/img4.jpg"><img src="src/img/img4s.jpg" /></a>
+		<a href="#src/img/img5.jpg"><img src="src/img/img5s.jpg" /></a>
+	</div>
+	<script src="src/js/album.js"></script>
+</body>
+</html>
+```
+
+album.css文件：    
+
+```
+.big-img-box {
+    width:1200px;
+    height:800px;
+    margin:10px auto;
+    text-align:center;
+    border:solid 1px gray;
+}
+.big-img { 
+    max-width:1200px;
+    height:800px;
+}
+.small-img-box { 
+    width:1200px;
+    margin:0 auto;
+    background:gray;
+    font-size:0;
+}
+.small-img-box img { 
+    width:200px;
+    height:120px;
+    margin:20px;
+    border-radius:10px;
+}
+.small-img-box .hover>img { 
+    box-shadow:white 0 0 20px;
+}
+```
+
+reset.css文件:     
+
+```
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+```   
+
+album.js文件:     
+
+```
+"use strict";
+(function (window, undefined) {
+    var doc = window.document;
+    var arr = doc.querySelectorAll('.small-img-box a');
+    var bigimg = doc.querySelector('.big-img');
+    for (var i = 0; i < arr.length; i++) {
+        arr[i].addEventListener('click', function (ev) {
+            bigimg.src = this.getAttribute('href').substr(1);
+            doc.querySelector('.small-img-box .hover').classList.remove('hover');
+            this.classList.add('hover');
+            ev.preventDefault();
+            return false;
+        }, false);
+    }
+})(window);
+```
+
+*grunt 合并文件之后，在html中的引用目录修改可以通过Grunt usemin，[grunt-text-replace](https://blog.csdn.net/tangxiaolang101/article/details/52788083)等插件*       
+      
+<h3 id="65">Gulp构建MarkDown编辑器</h3>          
+
+使用grunt构建项目设计磁盘操作，效率低。 因此基于流的Gulp应运而生。所有操作都在内存中进行。                   
+[gulp中文网](https://www.gulpjs.com.cn/)          
+[gulp官网](https://gulpjs.com/)         
+      
+全局安装：     
+
+`npm install gulp-cli -g`      
+
+项目根目录安装gulp和创建package.json文件：     
+
+```
+npm init
+npm install gulp --save-dev
+```
+
+根目录下创建gulpfile.js文件做配置:      
+
+```
+//gulp-connect搭服务器。不是必须要的
+var gulp = require('gulp'),
+    connect = require('gulp-connect');
+ 
+gulp.task('webserver', function() {
+    connect.server({
+        livereload: true,
+        port: 3000
+    });
+});
+ 
+gulp.task('default', ['webserver']);
+
+// es6转换es5 这里配置就不需要根目录.babelrc文件了
+var babel = require("gulp-babel")
+gulp.task("compile-js", function () {
+    gulp.src("src/**/*.js")
+        .pipe(babel({
+            presets:['es2015']
+        }))
+        .pipe(gulp.dest("dist/js"));
+});
+
+// sass文件转css
+var sass = require("gulp-sass");
+gulp.task("compile-sass", function () {
+    gulp.src("theme/**/*.scss")
+        .pipe(sass().on('error', sass.logError))
+        .pipe(gulp.dest("dist/css"));
+});
+
+//合成雪碧图
+var spritesmith = require('gulp.spritesmith');
+gulp.task("sprite", function () {
+    gulp.src("theme/images/**.png")
+        .pipe(spritesmith({
+            imgName: 'images/icons.png',
+            cssName: 'icons.css'
+        }))
+        .pipe(gulp.dest("dist/css"));
+});
+
+// js语法检测
+var eslint = require("gulp-eslint");
+gulp.task("eslint", function () {
+    gulp.src("src/**/*.js")
+        .pipe(eslint({
+            useEslintrc: true
+        }))
+        .pipe(eslint.format())
+        .pipe(eslint.failAfterError)
+});
+
+// sass语法检测
+var sasslint = require("gulp-sass-lint");
+gulp.task("sasslint", function () {
+    gulp.src("theme/**/*.scss")
+        .pipe(sasslint())
+        .pipe(sasslint.format())
+        .pipe(sasslint.failOnError())
+});
+
+// 文件合并
+var concat = require("gulp-concat");
+gulp.task("concat", ["compile-js", "compile-sass", "sprite", "copy-images"], function () {
+    gulp.src("dist/css/*.css")
+        .pipe(concat("style.css"))
+        .pipe(gulp.dest("dist/latest"))
+        .pipe(reload({
+            stream: true
+        }));
+
+    gulp.src("dist/js/**/*.js")
+        .pipe(concat("app.js"))
+        .pipe(gulp.dest("dist/latest"))
+        .pipe(reload({
+            stream: true
+        }));
+});
+
+gulp.task("copy-images", function () {
+    gulp.src("dist/css/images/**.**")
+        .pipe(gulp.dest("dist/latest/images"));
+})
+
+// 浏览器自动刷新默认3000端口，可配置里修改
+var browserSync = require("browser-sync");
+var reload = browserSync.reload;
+gulp.task("browser-sync", function () {
+    browserSync({
+        server: './',
+        files:['**'], //必须有，不然修改文件不刷新
+        notify: false
+    });
+});
+
+// 监听文件变化自动构建
+gulp.task("watch", ["concat", "browser-sync"], function () {
+    gulp.watch(["src/**/*.js", "theme/**/*.scss"], ["concat"]);
+})
+
+// 压缩js，css
+var uglify = require("gulp-uglify");
+var cssMinify = require("gulp-clean-css");
+var rename = require("gulp-rename");
+gulp.task("minify", ["concat"], function(){
+    gulp.src("dist/latest/app.js")
+    .pipe(uglify())
+    .pipe(rename(function(path){
+        path.basename += ".min"
+    }))
+    .pipe(gulp.dest("dist/latest"));
+    gulp.src("dist/latest/style.css")
+    .pipe(cssMinify())
+    .pipe(rename(function(path){
+        path.basename += ".min"
+    }))
+    .pipe(gulp.dest("dist/latest"));  
+})
+
+```
+
+gulp-babel：      
+将ES6编译成ES5     
+
+```
+npm install gulp-babel --save-dev
+npm install babel-preset-es2015
+```  
+
+gulp-sass:
+编译sass文件      
+
+`npm install gulp-sass --save-dev`    
+
+css sprites:
+合成雪碧图     
+
+`npm install gulp-spritesmith`       
+     
+[showdown类库](https://github.com/showdownjs/showdown)：开源的Markdown解析器，用于将Markdown解析为html。      
+
+存储部分通过html5的indexedDB进行保存：     
+
+```
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="dist/latest/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- 导航部分 -->
+    <nav>
+        <div class="buttons">
+            <a class="icon icon-add" href="#"></a>
+        </div>
+        <div class="list-container">
+            <ul class="list">
+            </ul>
+        </div>
+    </nav>
+    <!-- 编辑器部分 -->
+    <main>
+        <!-- 编辑区域 -->
+        <div class="editor">
+            <div class="title">
+                <input type="text" name="title" value="" placeholder="请输入标题" id="tbTitle" />
+            </div>
+            <div class="md-editor">
+                <textarea placeholder="请输入markdown" id="tbMarkdown"></textarea>
+            </div>
+        </div>
+        <!-- 预览区域 -->
+        <div class="preview-container">
+            <div class="preview markdown-body" id="preview">
+
+            </div>
+            <div class="buttons">
+                <div href="#" id='btnSave' class="btn-save">保存</div>
+            </div>
+        </div>
+    </main>
+    <script src="external/showdown.js"></script>
+    <script src="dist/latest/app.js"></script>
+</body>
+
+</html>
+```
+
+db.js:      
+
+```
+(function ($window) {
+    const indexedDB = $window.indexedDB
+    const DB_NAME = "mkeditor"
+    const STORE_NAME = "artical"
+    const openDB = (version = 1) => {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, version)
+            request.addEventListener("error", (e) => {
+                reject(e.target.error)
+            })
+            request.addEventListener("success", (e) => {
+                resolve(e.target.result)
+            })
+            request.addEventListener("upgradeneeded", (e) => {
+                const db = e.target.result
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                    db.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: true })
+                }
+            });
+        });
+    }
+
+    const wrapPromise = (fn) => {
+        return new Promise((resolve, reject) => {
+            const request = fn()
+            request.addEventListener("error", (e) => {
+                reject(e.target.error)
+            })
+            request.addEventListener("success", (e) => {
+                resolve(e.target.result)
+            })
+        })
+    }
+
+    const getStore = (mode = "readonly") => {
+        return openDB().then((db) => {
+            return db.transaction(STORE_NAME, mode).objectStore(STORE_NAME)
+        })
+    }
+
+    const add = (data) => {
+        return getStore('readwrite').then((store) => {
+            return wrapPromise(()=>{
+                return store.add(data);
+            })
+        });
+    }
+
+    const save = (data) => {
+        const id = data.id;
+        if (id) {
+            return getStore("readwrite").then((store) => {
+                return wrapPromise(()=>{
+                    return store.get(id)
+                }).then((result)=>{
+                    if(result){
+                        Object.assign(result, data)
+                        return wrapPromise(()=>{
+                            return store.put(result)
+                        })
+                    }else{
+                        return Promise.reject(new Error(`item with id ${id} not found`))
+                    }
+                })
+            })
+        }else{
+            return add(data)
+        }
+    }
+
+    const getAll = () => {
+        return getStore().then((store) => {
+            return new Promise((resolve, reject) => {
+                const request = store.openCursor()
+                let resuts = []
+                request.addEventListener("success", (e) => {
+                    const cursor = e.target.result
+                    if (cursor) {
+                        resuts.push(cursor.value)
+                        cursor.continue()
+                    } else {
+                        return resolve(resuts)
+                    }
+                })
+                request.addEventListener("error", (e) => {
+                    reject(e.target.error)
+                })
+            })
+        })
+    }
+
+    const getById = (id) => {
+        return getStore().then((store) => {
+            return wrapPromise(()=>{
+                return store.get(id)
+            })
+        })
+    }
+
+    const delData = (id) => {
+        return getStore("readwrite").then((store) => {
+            return wrapPromise(()=>{
+                return store.delete(id)
+            })
+        })
+    }
+    $window.MKDB = {
+        save: save,
+        getAll: getAll,
+        getById: getById,
+        delete: delData
+    }
+}(window))
+```   
+
+main.js:      
+
+```
+(() => {
+    const $title = document.getElementById("tbTitle")
+    const $markdown = document.getElementById("tbMarkdown")
+    const $preview = document.getElementById("preview")
+    const mdConverter = new showdown.Converter()
+    const $saveBtn = document.getElementById("btnSave")
+    const $addBtn = document.querySelector(".icon-add")
+    const $list = document.querySelector(".list")
+
+    let artical = {}
+
+    const bindEvents = () => {
+        $markdown.addEventListener("keyup", () => {
+            renderPreview()
+        })
+        $list.addEventListener("click", (e) => {
+            const target = e.target
+            if (target.matches(".icon-delete")) {
+                let $li = target.parentNode
+                let id = parseInt($li.getAttribute("data-id"))
+                MKDB.delete(id).then(() => {
+                    renderList()
+                })
+            } else if (target.matches(".title")) {
+                let $li = target.parentNode
+                let id = parseInt($li.getAttribute("data-id"))
+                MKDB.getById(id).then((data) => {
+                    Object.assign(artical, {
+                        id: parseInt($li.getAttribute("data-id"))
+                    }, data)
+                    renderArtical()
+                })
+            }
+        })
+        $addBtn.addEventListener("click", (e) => {
+            artical = {}
+            renderArtical()
+            e.preventDefault()
+        })
+        $saveBtn.addEventListener("click", () => {
+            Object.assign(artical, {
+                title: $title.value,
+                content: $markdown.value
+            })
+            console.log(artical)
+            MKDB.save(artical).then(() => {
+                renderList()
+            }).catch((ex) => {
+                console.log(ex)
+            })
+
+        })
+    }
+
+    const renderList = () => {
+        window.MKDB.getAll().then((data) => {
+            const frag = document.createDocumentFragment();
+
+            data.forEach((item) => {
+                let li = document.createElement("li")
+                li.innerHTML = `<a href="#" class="title">${item.title}</a><div class="btn-delete icon-delete">`
+                li.setAttribute("data-id", item.id)
+                frag.appendChild(li)
+            })
+            $list.innerHTML = ""
+            $list.appendChild(frag)
+            console.log(data);
+        })
+    }
+
+    const renderArtical = () => {
+        const {title = "", content = ""} = artical
+        $title.value = title
+        $markdown.value = content
+        renderPreview()
+    }
+
+    const renderPreview = () => {
+        const result = convertMarkdown($markdown.value);
+        $preview.innerHTML = result;
+    }
+
+    const convertMarkdown = (markdownStr) => {
+        return mdConverter.makeHtml(markdownStr);
+    }
+    bindEvents()
+    document.addEventListener("DOMContentLoaded", () => {
+        renderList()
+    })
+})();
+```
+
+代码检查任务eslint：        
+sass用gulp-sass-lint        
+es6用gulp-eslint      
+
+全局安装eslint：    
+
+`npm install eslint -g`     
+
+项目目录初始化，创建配置文件：     
+
+`eslint init`     
+
+选择配置方式：use a popular style guide     
+选择预设模式：standard      
+选择配置内容的存储文件类型： javascript      
+配置结束生成一个.eslintrc的文件。             
+
+项目中安装：     
+
+```
+npm install gulp-eslint --save-dev
+npm install gulp-sass-lint
+```      
+
+代码合并，压缩，重命名任务：     
+
+gulp-concat插件将各个独立的文件进行合并：     
+
+`npm install gulp-concat --save-dev`    
+
+代码压缩，css用gulp-clean-css.js用gulp-uglify:      
+
+`npm install gulp-clean-css gulp-uglify --save-dev`      
+
+重命名插件gulp-rename:     
+
+`npm install gulp-rename --save-dev`     
+
+监听文件变化，自动刷新：      
+gulp的watch方法监听文件变化自动构建     
+
+可采用browser-sync工具实现浏览器自动刷新：     
+
+`npm install browser-sync --save-dev`     
+
+用 gulp 建一个服务器:     
+
+`npm install gulp-connect --save-dev`     
+
+<h3 id="66">Webpack构建React应用</h3>                                                                                                                                                 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
