@@ -71,8 +71,7 @@
     * [14.1 工程化必要性和发展史](#63)
     * [14.2 Grunt开发简易相册](#64)
     * [14.3 Gulp构建MarkDown编辑器](#65)
-    * [14.4 Gulp构建MarkDown编辑器](#65)
-    * [14.5 Webpack构建React应用](#66)
+    * [14.4 Webpack4+vue2](#66)
                                                                                                                                                
 
   
@@ -7018,12 +7017,699 @@ gulp的watch方法监听文件变化自动构建
 
 `npm install gulp-connect --save-dev`     
 
-<h3 id="66">Webpack构建React应用</h3>                                                                                                                                                 
+<h3 id="66">Webpack4+vue2</h3>                                                                                                                                                 
+配置基本webpack：    
 
+创建一个新目录并进入该目录：      
 
+`mkdir webpack-quick && cd $_`      
 
+初始化 package.json：     
+*加-y（代表yes），则跳过提问阶段*         
 
+`npm init`        
 
+安装webpack-cli,webpack-dev-server和webpack4：       
+*i是install简写*      
+
+`npm i webpack-cli webpack webpack-dev-server --save-dev`         
+
+在package.json的script里添加快速启动：      
+
+```
+"scripts": {
+    "dev": "webpack-dev-server --open --config webpack.config.js"
+  }
+```
+
+webpack-quick里创建webpack.config.js文件并初始化设置：     
+
+```
+var config = {}
+module.exports = config 
+
+//支持es6后可以：
+//const config = {}
+//export default config
+```
+
+在webpack4中,既不必须定义entry point(入口点),也不必须定义output file(输出文件)。     
+它将查找 ./src/index.js 作为默认入口点。 而且，它会在 ./dist/main.js 中输出模块包。       
+
+如果要配置，可以在webpack.config.js配置如：         
+
+```
+var config = {
+  entry: './src/index.js',
+  output: {
+    path:path.join(__dirname,'./dist'),
+    publicPath:'/dist/', //指定资源文件引用目录，可以是CDN
+    filename: 'main.js'
+  }
+};
+
+module.exports = config 
+```
+
+在根目录webpack-start新建index.html文件。新建src文件夹，里边新建index.js文件：      
+
+index.html：     
+
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>webpack-quick</title>
+</head>
+<body>
+	<div id="app">hello world</div>
+	<script src="/dist/main.js"></script>
+</body>
+</html>
+```  
+
+index.js：       
+
+```
+document.getElementById('app').innerHTML = 'hello quick !';
+```
+    
+执行`npm run dev` 就会自动打开http://localhost:8080/    
+显示hello quick !  并能修改实时刷新。      
+
+webpack 4 引入了 production(生产) 和 development(开发) 模式：         
+
+一个典型的项目可能有：
+用于开发的配置文件，用于定义 webpack dev server 和其他东西     
+用于生产的配置文件，用于定义UglifyJSPlugin，sourcemaps 等     
+
+打开 package.json 并填充 script 部分：     
+
+```
+"scripts": {
+"dev": "webpack-dev-server --open --config webpack.config.js --mode development",
+"build": "webpack-dev-server --open --config webpack.config.js --mode production"
+}
+```   
+
+`npm run dev` //生成没压缩的开发版           
+`npm run build` //生成压缩的生产版,默认是生产版      
+
+production mode(生产模式) 可以开箱即用地进行各种优化。 包括压缩，作用域提升，tree-shaking 等。      
+development mode(开发模式)针对速度进行了优化，仅仅提供了一种不压缩的 bundle 。      
+
+另一种设置模式方法，在webpack.config.js里设置模式：     
+
+```
+module.exports = {
+  mode: 'development' // 不设置默认production
+};
+```   
+
+写css样式，用到css-loader,style-loader:     
+
+`npm i css-loader style-loader --save-dev`           
+
+src目录新建style.css 写入：      
+
+```
+#app{
+font-size: 24px;
+color:#f50;
+}
+```   
+
+在index.js文件引入style.css      
+
+`import './style.css'`    
+
+执行`npm run dev` 会动态创建style标签写入css     
+
+将散落在各地的css提取出来，生成main.css文件，在index.html文件link加载：     
+mini-css-extract-plugin      
+*注意：确保将 webpack 更新到 4.2.0 版。 否则 mini-css-extract-plugin 将无效*      
+*在过去，这是 extract-text-webpack-plugin 的工作。*：      
+
+`npm i mini-css-extract-plugin --save-dev`      
+
+index.html写入：    
+
+`<link rel="stylesheet" href="/dist/main.css">`     
+
+在webpack.config.js里设置:     
+
+```
+var MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
+{
+    test: /\.css$/,
+    use: [ //数组形式的话，编译是从后往前。
+        MiniCssExtractPlugin.loader,
+        // 'style-loader',
+        'css-loader'
+    ]
+}
+
+plugins: [
+    //重命名提取后的css文件
+    new MiniCssExtractPlugin('main.css')
+]
+```
+
+执行`npm run dev`不会再动态创建style，而是生成了link         
+
+支持ES6:        
+
+`npm i babel babel-cli babel-core babel-loader babel-preset-env --save-dev`       
+
+通过在项目文件夹中创建名为 .babelrc 的新文件来配置 Babel ：     
+
+```
+
+```
+
+除非要自定义entry point(入口点) ，否则无需webpack.config.js里指定babel-loader:      
+
+```
+module:{
+    rules:[
+        {
+            test: /\.js$/,
+            exclude: /node_modules/,
+            use: {
+                loader: "babel-loader"
+            }
+        }
+    ]
+}
+```
+
+也无需在 package.json 中配置npm scripts   
+
+```
+"scripts": {
+"dev": "webpack-dev-server --open --config webpack.config.js --module-bind js=babel-loader",
+"build": "webpack-dev-server --open --config webpack.config.js --module-bind js=babel-loader"
+}
+```      
+    
+安装vue,vue-loader,vue-style-loader,vue-template-compiler,vue-hot-reload-api:     
+
+`npm i vue --save`       
+          
+`npm i vue-loader vue-style-loader vue-template-compiler vue-hot-reload-api --save-dev`        
+
+更新 webpack 配置：      
+
+```
+const { VueLoaderPlugin } = require('vue-loader'); //vue-loader，15的版本需要再添加plugin的配置
+
+{
+    test:/\.vue$/,
+    loader:'vue-loader',
+    options:{
+        loaders:{
+            css:[
+                'vue-style-loader',
+                'mini-css-extract-plugin',
+                'css-loader'
+            ]
+        }
+    }
+}
+
+new VueLoaderPlugin() //vue-loader，15的版本需要再添加plugin的配置
+```
+
+url-loader和file-loader支持图片和字体等文件：     
+
+`npm i url-loader file-loader --save-dev`     
+
+更新 webpack 配置：               
+
+```
+{
+    test:/\.(gif|jpg|png|woff|svg|eot|ttf)\??.*$/,
+    loader:'url-loader?limit=1024' //文件小于1k就以base64形式加载
+}
+```    
+
+方便开发生产环境切换，新建用于生产环境的配置文件webpack.prod.config.js       
+用到webpack-merge模块，合并两个配置文件：     
+
+`npm i webpack-merge --save-dev`     
+
+配置webpack.prod.config.js:      
+
+```
+const webpack = require('webpack');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { VueLoaderPlugin } = require('vue-loader');
+const merge = require('webpack-merge');
+const webpackBaseConfig = require('./webpack.config.js');
+
+webpackBaseConfig.plugins = [];
+
+module.exports = merge(webpackBaseConfig,{
+	mode: 'production',
+	output:{
+		publicPath:'/dist/',
+		filename:'[name].[chunkhash].js'
+	},
+	plugins:[
+		new MiniCssExtractPlugin({
+			filename:'[name].[chunkhash].css'
+		}),
+		new VueLoaderPlugin()
+	]
+});
+```
+
+html-webpack-plugin生成html文件：     
+
+`npm i html-webpack-plugin --save-dev`    
+
+通过template选项读取指定模板index.ejs，输出到指定目录。      
+更新webpack.prod.config.js 配置：       
+
+```
+const HtmlWebPackPlugin = require("html-webpack-plugin");
+
+plugins: [
+new HtmlWebPackPlugin({
+    template: "./src/index.html",
+    filename: "./index.html"
+})
+]
+```
+ 
+index.ejs模板动态设置最新静态资源：     
+
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Webpack App</title>
+    <link rel="stylesheet" href="<%= htmlWebpackPlugin.files.css[0] %>">
+</head>
+<body>
+    <div id="app"></div>
+    <script type="text/javascript" src="<%= htmlWebpackPlugin.files.js[0] %>"></script>
+</body>
+</html> 
+```    
+
+运行`npm run build` 生成dist文件夹和文件     
+*如没有，输入`webpack -p`运行生产模式，生成dist文件*      
+
+生产环境css压缩，用到optimize-css-assets-webpack-plugin：        
+
+`npm i optimize-css-assets-webpack-plugin --save-dev`     
+
+更新webpack.prod.config.js设置：        
+
+```
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const UglifyJsPlugin = require("uglifyjs-webpack-plugin"); //设置生产模式，所以不用npm install装uglifyjs-webpack-plugin
+
+optimization: {
+    minimizer: [
+        new UglifyJsPlugin({
+            cache: true,
+            parallel: true,
+            sourceMap: true 
+            }),
+        new OptimizeCSSAssetsPlugin({}) 
+    ]
+}
+```
+
+生产环境图片压缩imagemin-webpack-plugin：    
+更新webpack.prod.config.js设置：         
+
+```
+const ImageminPlugin = require('imagemin-webpack-plugin').default
+
+new ImageminPlugin({ 
+        test: /\.(jpe?g|gif|png|svg)$/i,
+        optipng: {
+        optimizationLevel:6
+        }	
+})
+```
+
+给生产环境生成问价加chunkhash：     
+*问题在于修改css文件，js文件会一同算出新chunkhash*      
+
+```
+output:{
+    publicPath:'/dist/',
+    filename:'[name].[chunkhash].js',
+}
+
+new MiniCssExtractPlugin({
+    filename:'[name].[chunkhash].css'
+})
+```
+
+最终webpack.prod.config.js：      
+
+```
+const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { VueLoaderPlugin } = require('vue-loader');
+const merge = require('webpack-merge');
+const webpackBaseConfig = require('./webpack.config.js');
+webpackBaseConfig.plugins = [];
+
+// 压缩js，css
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
+
+//压缩图片
+const ImageminPlugin = require('imagemin-webpack-plugin').default
+
+module.exports = merge(webpackBaseConfig,{
+	mode: 'production',
+	output:{
+		publicPath:'/dist/',
+		filename:'[name].[chunkhash].js',
+	},
+	optimization: {
+	    minimizer: [
+			new UglifyJsPlugin({
+			    cache: true,
+			    parallel: true,
+			    sourceMap: true 
+			  }),
+			new OptimizeCSSAssetsPlugin({}) 
+	    ]
+	},
+	plugins:[
+		new MiniCssExtractPlugin({
+			filename:'[name].[chunkhash].css'
+		}),
+		new HtmlWebpackPlugin({
+			filename:'./index_prod.html',
+			template:'./index.ejs',
+			inject:false
+		}),
+		new VueLoaderPlugin(),
+		new ImageminPlugin({ 
+				test: /\.(jpe?g|gif|png|svg)$/i,
+				optipng: {
+				optimizationLevel:6
+				}	
+    	})
+	]
+});
+```
+
+最终webpack.config.js：      
+
+```
+const path = require('path');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { VueLoaderPlugin } = require('vue-loader'); //vue-loader，15的版本需要再添加plugin的配置
+
+const config = {
+	mode: 'development', // 不设置默认production
+	// entry,output均按默认路径和文件名设置，所以可以都不写。
+	entry: {
+		main:'./src/index.js'
+	},
+	output: {
+		path:path.join(__dirname,'./dist'),
+		publicPath:'/dist/', //指定资源文件引用目录，可以是CDN
+		filename: 'main.js'
+	},
+	module:{
+		rules:[
+			{
+				test:/\.vue$/,
+				loader:'vue-loader',
+				options:{
+					loaders:{
+						css:[
+							'vue-style-loader',
+							'mini-css-extract-plugin',
+							'css-loader'
+						]
+					}
+				}
+			},
+			{
+				test: /\.html$/,
+				use: [
+						{
+							loader: "html-loader",
+							options: { minimize: true }
+						}
+				]
+			},
+			{
+			    test: /\.css$/,
+			    use: [ //数组形式的话，编译是从后往前。
+					MiniCssExtractPlugin.loader,
+					// 'style-loader',
+					'css-loader'
+				]
+      		},
+			{
+            	test:/\.(gif|jpg|png|woff|svg|eot|ttf)\??.*$/,
+            	loader:'url-loader?limit=1024' //文件小于1k就以base64形式加载
+            }
+		]
+	},
+	plugins: [
+	    //重命名提取后的css文件
+		new MiniCssExtractPlugin('main.css'),
+		//vue-loader，15的版本需要再添加plugin的配置
+    	new VueLoaderPlugin() 
+	]
+};
+
+module.exports = config
+```
+
+前端路由vue-router    
+
+`npm i vue-router --save`      
+
+需要在package.json的script里加入：--history-api-fallback 所有路由都指向index.html       
+
+使用路由异步resolve后，在请求到该页面时，才去加载页面，所以自然没有必要把所有页面css自动合并到一起加载。       
+此时mini-css-extract-plugin无法把每个vue页面写的style合并到一起，如还想一起加载，可以改用老插件extract-text-webpack-plugin：      
+
+`npm i extract-text-webpack-plugin --save-dev`     
+
+在webpack.config.js加入配置：        
+
+```
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
+
+new ExtractTextPlugin({
+    filename:'main.css',//重命名提取后的css文件
+    allChunks: true //有了chunk，需要在此配置
+})
+
+{
+    test:/\.vue$/,
+    loader:'vue-loader',
+    options:{
+        loaders:{
+            css:ExtractTextPlugin.extract({
+                use:'css-loader',
+                fallback:'vue-style-loader'
+            })
+        }
+    }
+},
+{
+    test: /\.css$/,
+    use: ExtractTextPlugin.extract({
+        use: 'css-loader',
+        fallback: 'style-loader'
+    })
+},
+```   
+
+路由异步实现部分代码：     
+
+```
+{
+    path:'/index',
+    component:(resolve) => require(['./views/index.vue'],resolve)
+},
+```    
+
+改成加载时直接加载所有页面，mini-css-extract-plugin会生效css一并合并：     
+
+```
+import index from "./views/index.vue";
+
+{
+    path:'/index',
+    component:index
+},
+```
+
+状态管理vuex        
+主要使用场景：大型单页应用，适合多人协同项目开发。      
+*简单跨组件通讯可以封装vue-bus插件解决*                 
+
+`npm i vuex --save`      
+
+封装插件vue-bus：      
+用于解决跨级和兄弟组件通信：     
+
+```
+const install = function(Vue){
+	const Bus = new Vue({
+		methods:{
+			emit(event, ...args){
+				this.$emit(event, ...args);
+			},
+			on(event,callback){
+				this.$on(event,callback);
+			},
+			off(event,callback){
+				this.$off(event,callback);
+			}
+		}
+	});		
+	Vue.prototype.$bus = Bus;
+};
+
+export default install;
+```
+
+index.js里引入：      
+
+```
+import VueBus from './vue-bus' //使用插件代替vuex解决通讯
+
+Vue.use(VueBus);
+```
+
+node.js的request库，做代理：      
+
+`npm i request --save-dev`      
+
+新建proxy.js文件设置代理：      
+
+```
+const http = require('http');
+const request = require('request');
+
+const hostname = '127.0.0.1';
+const port = 8010;
+const imgPort = 8011;
+
+// 创建一个API 代理服务器
+const apiServer = http.createServer((req, res) => {
+    const url = 'http://news-at.zhihu.com/api/4' + req.url;
+    const options = {
+        url: url
+    };
+
+    function callback (error, response, body) {
+        if (!error && response.statusCode === 200) {
+            // 设置编码类型，否则中文会显示为乱码
+            res.setHeader('Content-Type', 'text/plain;charset=UTF-8');
+            // 设置所有域允许跨域
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            // 返回代理后的内容
+            res.end(body);
+        }
+    }
+	request.get(options, callback);
+});
+
+// 监听8010端口
+apiServer.listen(port, hostname, () => {
+    console.log(`接口代理运行在 http://${hostname}:${port}/`);
+});
+
+// 创建一个图片代理服务
+const imgServer = http.createServer((req, res) => {
+    const url = req.url.split('/img/')[1];
+    const options = {
+        url: url,
+        encoding: null
+    };
+
+    function callback (error, response, body) {
+        if (!error && response.statusCode === 200) {
+            const contentType = response.headers['content-type'];
+            res.setHeader('Content-Type', contentType);
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.end(body);
+        }
+    }
+    request.get(options, callback);
+});
+
+// 监听8011端口
+imgServer.listen(imgPort,hostname,()=>{
+	console.log(`图片代理运行在http://${hostname}:${imgPort}/`);
+})
+```     
+
+node下运行 `node proxy.js` 开启代理          
+
+接口的ajax请求：     
+*可以jq的$ajax或vue-resource或推荐的axios*     
+
+axios做异步请求：     
+
+`npm i axios --save`      
+
+项目中使用工具函数可以封装放到libs文件夹        
+新建util.js封装axios：      
+
+```
+import axios from 'axios';
+// 基本配置
+const Util = {
+	imgPath:'http://127.0.0.1:8011/img/',
+	apiPath:'http://127.0.0.1:8010/'
+}
+
+// ajax通用配置
+Util.ajax = axios.create({ //自定义配置新建一个 axios 实例
+	baseURL:Util.apiPath
+})
+
+// 添加响应拦截器 在响应被 then 或 catch 处理前拦截它们。
+Util.ajax.interceptors.response.use(res=>{
+	return res.data;
+});
+
+export default Util;
+```
+
+使用例如：          
+
+```
+import $ from './libs/util';
+
+$.ajax.get('news/3892357').then(res=>{
+    var title = res.title;
+    console.log(title)
+})
+```
+
+插件concurrently用于script同时执行多个命令       
+
+`npm i concurrently --save-dev`         
+  
+package.json的script里设置：       
+
+`"start": "concurrently \"npm run dev\" \"node proxy.js\""`         
 
 
 
