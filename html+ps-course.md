@@ -30,31 +30,7 @@
                                                                              
 <h2 id="1">HTML</h2>          
 
-html:[w3c验证](http://validator.w3.org/)   
-
-支持html5标签：[html5.js](http://cdn.static.runoob.com/libs/html5shiv/3.7/html5shiv.min.js)   
-
-```
-<!--[if lt IE 9]>
-  <script src="http://cdn.static.runoob.com/libs/html5shiv/3.7/html5shiv.min.js"></script>
-<![endif]-->
-```   
-
-html5 DOCTYPE及字符编码更简单了。   
-
-```
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Document</title>
-</head>
-<body>
-</body>
-</html>
-```   
-
-html5可省略引号或者用单引号。省略结束标签，如每段都没结束p标签。     
-布尔值不写就是true。如`<input type="checkbox" name="" id="" checked>` html4就要`checked="checked"`        
+html:[w3c验证](http://validator.w3.org/)    
 
 a标签target="_blank"开新标签，其实也可以不是_blank。可以随便写  
    
@@ -68,20 +44,13 @@ form里`action="http://baidu.com/s"`然后input里name="wd"，这样submit提交
    
 表单radio的name要相同，id不同。所有表单标签，需要提交数据的，都要加name    
    
-label里for，关联到input里的id即可一同选中。   
-   
-input中autocomplete 属性是 HTML5 中的新属性。     
-autocomplete="off" 属性规定输入字段是否应该启用自动完成功能     
-适用于 form，以及下面的 input 类型：text, search, url, telephone, email, password, datepickers, range 以及 color。     
-      
-placeholder="默认内容" 属性提供可描述输入字段预期值的提示信息   
-适用于以下的 <input\> 类型：text, search, url, telephone, email 以及 password。     
+label里for，关联到input里的id即可一同选中。       
       
 tabindex规定tab键控制次序 几乎所有浏览器均支持 tabindex 属性，除了 Safari。   
     
 readonly="flase" 在input中加上这句，就可以变成只读，能保留现有value，并且不能往里输入。    
     
-[jade](http://www.nooong.com/docs/jade_chinese.htm):高性能的模板引擎        
+[jade](https://segmentfault.com/a/1190000000357534):源于Node.js的HTML 模板引擎       
     
 a里放span，然后span里再放a。就会出问题。可用控制台看。   
    
@@ -139,6 +108,30 @@ swfobject.embedSWF("test.swf", "swfid", "300", "120", "9.0.0", "expressInstall.s
 ```     
         
 <h2 id="2">HTML5必会特性</h2>     
+
+支持html5标签：[html5.js](http://cdn.static.runoob.com/libs/html5shiv/3.7/html5shiv.min.js)   
+
+```
+<!--[if lt IE 9]>
+  <script src="http://cdn.static.runoob.com/libs/html5shiv/3.7/html5shiv.min.js"></script>
+<![endif]-->
+```   
+
+html5 DOCTYPE及字符编码更简单了。   
+
+```
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+</body>
+</html>
+```   
+
+html5可省略引号或者用单引号。省略结束标签，如每段都没结束p标签。     
+布尔值不写就是true。如`<input type="checkbox" name="" id="" checked>` html4就要`checked="checked"`       
 
 <h3 id="3">新元素</h3>      
 
@@ -206,7 +199,12 @@ range：滑块输入
 
 input元素属性：     
 
-placeholder:占位符，提示用户输入     
+placeholder="默认内容" 属性提供可描述输入字段预期值的提示信息   
+适用于以下的 <input\> 类型：text, search, url, telephone, email 以及 password。      
+
+input中autocomplete 属性           
+autocomplete="off" 规定输入字段不启用自动完成功能     
+适用于 form，以及下面的 input 类型：text, search, url, telephone, email, password, datepickers, range 以及 color。  
 
 required:input元素为必填      
 `<input type="text" placeholder="此项必填" required>`    
@@ -545,8 +543,7 @@ navigator.serviceWorker.register('sw.js').then(function(registration) {
 	console.log('Servcie Worker 注册失败：'+err);
 });
 
-//sw.js
-// 需要缓存的资源列表
+//sw.js 需要缓存的资源列表
 var cacheFiles = [
     'style.css',
     'main.js'
@@ -572,7 +569,7 @@ html5本地存储为每个网站分配空间大小是5MB
 本地存储只支持存储字符串类型数据，若要存储json数据，需要先将数据转换成字符串。     
 
 LocalStorage和SessionStorage两种API在使用上没有区别。      
-不过前者会一致存储在本地，直到手动删除，后者存活在当前页面生命周期中，一旦页面关闭就自动消失。     
+不过前者会一直存储在本地，直到手动删除，后者存活在当前页面生命周期中，一旦页面关闭就自动消失。     
 
 ```
 // 存储数据
@@ -637,6 +634,8 @@ el.addEventListener('blur', function(){
 
 <h3 id="10">IndexedDB实现便签管理</h3>             
 
+[浏览器数据库 IndexedDB 入门教程](http://www.ruanyifeng.com/blog/2018/07/indexeddb.html)         
+
 IndexedDB是一个事务型数据库系统，同时也是一个基于js的面向对象的数据库系统。     
 IndexedDB可以存储大量结构化的数据，并且使用基于索引的高效API检索。     
 
@@ -646,11 +645,13 @@ IndexedDB可以存储大量结构化的数据，并且使用基于索引的高�
 ```
 <!--创建一个便签容器-->
 <div class="notes">
+
 <!--添加按钮-->
 <div class="add">
     <p class="ic_add">+</p>
     <p>添加便签</p>
 </div>
+
 </div>
 
 <!--为了简化代码，基于jQuery开发-->
@@ -662,19 +663,24 @@ IndexedDB可以存储大量结构化的数据，并且使用基于索引的高�
 <script>
 // 预先定义每一个便签的HTML代码
 var divstr = '<div class="note"><a class="close">X</a><textarea></textarea></div>';
+
 // 实例化一个便签数据库、数据表
 var db = new LocalDB('db1', 'notes');
+
 // 打开数据库
 db.open(function(){
+
     // 页面初始化时，获取所有已有便签
     db.getAll(function(data){
         var div = $(divstr);
         div.data('id', data.id);
         div.find('textarea').val(data.content);
+
         // 将便签插入到添加按钮前边
         div.insertBefore(add);
     });
 });
+
 // 为添加按钮注册点击事件
 var add = $('.add').on('click', function(){
     var div = $(divstr);
@@ -685,6 +691,7 @@ var add = $('.add').on('click', function(){
         div.data('id', id);
     });
 });
+
 // 监听所有便签编辑域的焦点事件
 $('.notes').on('blur', 'textarea', function(){
     var div = $(this).parent();
@@ -693,6 +700,7 @@ $('.notes').on('blur', 'textarea', function(){
     // 写入数据库
     db.set(data);
 })
+
 // 监听所有关闭按钮的点击事件
 .on('click', '.close', function(){
     if(confirm('确定删除此便签吗？')){
@@ -705,6 +713,7 @@ $('.notes').on('blur', 'textarea', function(){
 });
 </script>
 ```
+     
 为了便于维护，对IndexedDB操作的逻辑封装在indexeddb.js中：     
 
 ```
@@ -757,6 +766,7 @@ LocalDB.prototype.set = function (data, callback) {
 		callback && callback(event.target.result);
 	};
 }
+
 // 获取一条数据
 LocalDB.prototype.get = function (id, callback) {
 	var objStore = this.getStore();
@@ -802,8 +812,8 @@ LocalDB.prototype.remove = function (id) {
 Canvas绘制饼图：     
 
 ```
-<canvas class="pie-chart" width="850" height="500" style="transform: scale(0.5);transform-origin: 0 0"></canvas>
 <!-- canvas绘制的图像在一些设备devicePixelRatio不为1的Retina屏幕中显示会出现模糊，设置transform属性缩放原有canvas元素 -->
+<canvas class="pie-chart" width="850" height="500" style="transform: scale(0.5);transform-origin: 0 0"></canvas>
 
 //创建PieChart类，获取canvas的context环境
     let PieChart = function(selector, options) {
@@ -1230,7 +1240,7 @@ ws.onclose = function(evt) {
 
 <h3 id="16">WebRTC实时通讯</h3>          
 
-为浏览器也移动端网页应用提供实时的语音或者视频通话功能    
+为浏览器和移动端网页应用提供实时的语音或者视频通话功能    
 从用户摄像头和麦克风获取音视频数据，并进行播放：    
 
 ```
@@ -1797,8 +1807,8 @@ PS打开UI图，文件->导出->illustrator。 AI执行file->Scripts->SaveDocsAs
    
 图标字体在安卓上：      
 通过外链引入的图标字体的加载经常会慢与html的加载。字体没加载好，安卓上会先使用一个默认字体来代替，而图标字体的编码，      
-可能刚好就是某一个繁体字的编码。导致了刷新页面的时候先是繁体之后变成图标的问题。ios和电脑的浏览器上是先显示一个方框，等字体      
-加载好了在变成正常图标。         
+可能刚好就是某一个繁体字的编码。导致了刷新页面的时候先是繁体之后变成图标的问题。ios和电脑的浏览器上是先显示一个方框，       
+等字体加载好了在变成正常图标。         
 把图标字体转成base64可以解决。或使用内联的方式也可以避免这种问题。      
     
 结合使用SVG：     
@@ -2197,13 +2207,16 @@ xhr.onreadystatechange=function(){
 <h3 id="25">前端本地文件操作与上传</h3>            
     
 FormData对象：     
+*[FormData 对象的使用](https://developer.mozilla.org/zh-CN/docs/Web/API/FormData/Using_FormData_Objects)*            
 提供一种简单的方式创建一个包含键值对的form表单结构，可以用XMLHttpRequest.send()方法很方便的提交用FormData创建的form表单数据。     
 可以通过new 的方式创建一个FormData对象:     
 
 `var fm=new FormData();`    
 
-`FormData.append(name,value);`添加一条数据到FormData对象中如果添加的数据key值已经存在，append方法会在key值对应的values末尾添加value值     
-
+添加一条数据到FormData对象中如果添加的数据key值已经存在，append方法会在key值对应的values末尾添加value值：       
+   
+`FormData.append(name,value);`  
+    
 使用form表单初始化一个FormData对象     
 可以用一个已有的 form 元素来初始化 FormData 对象，只需要把这个 form 元素作为参数传入 FormData 构造函数即可：    
 
@@ -2410,7 +2423,7 @@ fileReader.readAsArrayBuffer(blob;)
 
 
 
-除此，还能使用window.URL读取，这是一个新的API，经常和Service Worker配套使用，因为SW里面常常要解析url。如下代码：     
+除此，还能使用window.URL读取，这是一个新的API，经常和Service Worker配套使用，因为SW里面常常要解析url：           
 
 ```
 function readBlob(blobImg) {
@@ -2422,6 +2435,12 @@ function readBlob(blobImg) {
 
 readBlob(this.response);
 ```
+
+URL对象是硬盘（SD卡等）指向文件的一个路径，如果我们做文件上传的时候，想在没有上传服务器端的情况下看到上传图片的效果图,可以通过：      
+
+`var url=window.URL.createObjectURL(obj.files[0]);`             
+
+获得一个http格式的url路径，这个时候就可以设置到img标签中显示了。               
 
 关于src使用的是blob链接的，除了上面提到的img之外，另外一个很常见的是video标签，如youtobe的视频就是使用的blob    
 这种数据不是直接在本地的，而是通过持续请求视频数据，然后再通过blob这个容器媒介添加到video里面，它也是通过URL的API创建的：     
