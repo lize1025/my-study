@@ -1,237 +1,89 @@
 # 移动端知识点   
 
 移动端常用技术：    
-[css3图片帧动画](#3)，[拍照](https://www.cnblogs.com/apanly/p/5731086.html)，[地理定位](https://www.cnblogs.com/moyuling/p/8965192.html)，手势识别，音频支持，[重力感应](https://blog.csdn.net/tangxiujiang/article/details/78080090)，canvas图形，多屏互动，vr虚拟实现技术3d全景绑定陀螺仪。    
-       
-[移动端动画优化](#1)	   
-[移动端常见bug](#2)
-	   
-css3边框：   
-border-radius   
-每个半径的四个值的顺序是：左上角，右上角，右下角，左下角       
-   
-border-shadow    
-可以设置一个或多个下拉阴影的框。     
-   
-border-image   
-可以使用图片来创建边框       
-   
-css3背景：       
-background-size    
-规定背景图片的尺寸,调整大小，进行拉伸。             
+css3图片帧动画，[拍照](https://www.cnblogs.com/apanly/p/5731086.html)，[地理定位](https://www.cnblogs.com/moyuling/p/8965192.html)，手势识别，音频支持，[重力感应](https://blog.csdn.net/tangxiujiang/article/details/78080090)，canvas图形，多屏互动，vr虚拟实现技术3d全景绑定陀螺仪。    
+            
+[移动端自适应适配](#1)                 
+[移动端动画优化](#2)	   
+[移动端常见bug](#3)            
 
-background-origin    
-规定背景图片的定位区域。背景图片可以放置于 content-box、padding-box 或 border-box 区域         
+<span id="1">移动端自适应适配</span>     
 
-为元素使用多个背景图像   
-`background-image:url(bg_flower.gif),url(bg_flower_2.gif);`   
-   
-css3文本效果：    
-text-shadow   
-向文本应用阴影。能够规定水平阴影、垂直阴影、模糊距离，以及阴影的颜色        
+[移动前端自适应适配方法总结](http://caibaojian.com/mobile-responsive.html)               
 
-word-wrap    
-允许您允许文本强制文本进行换行        
-
-text-overflow    
-规定当文本溢出包含元素时发生的事情。       
-clip：修剪文本       
-ellipsis：显示省略符号来代表被修剪的文本。        
-
-css3字体：   
-@font-face 规则   
+所谓前端适配，就是为了让移动设计稿在大部分的移动设备上看起来有一致的展示效果，目前比较流行的方法有两种。          
+一种是强制meta viewport宽度为设计稿宽度。       
+一种是使用rem自适应布局的flexible.js。            
+各有利弊，使用第一种在某些浏览器的webview里面会出现兼容问题，而且对于1像素会无法渲染。而用rem的方案在背景和字体上也会有某些问题。              
+               
+强制meta viewport的宽度为设计稿的宽度：           
 
 ```
-@font-face
-{
-font-family: myFirstFont;
-src: url('Sansation_Light.ttf'),
-     url('Sansation_Light.eot'); /* IE9+ */
-}
-
-div
-{
-font-family:myFirstFont;
-}
-```    
-
-css3 2D转换 transform：    
-translate()    
-元素从其当前位置移动，根据给定的 left（x 坐标） 和 top（y 坐标）        
-*translate(50px,100px) 把元素从左侧移动 50 像素，从顶端移动 100 像素。*      
-
-rotate()   
-元素顺时针旋转给定的角度。允许负值，元素将逆时针旋转。     
-*rotate(30deg) 把元素顺时针旋转 30 度*    
-
-scale()   
-元素的尺寸会增加或减少，根据给定的宽度（X 轴）和高度（Y 轴）参数   
-只支持数值，可以是负值。居中缩放。缩放占据原始尺寸不变。        
-*scale(2,4) 把宽度转换为原始尺寸的 2 倍，把高度转换为原始高度的 4 倍*       
-   
-skew()     
-元素翻转给定的角度，根据给定的水平线（X 轴）和垂直线（Y 轴）    
-*skew(30deg,20deg) 围绕 X 轴把元素翻转 30 度，围绕 Y 轴翻转 20 度*     
-
-css3 3D转换 transform：    
-rotateX() 方法，元素围绕其 X 轴以给定的度数进行旋转    
-`transform: rotateX(120deg);`   
-
-rotateY() 方法，元素围绕其 Y 轴以给定的度数进行旋转    
-`transform: rotateY(130deg);`    
-
-css3过渡 transition:   
-CSS3 过渡是元素从一种样式逐渐改变为另一种的效果:    
-要实现这一点，必须规定两项内容：    
-规定您希望把效果添加到哪个 CSS 属性上    
-规定效果的时长    
-
-效果开始于指定的 CSS 属性改变值时。如果时长未规定，则不会有过渡效果，因为默认值是 0。    
-`transition: width 2s;`   
-
-向多个样式添加过渡效果，添加多个属性，由逗号隔开:    
+// 根据设计稿的宽度来传参 比如640 750 1125
+!function(designWidth){
+	if (/Android(?:\s+|\/)(\d+\.\d+)?/.test(navigator.userAgent)) {
+		var version = parseFloat(RegExp.$1);
+		if (version > 2.3) {
+			var phoneScale = parseInt(window.screen.width) / designWidth;
+			document.write('<meta name="viewport" content="width=' + designWidth + ',minimum-scale=' + phoneScale + ',maximum-scale=' + phoneScale + ', target-densitydpi=device-dpi">');
+		} else {
+			document.write('<meta name="viewport" content="width=' + designWidth + ',target-densitydpi=device-dpi">');
+		}
+	} else {
+		document.write('<meta name="viewport" content="width=' + designWidth + ',user-scalable=no,target-densitydpi=device-dpi,minimal-ui,viewport-fit=cover">');
+	}
+}(640);
+```
 
 ```
-div
-{
-width:100px;
-height:100px;
-background:yellow;
-transition:width 2s, height 2s;
--moz-transition:width 2s, height 2s, -moz-transform 2s; /* Firefox 4 */
--webkit-transition:width 2s, height 2s, -webkit-transform 2s; /* Safari and Chrome */
--o-transition:width 2s, height 2s, -o-transform 2s; /* Opera */
+<!doctype HTML>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+<meta content="telephone=no" name="format-detection" />
+<title>model</title>
+<script type="text/javascript">
+// 根据设计稿的宽度来传参 比如640 750 1125
+!function(e){if(/Android(?:\s+|\/)(\d+\.\d+)?/.test(navigator.userAgent)){var t=parseFloat(RegExp.$1);if(t>2.3){var i=parseInt(window.screen.width)/e;document.write('<meta name="viewport" content="width='+e+",minimum-scale="+i+",maximum-scale="+i+', target-densitydpi=device-dpi">')}else{document.write('<meta name="viewport" content="width='+e+',target-densitydpi=device-dpi">')}}else{document.write('<meta name="viewport" content="width='+e+',user-scalable=no,target-densitydpi=device-dpi,minimal-ui,viewport-fit=cover">')}}(640);
+</script>
+<style>
+body,dl,dd,ul,ol,h1,h2,h3,h4,h5,h6,pre,form,input,textarea,p,hr,thead,tbody,tfoot,th,td{margin:0;padding:0;}
+ul,ol{list-style:none;}
+a{text-decoration:none;}
+html{-ms-text-size-adjust:none;-webkit-text-size-adjust:none;text-size-adjust:none;font-size:32px;}
+body{font-size:32px;line-height:1.5;}
+body,button,input,select,textarea{font-family:'helvetica neue',tahoma,'hiragino sans gb',stheiti,'wenquanyi micro hei',5FAE8F6F96C59ED1,5B8B4F53,sans-serif;}
+b,strong{font-weight:bold;}
+i,em{font-style:normal;}
+table{border-collapse:collapse;border-spacing:0;}
+table th,table td{border:1px solid #ddd;padding:5px;}
+table th{font-weight:inherit;border-bottom-width:2px;border-bottom-color:#ccc;}
+img{border:0 none;width:auto9;max-width:100%;vertical-align:top;}
+button,input,select,textarea{font-family:inherit;font-size:100%;margin:0;vertical-align:baseline;}
+button,html input[type="button"],input[type="reset"],input[type="submit"]{-webkit-appearance:button;cursor:pointer;}
+button[disabled],input[disabled]{cursor:default;}
+input[type="checkbox"],input[type="radio"]{box-sizing:border-box;padding:0;}
+input[type="search"]{-webkit-appearance:textfield;-moz-box-sizing:content-box;-webkit-box-sizing:content-box;box-sizing:content-box;}
+input[type="search"]::-webkit-search-decoration{-webkit-appearance:none;}
+@media screen and (-webkit-min-device-pixel-ratio:0){
+input{line-height:normal!important;}
 }
-
-div:hover
-{
-width:200px;
-height:200px;
-transform:rotate(180deg);
--moz-transform:rotate(180deg); /* Firefox 4 */
--webkit-transform:rotate(180deg); /* Safari and Chrome */
--o-transform:rotate(180deg); /* Opera */
-}
-```    
-   
-transition:简写属性，用于在一个属性中设置四个过渡属性。     
-transition-property:规定应用过渡的 CSS 属性的名称。可以是all        
-transition-duration:定义过渡效果花费的时间。    
-transition-timing-function:规定过渡效果的时间曲线。默认是 "ease"。
-transition-delay:规定过渡效果何时开始。默认是 0。    
-      
-transition-timing-function:    
-linear:规定以相同速度开始至结束的过渡效果    
-ease:规定慢速开始，然后变快，然后慢速结束的过渡效果    
-ease-in:规定以慢速开始的过渡效果    
-ease-out:规定以慢速结束的过渡效果    
-ease-in-out:规定以慢速开始和结束的过渡效果     
-
-<span id="3">css3动画：</span>    
-
-CSS3 @keyframes 规则:    
-@keyframes 规则用于创建动画。在 @keyframes 中规定某项 CSS 样式，就能创建由当前样式逐渐改为新样式的动画效果。    
-
-在@keyframes中创建动画时，把它捆绑到某个选择器，否则不会产生动画效果。    
-通过规定至少以下两项 CSS3 动画属性，即可将动画绑定到选择器：     
-规定动画的名称   
-规定动画的时长   
-
+select[size],select[multiple],select[size][multiple]{border:1px solid #AAA;padding:0;}
+article,aside,details,figcaption,figure,footer,header,hgroup,main,nav,section,summary{display:block;}
+audio,canvas,video,progress{display:inline-block;}
+</style>
+</head>
+<body>
+	<!-- 页面结构写在这里 -->
+	<!-- 页面结构写在这里 -->
+	<!-- 页面结构写在这里 -->
+	<!-- 页面结构写在这里 -->
+</body>
+</html>
 ```
-div
-{
-width:100px;
-height:100px;
-background:red;
-animation:myfirst 5s;
--moz-animation:myfirst 5s; /* Firefox */
--webkit-animation:myfirst 5s; /* Safari and Chrome */
--o-animation:myfirst 5s; /* Opera */
-}
-
-@keyframes myfirst
-{
-from {background:red;}
-to {background:yellow;}
-}
-
-@-moz-keyframes myfirst /* Firefox */
-{
-from {background:red;}
-to {background:yellow;}
-}
-
-@-webkit-keyframes myfirst /* Safari and Chrome */
-{
-from {background:red;}
-to {background:yellow;}
-}
-
-@-o-keyframes myfirst /* Opera */
-{
-from {background:red;}
-to {background:yellow;}
-}
-```   
-
-animation所有动画属性的简写属性，除了 animation-play-state 属性。   
-animation-name	规定 @keyframes 动画的名称。    
-animation-duration	规定动画完成一个周期所花费的秒或毫秒。默认是 0。    
-animation-timing-function	规定动画的速度曲线。默认是 "ease"。     
-animation-delay	规定动画何时开始。默认是 0。     
-animation-iteration-count	规定动画被播放的次数。默认是 1。     
-animation-direction	规定动画是否在下一周期逆向地播放。默认是 "normal"。	     
-animation-play-state	规定动画是否正在运行或暂停。默认是 "running"。     
-animation-fill-mode	规定对象动画时间之外的状态。      
-
-帧动画：animation-timing-function规定动画曲线    
-作用于每两个关键帧之间，而不是整个动画    
-
-steps函数，它可以传入两个参数，第一个是一个大于0的整数，他是将间隔动画等分成指定数目的小间隔动画。        
-第二个参数设置后其实和step-start，step-end同义，在分成的小间隔动画中判断显示效果。     
-   
-steps(1,start)等同于step-start动画分成一步，动画执行时为开始左侧端点的部分为开始   
-steps(1,end)等同于step-end动画分成一步，动画执行时以结尾端点为开始，默认是end    
-
-```
-<div class="p1 page"></div>
-
-.page{animation:name 1s steps(1,start) infinite;}
-@keyframes name{
-	0%{bakcground-position:0 0;}
-	50%{bakcground-position:0 0;}
-	100%{bakcground-position:-350px 0;}
-}
-
-.p1{background: url(abc.png) no-repeat;width: 455px;height: 329px;}
-```   
-
-```
-@-webkit-keyframes circle { 
-0% {background: red} 
-50%{background: yellow} 
-100% {background: blue} 
-} 
-```   
-
-step-start ： 黄色与蓝色相互切换    
-step-end ： 红色与黄色相互切换    
-2个参数都会选择性的跳过前后部分，start跳过0%，end跳过100%    
- 
-CSS3 多列属性:   
-column-count:指定元素应该被分割的列数。    
-column-fill:指定如何填充列    
-column-gap:指定列与列之间的间隙    
-column-rule:所有 column-rule-* 属性的简写    
-column-rule-color:指定两列间边框的颜色    
-column-rule-style:指定两列间边框的样式       
-column-rule-width:指定两列间边框的厚度         
-column-span:指定元素要跨越多少列        
-column-width:指定列的宽度        
-columns:设置 column-width 和 column-count 的简写        
 
 
-<span id="1">移动端动画优化：</span>     
+<span id="2">移动端动画优化：</span>     
    
 尽量用css3       
 不占用js主线程  
@@ -276,7 +128,7 @@ scale(1)-scale(1.1)
 背后的动画可能会影响到当前动画的播放，在android4.0系统，会产生渲染异常问题      
 因此应把不在当前页的动画停掉，背后动画设display:none;或animation-play-state:pause;        
 
-<span id="2">移动端常见bug：</span>
+<span id="3">移动端常见bug：</span>
             
 仿app头部底部固定设置position:fixed; android2.2以上实现。ios下，当小键盘激活时（比如有点击input），回传位置浮动问题   
 解决：中间部分外层加上`position:absolute;top:30px;bottom:38px;overflow:scroll;`    
@@ -395,9 +247,12 @@ touchend事件不触发，android4.04以下，按住一个dom元素滑动后放�
 解决：在touchstart的时候调用`e.preventDefault()`       
     
 `.game{position:absolute;top:0;bottom:0;left:0;right:0;overflow:hidden;}`    
+
 以上代码决定定位后，叫上下左右都与手机屏幕紧贴，做到适配各个屏幕，在用background-size:cover;让背景图覆盖全屏。    
 然后内部元素根据其所接近的边缘做动态布局    
+
 `.ranbox{position:absolute;bottom:110px;left:0;width:100%;overflow:hidden;padding-bottom:10px;}`     
+
 bottom基于底边定位，100宽，保证从屏幕边缘出现。    
     
 iphone5,5s在safari上，当前页后边有全屏视频，即使不显示，位置也不在视窗内，页面上任何触屏事件也都捕获不到，全被看不见的video抢去了。    

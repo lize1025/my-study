@@ -525,6 +525,17 @@ body { font-size:12px; margin:0; }
 多列布局是块级布局模式的扩展，必须作用在块元素上。     
 多列布局是针对文本排版布局，常出现在报刊中，跟通常页面的左中右布局是两个概念：     
 
+column-count:指定元素应该被分割的列数。         
+column-fill:指定如何填充列           
+column-gap:指定列与列之间的间隙            
+column-rule:所有 column-rule-* 属性的简写              
+column-rule-color:指定两列间边框的颜色            
+column-rule-style:指定两列间边框的样式             
+column-rule-width:指定两列间边框的厚度            
+column-span:指定元素要跨越多少列           
+column-width:指定列的宽度           
+columns:设置 column-width 和 column-count 的简写                
+
 ```
 #col{column-width: 200px;}/* 固定每列文本宽度为200px，具体列数不定 */
 
@@ -618,7 +629,7 @@ transform转换：
 *注意：3d变换函数需要配合perspective使用，变形基点通过transform-origin属性修改*       
    
 文档流中zoom加在任意元素都会引起整个页面重绘，transform:scale()只是当前元素上的重绘。       
-scale只支持数值，可以是负值。居中缩放。缩放占据原始尺寸不变。       
+scale只支持数值，根据给定的宽度（X 轴）和高度（Y 轴）参数。可以是负值。居中缩放。缩放占据原始尺寸不变。       
 zoom可以是百分比，不可以是负值。缩放相对左上角，缩放改变了元素占据空间的大小。      
 
 rotateX像笔记本，y像翻书，z像钟表。可设置旋转元素基点位置    
@@ -634,6 +645,15 @@ backface-visibility:hidden;隐藏被旋转的元素
 ```   
 
 Transition过渡：      
+
+过渡是元素从一种样式逐渐改变为另一种的效果:            
+要实现这一点，必须规定两项内容：             
+规定您希望把效果添加到哪个 CSS 属性上            
+规定效果的时长          
+
+向多个样式添加过渡效果，添加多个属性，由逗号隔开:    
+
+`transition:width 2s, height 2s;`        
 
 `transition: property duration timing-function delay;`         
 
@@ -669,7 +689,15 @@ animation-direction 规定是否应该轮流反向播放动画。
 
 动画轮流反向播放              
 animation-iteration-count: n | infinite;    
-animation-direction: normal | alternate; 
+animation-direction: normal | alternate;      
+
+CSS3 @keyframes 规则:           
+@keyframes 规则用于创建动画。在 @keyframes 中规定某项 CSS 样式，就能创建由当前样式逐渐改为新样式的动画效果。              
+
+在@keyframes中创建动画时，把它捆绑到某个选择器，否则不会产生动画效果。              
+通过规定至少以下两项 CSS3 动画属性，即可将动画绑定到选择器：                  
+规定动画的名称              
+规定动画的时长               
 
 ```
 .img { position:fixed; top:-400px; width:500px; }		
@@ -680,6 +708,40 @@ animation-direction: normal | alternate;
 	50% { top:20px; }
 	100% { width:1000px; }
 }
+
+帧动画：animation-timing-function规定动画曲线              
+作用于每两个关键帧之间，而不是整个动画                
+             
+steps函数，它可以传入两个参数，第一个是一个大于0的整数，他是将间隔动画等分成指定数目的小间隔动画。             
+第二个参数设置后其实和step-start，step-end同义，在分成的小间隔动画中判断显示效果。               
+          
+steps(1,start)等同于step-start动画分成一步，动画执行时为开始左侧端点的部分为开始        
+steps(1,end)等同于step-end动画分成一步，动画执行时以结尾端点为开始，默认是end            
+
+```
+<div class="p1 page"></div>
+
+.page{animation:name 1s steps(1,start) infinite;}
+@keyframes name{
+	0%{bakcground-position:0 0;}
+	50%{bakcground-position:0 0;}
+	100%{bakcground-position:-350px 0;}
+}
+
+.p1{background: url(abc.png) no-repeat;width: 455px;height: 329px;}
+```
+
+```
+@-webkit-keyframes circle { 
+0% {background: red} 
+50%{background: yellow} 
+100% {background: blue} 
+} 
+```
+      
+step-start ： 黄色与蓝色相互切换              
+step-end ： 红色与黄色相互切换              
+2个参数都会选择性的跳过前后部分，start跳过0%，end跳过100%             
 
 <!-- 在页面加载后对img应用新的样式 -->
 <body onload="document.querySelector('.img').className+=' show'">
@@ -1015,6 +1077,9 @@ border边框：
 [border-radius](http://www.w3school.com.cn/cssref/pr_border-radius.asp) ,[border-image](http://www.w3school.com.cn/cssref/pr_border-image.asp),[box-shadow](http://www.w3school.com.cn/cssref/pr_box-shadow.asp)         
 
 `border-radius:100px/10px;` 水平100px；垂直10px；        
+
+border-radius      
+每个半径的四个值的顺序是：左上角，右上角，右下角，左下角     
             
  `box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 40px rgba(0,0,0,.1) inset;` 逗号后边那套是设置内阴影        
 
