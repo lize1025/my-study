@@ -29,8 +29,8 @@ android5之前，原生浏览器与系统绑定。从5开始浏览器版本可�
 Hybrid APP即在app内部通过webview组件访问web页面的情况， 内核即原生浏览器内核。     
 ios不会有厂商定制的情况，其次所有第三方浏览器都被强制使用了ios自带的内核。    
 
-[Modernizr]()：      
-一个用于检测用户浏览器的html5和css3特性的js库。 
+[Modernizr](https://modernizr.com/)：      
+一个用于检测用户浏览器的html5和css3特性的js库。 [中文网](http://modernizr.cn/)         
 
 盒模型：      
 box-sizing 属性     
@@ -161,7 +161,7 @@ input:checked 匹配选中的元素。
 input:not([type="text"]) 匹配所有非指定类型的其他元素      
 
 伪元素：     
-不存在也文档树中的抽象内容，如元素内容的第一个字母或第一行。     
+不存在文档树中的抽象内容，如元素内容的第一个字母或第一行。     
 
 `p::first-letter{color:red;} <!--第一个字母设为红色 --> `  
 
@@ -308,7 +308,7 @@ flex父元素不定宽垂直水平居中：
 ```  
 
 display:box定宽高垂直水平居中：       
-*注意要加浏览器前缀*     
+*09年的规范，注意要加浏览器前缀*     
 
 ```
 .center{ 
@@ -471,7 +471,7 @@ screen：显示器
 speech：辅助设备     
 
 媒体属性：    
-width：viewport的宽度    
+width:viewport的宽度    
 height:viewport的高度    
 aspect-ratio:viewport的宽高比     
 orientation:设备横竖屏 portrait和landscape      
@@ -481,6 +481,7 @@ resolution:设备分辨率
 
 em相对于当前元素的字体大小计量单位。     
 rem相对于根元素的字体大小。    
+[rem与em的使用和区别详解](http://caibaojian.com/rem-vs-em.html)     
 
 rem布局，首先对根元素字号赋值，为了便于计算，实例中使用实际宽度除以10的大小作为根元素字号：     
 *注意：并非所有单位都需要转成rem，比如字体大小仍用px。容器中元素直接使用百分比也比较常用。*       
@@ -543,6 +544,7 @@ body { font-size:12px; margin:0; }
 transform转换：    
 
 `transform: none|transform-functions;`         
+
 移动translate     
 缩放scale     
 旋转rotate     
@@ -564,7 +566,7 @@ transform转换：
 /* transform的默认值：none */
 .box .none {transform: none;}
 
-/* 2D位移：向右方和下放分别移动10像素 */
+/* 2D位移：向右方和下方分别移动10像素 */
 .box .translate {transform: translate(10px, 10px);}
 
 /* 3D位移：沿Z轴向内位移30像素 */
@@ -633,7 +635,8 @@ backface-visibility:hidden;隐藏被旋转的元素
 
 Transition过渡：      
 
-`transition: property duration timing-function delay;`      
+`transition: property duration timing-function delay;`         
+
 简写：`transition:width 2s ease 1s `          
 
 transition-property 规定设置过渡效果的 CSS 属性的名称。     
@@ -653,18 +656,20 @@ cubic-bezier(n,n,n,n) 在 cubic-bezier 函数中定义自己的值。可能的�
 
 Animation动画：      
 
-animation和transition不同的是，animation只将定义好的动画应用到元素1次或n次。并不会对元素最初的样式造成影响。      
-`animation: name duration timing-function delay iteration-count direction;`      
-
-animation-name 规定需要绑定到选择器的 keyframe 名称     
+animation和transition不同的是，animation只将定义好的动画应用到元素1次或n次。并不会对元素最初的样式造成影响。       
+            
+`animation: name duration timing-function delay iteration-count direction;`       
+         
+animation-name 规定需要绑定到选择器的 keyframe 名称               
 animation-duration 规定完成动画所花费的时间，以秒或毫秒计。     
 animation-timing-function 规定动画的速度曲线。     
 animation-delay 规定在动画开始之前的延迟。     
 animation-iteration-count 规定动画应该播放的次数。     
 animation-direction 规定是否应该轮流反向播放动画。    
 
-animation-iteration-count: n|infinite;    
-animation-direction: normal|alternate; /*动画轮流反向播放*/      
+动画轮流反向播放              
+animation-iteration-count: n | infinite;    
+animation-direction: normal | alternate; 
 
 ```
 .img { position:fixed; top:-400px; width:500px; }		
@@ -706,7 +711,7 @@ animation-direction: normal|alternate; /*动画轮流反向播放*/
 	font-family: "fontello";	/*字体名*/
 	font-style: normal;		/*字体样式*/
 	display: inline-block;		/*行内块元素*/
-	font-size: 42px;			/*字体大小*/
+	font-size: 42px;		/*字体大小*/
 	margin-right: 5px;		/*元素的右外边距*/
 }
 
@@ -720,8 +725,9 @@ background:
 
 css3新增background-origin/background-clip/background-size      
 
-background-origin:     
-规定背景图片的定位区域,改变background-position的原点位置：          
+[background-origin](http://www.w3school.com.cn/tiy/c.asp?f=css_background-origin):       
+background-origin: padding-box|border-box|content-box;                      
+规定背景图片的定位区域,改变background-position的原点位置：           
 
 ```
 .square-01,.square-02,.square-03 {
@@ -792,7 +798,8 @@ background-clip:
 <div class="square-03">content-box</div>
 ```
 
-background-size:      
+[background-size](http://www.w3school.com.cn/tiy/c.asp?f=css_background-size):          
+background-size: length|percentage|cover|contain;           
 规定背景图片尺寸。       
 
 ```
@@ -809,7 +816,7 @@ background-size:
 	background: url('./cccat.jpg') no-repeat;
 }
 .square-01 {
-	background-size: 50px;
+	background-size: 50px 50px;
 }
 .square-02 {
 	background-size: 50%;
@@ -830,6 +837,7 @@ background-size:
 ```
 
 css3多重背景，把不同背景放到一个元素中：     
+多个url之间逗号隔开：          
 
 ```
 .multiple {
@@ -851,8 +859,7 @@ css3多重背景，把不同背景放到一个元素中：
 
 color颜色：     
 
-颜色的取值：      
-color name：      
+颜色的取值：           
 `color:red;`      
 
 HEX:十六进制表示颜色值：     
@@ -862,9 +869,8 @@ RGB:rgb(255,255,255) = rgb(100%,100%,100%) = #ffffff = #fff
 `color:rgb(0,0,0)`     
 
 RGBA:色彩模式与RGB相同，新增Alpha透明度:      
-`color:rgb(0,0,0,0.5) /*黑色字体，百分之50不透明度*/`          
-
 *ie6-8不支持rgba，需要通过滤镜实现*       
+`color:rgb(0,0,0,0.5) /*黑色字体，百分之50不透明度*/`          
 
 HSL:H为色调，取值0-360， S饱和度,L亮度，0.0%-100%，：      
 `color:hsl(360,50%,50%)`     
@@ -1008,8 +1014,9 @@ border边框：
 
 [border-radius](http://www.w3school.com.cn/cssref/pr_border-radius.asp) ,[border-image](http://www.w3school.com.cn/cssref/pr_border-image.asp),[box-shadow](http://www.w3school.com.cn/cssref/pr_box-shadow.asp)         
 
-`border-radius:100px/10px;` 水平100px；垂直10px；       
- `box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 40px rgba(0,0,0,.1) inset;` 逗号后边那套是设置内阴影       
+`border-radius:100px/10px;` 水平100px；垂直10px；        
+            
+ `box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 40px rgba(0,0,0,.1) inset;` 逗号后边那套是设置内阴影        
 
 data url就是把图片转换成base64编码的字符串。    
 好处是少向服务器请求图片次数。      
@@ -1057,10 +1064,18 @@ left:0;
 例如根据input标签的type属性来决定是显示输入框，还是单选按钮等。              
 HTML中的img、input、textarea、select、object都是替换元素。这些元素往往没有实际的内容，即是一个空元素。      
 
-做横着的虚线：`"width:100px;height:1px;background:url(images/bg.gif) repeat-x;overflow:hidden"`        
+做横着的虚线：        
+
+`"width:100px;height:1px;background:url(images/bg.gif) repeat-x;overflow:hidden"`        
+
+或：      
+
+`border-top:1px dashed #C0C0C0;`    
    
-做竖着的虚线：比如左一个div，右一个div，可以先定义右边的div，然后设置border-left                       
-    
+做竖着的虚线：            
+
+`border-left:1px dashed #C0C0C0;`             
+     
 textarea可拖动问题， resize:none;           
         
 border:none;实现全兼容：在同一选择符上添加背景属性即可      
@@ -1152,12 +1167,13 @@ _right:150px;
 _bottom: "auto";
 ```   
    
-如果ie6和搜狗出现了显示层的问题，那么把下边这段话加到显示层里边，就行了：   
+如果ie6和搜狗出现了显示层的问题，那么把下边这段话加到显示层里边，就行了：     
+
 `<iframe style="background:#F0F9FB;width:100%;height:110px;filter:alpha(opacity=0);-moz-opacity:0"></iframe>`    
     
-doctype后一行写条件注释，比如：      
-`<!--[if lt IE 7]><html class="ie6"><![endif]-->`    
-那么样式就能直接写.ie6{}了    
+doctype后一行写条件注释，就能直接写.ie6{}了。比如：         
+
+`<!--[if lt IE 7]><html class="ie6"><![endif]-->`      
     
 ie6支持星号*、下划线_ 但是不支持！important；     
 i7支持星号*、 ！important但是不支持下划线_；    
@@ -1171,22 +1187,26 @@ ff支持！improtant；
 
 [less中文网](http://lesscss.cn/)     
 
-less最早版本采用ruby语言实现，当前版本已经换位JavaScript。     
+less最早版本采用ruby语言实现，当前版本已经换为JavaScript。     
 
 less安装：      
 
 命令行使用：     
 nodejs下通过npm安装：       
+
 `npm install less -g`    
 
 命令行用法：     
-option为可选参数，source为源文件less文件，destination为编译后的css文件    
+option为可选参数，source为源文件less文件，destination为编译后的css文件       
+
 `lessc [option option=parameter ...] <source> [destination]`      
 
-less文件可以直接通过命令行进行编译：    
+less文件可以直接通过命令行进行编译：       
+
 `$ lessc style.less style.css`     
 
-添加-x参数，对编译后的css文件进行压缩：    
+添加-x参数，对编译后的css文件进行压缩：       
+
 `$ lessc -x style.less style.css`       
 
 浏览器使用：    
@@ -1557,5 +1577,7 @@ sass的工具库，在sass基础上，封装了大量使用的模块。包括重
   
 [Compass入门小记](https://blog.csdn.net/qq_15096707/article/details/70216852)   
 
+[stylus中文版参考文档之综述](https://www.zhangxinxu.com/jq/stylus/)              
 
+[Stylus基本使用](https://www.jianshu.com/p/5fb15984f22d)               
 
