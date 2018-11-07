@@ -36,7 +36,8 @@
     * [5.3 操作表单和文件](#25)
     * [5.4 AJAX](#26)
     * [5.5 Promise](#27)
-    * [5.6 Canvas](#28)
+    * [5.6 fetch](#51)
+    * [5.7 Canvas](#28)
 * [6. jQuery](#29)
     * [6.1 $.ajax()](#30)
     * [6.2 编写jQuery插件](#31)
@@ -61,7 +62,6 @@
     * [12.2 0.1+0.2不等于0.3](#48)
     * [12.3 WebAssembly与程序编译](#49)
     * [12.4 js与多线程](#50)
-    * [12.5 前端算法与数据结构](#51)  
 * [13.模块化](#57)
     * [13.1 模块化发展](#58)  
     * [13.2 CommonJS/AMD/CMD](#59)  
@@ -79,17 +79,6 @@
      
 <h3 id="new2">基本语法和数据类型</h3>                                                                                                                                                 
 typeof typeof 任何 返回string    
-
-```
-var a = {b:2}
-a.b
-a['b']
-```    
-
-`ele.onclick === ele['onclick']`    
-如做能力检测时候，ele['on'+type]就没法用点    
-  
-{"a.2":2}不是变量名就要加引号   
 
 按位或,按位与,异或:   
 
@@ -116,8 +105,8 @@ Math.floor(123.13234) //123
 &&如果都是true，那么直接返回后边的。如果前边是false，那就返回前边的。如     
 
 ```
-123&&456 //456
-0&&123 //0
+123 && 456 //456
+0 && 123 //0
 ```    
 
 二进制转换十进制：    
@@ -164,6 +153,8 @@ a.name = 'Zheng'
 b.age = 1
 console.log(b.name) //Zheng
 console.log(a.age) //1
+a = null
+b //{name: "Zheng", age: 1}
 ```    
 
 变量向变量赋值基本类型时：    
@@ -176,10 +167,7 @@ console.log(d) //10
 console.log(c) //11
 ```    
 
-x=y=z=[1,2,3]那xyz都是数组123    
-
-!!这样就可以把非布尔类型转换成布尔类型了：    
-`var isArr = !!area.length //返回布尔值true或者false ` 
+x=y=z=[1,2,3]那xyz都是数组123               
 
 <h3 id="new1">let和const命令</h3>
 
@@ -346,7 +334,11 @@ var message = '你好, ' + name + ', 你今年' + age + '岁了!';
 ```
 **ES6**模板字符串：  
   
-`var message = 你好,${name},你今年${age}岁了`   
+```
+var name = '小明';  
+var age = 20; 
+var message = `你好,${name},你今年${age}岁了`;
+```   
 
 **ES6**常用字符串函数startsWith,endsWith,includes,repeat：     
 
@@ -359,13 +351,13 @@ s.repeat(3); //返回'HelloHelloHello',表示将原字符串重复3次
 ```
 
 **ES6**在Number对象上增加了isNaN和isInteger方法：       
-Number.isNaN判断参数的值是否是NaN：     
+[Number.isNaN](https://www.cnblogs.com/Spring-Rain/p/5722594.html)判断参数的值是否是NaN：       
 
 ```
 Number.isNaN(NaN)  //true
-Number.isNaN('1024') //true
-Number.isNaN(true) //true
-Number.isNaN(1024) //true
+Number.isNaN('1024') //false
+Number.isNaN(true) //false
+Number.isNaN(1024) //false
 ```
 
 Number.isInteger判断参数的值是否是整数      
@@ -555,7 +547,7 @@ concat()方法可以接收任意个元素和Array，并且自动把Array拆开�
 
 ```
 var arr = ['A', 'B', 'C'];
-arr.concat(1, 2, [3, 4]); // ['A', 'B', 'C', 1, 2, 3, 4]
+var added = arr.concat(1, 2, [3, 4]); // ['A', 'B', 'C', 1, 2, 3, 4]
 ```   
 
 join()方法，它把当前Array的每个元素都用指定的字符串连接起来，然后返回连接后的字符串   
@@ -573,8 +565,21 @@ var arr = [1,2,3]
 arr.push.apply(arr,[4,5])
 ```   
 
-<h3 id="4">对象</h3> 
-访问属性是通过.操作符完成的，但这要求属性名必须是一个有效的变量名。如果属性名包含特殊字符，就必须用引号括起来：   
+<h3 id="4">对象</h3>     
+
+```
+var a = {b:2}
+a.b
+a['b']
+```    
+
+`ele.onclick === ele['onclick']`    
+
+如做能力检测时候，ele['on'+type]就没法用点    
+  
+{"a.2":2}不是变量名就要加引号   
+
+访问属性是通过.操作符完成的，但这要求属性名必须是一个有效的变量名。如果属性名包含特殊字符，就必须用引号括起来：           
       
 ```
 var xiaohong = {
@@ -653,6 +658,8 @@ Object.freeze冻结对象，不能改属性：
 let person = {
     name:'yu'
 };
+Object.freeze(person);
+
 person.name = 'yuyu'
 person.name // yu
 ```
@@ -699,11 +706,11 @@ var i = 0;
 for(;i<10;i++){console.log(i)}
 ```    
   
-<h3 id="6">Map和Set</h3>  
-**ES6**新数据类型 Map是一组键值对的结构，具有极快的查找速度。      
+<h3 id="6">Map和Set</h3>     
 
-*注意：由于一个key只能对应一个value，所以，多次对一个key放入value，后面的值会把前面的值冲掉*   
-
+**ES6**新数据类型 Map是一组键值对的结构，具有极快的查找速度。         
+              
+*注意：由于一个key只能对应一个value，所以，多次对一个key放入value，后面的值会把前面的值冲掉*              
 
 ```
 var m = new Map([['Michael', 95], ['Bob', 75], ['Tracy', 85]]);
@@ -784,9 +791,9 @@ for (var x of m) { // 遍历Map
 }
 ```   
 
-for ... in循环由于历史遗留问题，它遍历的实际上是对象的属性名称。   
-一个Array数组实际上也是一个对象，它的每个元素的索引被视为一个属性。   
-当我们手动给Array对象添加了额外的属性后，for ... in循环将带来意想不到的意外效果：   
+for ... in循环由于历史遗留问题，它遍历的实际上是对象的属性名称。     
+一个Array数组实际上也是一个对象，它的每个元素的索引被视为一个属性。      
+当我们手动给Array对象添加了额外的属性后，for ... in循环将带来意想不到的意外效果：      
 
 ```  
 var a = ['A', 'B', 'C'];
@@ -802,10 +809,12 @@ a.length //3
 for (var y of a) {
     console.log(y); // 'A', 'B', 'C'
 }
-y.length //3
-```   
+a.length //3
+```    
 
-然而，更好的方式是直接使用iterable内置的forEach方法。  
+*for ... in每次迭代操作会同时搜索实例和原型属性，除非明确需要迭代一个属性数量未知的对象，否则避免用*           
+
+然而，更好的方式是直接使用iterable内置的forEach方法。     
 它接收一个函数，每次迭代就自动回调该函数。以Array为例：  
 
 ```
@@ -852,16 +861,20 @@ s.forEach(function (element, sameElement, set) {
 <h3 id="9">函数定义和调用</h3>   
 
 函数声明：   
-使用 function 关键字声明一个函数，再执行一个函数名。   
+使用 function 关键字声明一个函数，再执行一个函数名。        
+
 `function fnName() {...} `     
    
 函数表达式：   
-使用 function 关键字声明一个函数，但未给函数命名，最后将匿名函数赋予一个变量。
+使用 function 关键字声明一个函数，但未给函数命名，最后将匿名函数赋予一个变量。          
+
 `var fnName = function() { ... }`    
 
 匿名函数：  
 使用 function 关键字声明一个函数，但未给函数命名，所以叫匿名函数。   
-匿名函数属于函数表达式，匿名函数有很多作用，赋予一个变量则创建函数，赋予一个事件则成为事件处理程序或创建闭包等。   
+匿名函数属于函数表达式，匿名函数有很多作用。           
+赋予一个变量则创建函数，赋予一个事件则成为事件处理程序或创建闭包等。       
+
 `function() { ... }`   
 
 函数声明和函数表达式不同之处在于：   
@@ -874,6 +887,22 @@ JavaScript 引擎在解析 JavaScript 代码时会“函数声明提升”当前
 () 、! 、+ 、- 、= 等运算符，都将函数声明转换成函数表达式,可以在后面加括号，并立即执行函数的代码:       
      
 ```
+//因为以function开头，认为是函数声明，结果没有函数名，就报错了
+function () {
+  console.log("hello word!");
+}();
+
+//函数声明不能这样立即执行，报错。
+function foo() {
+console.log("hello word!");
+}();
+
+//函数声明传个参数就不报错了。
+function a(a) {
+  console.log(a);  //打印出123
+}(123);
+
+//匿名函数立即执行
 (function(a) {
   console.log(a);  //使用()运算符，打印出123
 })(123);
@@ -899,8 +928,8 @@ var fn = function(a) {
 }(12345678);
 ```   
 
-javascript 中没有私有作用域的概念，你在全局或局部作用域中声明了一些变量，可能会被其他人不小心用同名的变量给覆盖掉。   
-根据 javascript 函数作用域链的特性，可以使用这种技术可以模仿一个私有作用域：     
+javascript没有私有作用域的概念，你在全局或局部作用域中声明了一些变量，可能会被其他人不小心用同名的变量给覆盖掉。     
+根据 javascript 函数作用域链的特性，可以使用这种技术模仿一个私有作用域：     
 用匿名函数作为一个“容器”，“容器”内部可以访问外部的变量，而外部环境不能访问“容器”内部的变量，    
 所以 (function(){ ... })() 内部定义的变量不会和外部的变量发生冲突，俗称“匿名包裹器”或“命名空间”。    
 
@@ -1151,6 +1180,7 @@ var x=1, y=2;
 ```    
 
 快速获取当前页面的域名和路径：     
+
 `var {hostname:domain, pathname:path} = location;`     
 
 函数参数的解构赋值：    
@@ -1335,7 +1365,7 @@ function lazy_sum(arr) {
 
 `f(); // 15`     
 
-在这个例子中，我们在函数lazy_sum中又定义了函数sum，并且，内部函数sum可以引用外部函数lazy_sum的参数和局部变量。     
+在这个例子中，我们在函数lazy_sum中又定义了函数sum，内部函数sum可以引用外部函数lazy_sum的参数和局部变量。      
 当lazy_sum返回函数sum时，相关参数和变量都保存在返回的函数中，这种称为“闭包（Closure）”的程序结构拥有极大的威力。      
   
 当我们调用lazy_sum()时，每次调用都会返回一个新的函数，即使传入相同的参数：    
@@ -1430,12 +1460,9 @@ c2.inc(); // 13
 计算斐波那契数列：    
 
 ```
-var count = 0;
-
 var fib = (function(){
     var arr = [0,1,1]; //前3位直接返回
     return function(n){
-        count++;
         var res = arr[n];
         if(res){
             return res;
@@ -1448,6 +1475,11 @@ var fib = (function(){
 
 fib(10) //55
 ```
+
+[函数柯里化](https://blog.csdn.net/shunfa888/article/details/80013170)     
+高阶函数是可以当参数传递和返回值的。           
+写一个只有一个参数的函数，而这个函数返回一个带参数的函数，就实现了能写两个参数的函数了。这就是所谓的柯里化。      
+也可以理解为一种在处理函数过程中的逻辑思维方式。      
 
 闭包还可以把多参数的函数变成单参数的函数。    
 计算xy可以用Math.pow(x, y)函数，考虑到经常计算x2或x3。可以利用闭包创建新的函数pow2和pow3：    
@@ -1533,16 +1565,18 @@ x => {
 可变参数:       
 
 ```
-(x, y, ...rest) => {
+var fun = (x, y, ...rest) => {
     var i, sum = x + y;
     for (i=0; i<rest.length; i++) {
         sum += rest[i];
     }
     return sum;
 }
+fun(1,2,3,4,5,6,7,8,9,10) //55
 ```    
 
-如果要返回一个对象，就要注意：    
+如果要返回一个对象，就要注意：       
+
 `x => ({ foo: x })`   
 
 箭头函数看上去是匿名函数的一种简写，但实际上，箭头函数和匿名函数有个明显的区别：箭头函数内部的this是词法作用域，由上下文确定:   
@@ -1556,7 +1590,7 @@ var obj = {
         return fn();
     }
 };
-obj.getAge(); // 25
+obj.getAge(); // 28
 ```    
 
 如果使用箭头函数，以前的那种hack写法就不需要了：   
@@ -1728,7 +1762,7 @@ getUAType:function(){
 }
 ```
 
-这个函数判断用户是在哪个环境打开网页。一般结果都是死的，不管都少次判断都是一样结果。      
+这个函数判断用户是在哪个环境打开网页。一般结果都是死的，不管多少次判断都是一样结果。      
 所以为了优化，有了惰性函数一说，可以改写：      
 
 ```
@@ -1749,19 +1783,14 @@ getUAType:function(){
 ```
 
 在每次判断之后，把getUaType函数重新赋值，以后每次获取就不用判断了。     
-上边例子更简单实现，直接用变量存起来就好了，缺点是没使用到getUAType函数也会执行一次判断：      
+下边例子更简单实现，直接用变量存起来就好了，缺点是没使用到getUAType函数也会执行一次判断：      
 
 ```
 let ua = window.navigator.userAgent;
-left UAType = ua.match(/renten/i) ? 0 :
+let UAType = ua.match(/renten/i) ? 0 :
               ua.match(/MicroMessenger/i) ? 1 :
               ua.match(/weibo/i) ? 2 : -1
 ```   
-   
-[函数柯里化](https://blog.csdn.net/shunfa888/article/details/80013170)     
-假如一个函数只能收一个参数，那么这个函数怎么实现加法呢。因为高阶函数是可以当参数传递和返回值的，所以问题就简化为：       
-写一个只有一个参数的函数，而这个函数返回一个带参数的函数，这样就实现了能写两个参数的函数了。这就是所谓的柯里化。      
-也可以理解为一种在处理函数过程中的逻辑思维方式。      
 
 <h3 id="53">防抖和节流</h3>       
 
@@ -1798,17 +1827,24 @@ var s = new String('str'); // 'str',生成了新的包装类型
 用String()来转换任意类型到string，或者直接调用某个对象的toString()方法；   
 
 通常不必把任意类型转换为boolean再判断，因为可以直接写if (myVar) {...}；   
+*!!这样就可以把非布尔类型转换成布尔类型了:*     
+
+`var isArr = !!area.length //返回布尔值true或者false `       
 
 typeof操作符可以判断出number、boolean、string、function和undefined；   
  
-判断Array要使用Array.isArray(arr)；//兼容ie9及以上   
+判断Array使用Array.isArray(arr)；//兼容ie9及以上   
 
-判断数组，不兼容ie6：     
-*在iframe里判断父窗口的变量是否为一个数组时，就不能用instanceof，要用以下方法*   
+判断Array，不兼容ie6：     
+*在iframe里判断父窗口的变量是否为一个数组时，就不能用instanceof，要用以下方法*      
 
 ```
-var arr = ({}).toString.call([]) === "[object Array]" //true
-var arr = Object.prototype.toString.call([]) === "[object Array]" //true
+function isArray(o){
+    return ({}).toString.call(o) === "[object Array]"
+    //return Object.prototype.toString.call(o) === "[object Array]"
+}
+
+isArray([1,2,3])
 ```   
 
 判断null请使用myVar === null；   
@@ -1819,21 +1855,27 @@ var arr = Object.prototype.toString.call([]) === "[object Array]" //true
 
 null和undefined没有toString()方法   
 
-遇到这种情况，要特殊处理一下：   
+123.toString()会当作浮点数看待所以报错，要特殊处理一下：   
 
 ```
 123..toString(); // '123', 注意是两个点！
 (123).toString(); // '123'
+var a = 123; a.toString(); //'123'
 ```   
 
 instanceof通过返回一个布尔值来指出，这个对象是否是这个特定类或者是它的子类的一个实例:   
   
-判断对象，一切皆对象   
-`(a.instanceof Object)&&!(a.instanceof Array)&&!(a instanceof Function)`    
-判断数组：   
-`(a.instanceof Object)&&(a.instanceof Array)`    
-判断函数：    
-`(a.instanceof Object)&&(a.instanceof Function)`    
+判断对象，一切皆对象      
+
+`(a.instanceof Object)&&!(a.instanceof Array)&&!(a instanceof Function)`       
+
+判断数组：     
+
+`(a.instanceof Object)&&(a.instanceof Array)`       
+
+判断函数：       
+
+`(a.instanceof Object)&&(a.instanceof Function)`        
   
 <h3 id="17">Date</h3>   
 
@@ -1843,7 +1885,7 @@ instanceof通过返回一个布尔值来指出，这个对象是否是这个特�
 var now = new Date();
 now; // Tue Sep 11 2018 16:20:08 GMT+0800 (中国标准时间)
 now.getFullYear(); // 2018, 年份
-now.getMonth(); // 8, 月份，注意月份范围是0~11，5表示六月
+now.getMonth(); // 8, 月份，注意月份范围是0~11，8表示9月
 now.getDate(); // 11, 表示11号
 now.getDay(); // 2, 表示星期二
 now.getHours(); // 16, 24小时制
@@ -1853,13 +1895,14 @@ now.getMilliseconds(); // 832, 毫秒数
 now.getTime(); // 1536654008832, 以number形式表示的时间戳
 ```   
 
+*JavaScript的月份范围用整数表示是0~11，0表示一月，1表示二月……，所以要表示9月，我们传入的是8*            
+
 创建一个指定日期和时间的Date对象，可以用：   
 
 ```
 var d = new Date(2018, 8, 1, 20, 15, 30, 123);
 d; // Sat Sep 01 2018 20:15:30 GMT+0800 (中国标准时间)
 ```   
-*JavaScript的月份范围用整数表示是0~11，0表示一月，1表示二月……，所以要表示9月，我们传入的是8*
 
 创建一个指定日期和时间的方法是解析一个符合ISO 8601格式的字符串：    
 
@@ -1979,27 +2022,27 @@ console.log(JSON.stringify(obj)); // {name: '小明同学', age: 14}
 
 ```
 var obj = {
-	'a':1,
-	'b':2,
-	'c':[3,4,5,6],
-	'rel':new Date(2016,5,19)	
+	a:1,
+	b:2,
+	c:[3,4,5,6],
+	rel:new Date(2018,11,5)	
 }
 
-var str = JSON.stringify(obj) //"{"a":1,"b":2,"c":[3,4,5,6],"rel":"2016-06-18T16:00:00.000Z"}"
+var str = JSON.stringify(obj) //"{"a":1,"b":2,"c":[3,4,5,6],"rel":"2018-12-04T16:00:00.000Z"}"
 
 var objtext = JSON.parse(str,function(key,value){
 	if(key == "rel"){
 		return new Date(value)
 	}else{return value}
-}) //{a: 1, b: 2, c: [3,4,5,6], rel: Sun Jun 19 2016 00:00:00 GMT+0800}
+}) //{a: 1, b: 2, c: Array(4), rel: Wed Dec 05 2018 00:00:00 GMT+0800 (中国标准时间)}
 
-console.log(objtext.rel.getFullYear()) //2016
+console.log(objtext.rel.getFullYear()) //2018
 ```   
 
 eval()把json字符串转换为对象    
 
 ```
-var str = "{name:'json'}"
+var str = "{'name':'json'}"
 var obj = eval("("+str+")")
 ```   
       
@@ -2007,7 +2050,7 @@ var obj = eval("("+str+")")
 
 面向对象三个主要特点：封装继承和多态    
 
-研究下狗，关注它的咬人和叫。封装狗的类：      
+研究下狗，关注它的咬人和叫。封装狗的类**ES6**：      
 
 ```
 class Dog{
@@ -2073,7 +2116,7 @@ var zyf = new Person('zheng')
 zyf.getName() //zheng
 ```   
 
-js创建对象的时候，都有一个__proto__的内置对象，用于指向创建他的函数的原型对象prototype,我们把这个由__proto__串起来直到Object.prototype._proto_为null的链条叫做原型链。    
+js创建对象的时候，都有一个__proto__的内置对象，用于指向创建他的函数的原型对象prototype,我们把这个由__proto__串起来直到Object.prototype.__proto__为null的链条叫做原型链。    
 
 ```
 zyf.__proto__ === Person.prototype //true
@@ -2082,32 +2125,29 @@ Object.prototype.__proto__ === null //true
 ```   
   
 原型对象prototype中都有个预定义的constructor属性，用来引用他的函数对象，这是循环引用    
+JavaScript对每个创建的对象都会设置一个原型，指向它的原型对象。     
 
 ```
 Person.prototype.constructor === Person //true
 Function.prototype.constructor === Function //true
-zyf.prototype === undefined //普通对象没有prototype但有__proto__属性。
+zyf.prototype === undefined //普通对象没有prototype但有__proto__属性和costructor        
 ```   
   
-JavaScript对每个创建的对象都会设置一个原型，指向它的原型对象。   
-
 当我们用obj.xxx访问一个对象的属性时，js引擎先在当前对象上查找该属性，如果没有找到，就到其原型对象上找。    
 如果还没有找到，就一直上溯到Object.prototype对象，最后，如果还没有找到，就只能返回undefined。   
 
-如，创建一个Array对象：    
-`var arr = [1, 2, 3];`   
+如，创建一个Array对象：       
+
+`var arr = [1, 2, 3];`     
 
 其原型链是：    
 arr ----> Array.prototype ----> Object.prototype ----> null    
 Array.prototype定义了indexOf()、shift()等方法，因此你可以在所有的Array对象上直接调用这些方法。    
 
-当我们创建一个函数时：   
-```
-function foo() {
-    return 0;
-}
-```     
-
+当我们创建一个函数时：            
+           
+`function foo() { return 0; }`          
+           
 函数也是一个对象，它的原型链是：     
   
 `foo ----> Function.prototype ----> Object.prototype ----> null`    
@@ -2305,13 +2345,13 @@ JavaScript的原型继承实现方式就是：
 *取消原型对象上的某个属性：*`delete Object.prototype.name`    
 
 Mixin模式：     
-解决多重继承方案，将多个继承对象上的属性拷贝带个原型上：      
+解决多重继承方案，将多个继承对象上的属性拷贝到原型上：      
 
 ```
 // mixin方法，接收一个构造函数和一个原型对象
 var mixin = function(obj, mixins) {
   var newObj = obj; // 保存构造函数等待扩展原型链
-  newObj.prototype = Object.create(obj.prototype); // 原型对象实例赋给新的的函数的原型
+  newObj.prototype = Object.create(obj.prototype); // 原型对象实例赋给新的函数的原型
   for (var key in mixins) {
     // 遍历原型对象上的属性
     if (mixins.hasOwnProperty(key)) {
@@ -2480,7 +2520,7 @@ var obj = {
             return salary * 2;
         } 
 };
-var calculateBouns =function(level,salary) {
+var calculateBouns = function(level,salary) {
     return obj[level](salary);
 };
 console.log(calculateBouns('A',10000)); // 40000
@@ -2760,12 +2800,15 @@ location.hash; // 'TOP'
 要加载一个新页面，可以调用location.assign()。如果要重新加载当前页面，调用location.reload()方法非常方便。    
 
 document对象表示当前页面。由于HTML在浏览器中以DOM形式表示为树形结构，document对象就是整个DOM树的根节点。   
-document的title属性是从HTML文档中的title标签读取的，但是可以动态改变   
+document的title属性是从HTML文档中的title标签读取的，但是可以动态改变        
+
 `document.title = '努力学习JavaScript!'; `    
    
-`document.URL` 获取url   
-`document.referrer`  返回载入当前文档的url   
-`document.cookie` 读取到当前页面的Cookie    
+`document.URL` 获取url         
+
+`document.referrer`  返回载入当前文档的url [移动端返回上一页详解](https://www.cnblogs.com/baiyygynui/p/6426621.html)                     
+
+`document.cookie` [读取到当前页面的Cookie详解](http://www.w3school.com.cn/js/js_cookies.asp)         
 
 由于JavaScript能读取到页面的Cookie，而用户的登录信息通常也存在Cookie中，这就造成了巨大的安全隐患。   
 这是因为在HTML页面中引入第三方的JavaScript代码是允许的。   
@@ -2774,17 +2817,19 @@ document的title属性是从HTML文档中的title标签读取的，但是可以�
 为了确保安全，服务器端在设置Cookie时，应该始终坚持使用httpOnly。    
      
 滚动条滚走距离兼容：        
-*clientWidth和clientHeight同理*       
+*clientWidth和clientHeight同理*          
+
 `var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;`     
 
-求得一个div的宽度。   
-`var num = Math.floor(document.documentElement.clientWidth/iPinW)`   
+求得一个div的宽度:           
+
+`var num = Math.floor(document.documentElement.clientWidth/iPinW)`      
    
-自动刷新：    
+自动刷新两种方法：    
+
+`<meta http-equiv="refresh" content="20;http://baidu.com">`              
 
 ```
-<meta http-equiv="refresh" content="20;http://baidu.com">
-
 function ref(){window.location.reload()}
 setTimeout(ref,1000)
 ```   
@@ -2805,12 +2850,16 @@ if(this != this.parent){
 在操作一个DOM节点前，我们需要通过各种方式先拿到这个DOM节点:     
 document.getElementById()和document.getElementsByTagName()，以及CSS选择器document.getElementsByClassName()。   
 
-使用querySelector()和querySelectorAll()，需要了解selector语法，然后使用条件来获取节点，更加方便：    
+[使用querySelector()和querySelectorAll()](https://www.cnblogs.com/xiaohuochai/p/5798014.html)：        
+*注意：ie8以下版本不支持querySelector和querySelectorAll。IE8仅有限支持*         
+*selector类方法非实时和在元素上调用参数仍然在整个文章中匹配*          
 
-通过querySelector获取ID为q1的节点：   
+通过querySelector获取ID为q1的节点：     
+
 `var q1 = document.querySelector('#q1');`
 
-通过querySelectorAll获取q1节点内的符合条件的所有节点。结果是NodeList：   
+通过querySelectorAll获取q1节点内的符合条件的所有节点。结果是NodeList：      
+
 `var ps = q1.querySelectorAll('div.highlighted > p');`    
 
 关于转义：    
@@ -2818,11 +2867,10 @@ document.getElementById()和document.getElementsByTagName()，以及CSS选择器
 ```
 document.querySelector('.foo\\:bar')
 <div class="foo:bar"></div>
+
 document.querySelector('.foo\\\\bar')
 <div class="foo\bar"></div>
 ```    
-  
-*注意：ie8以下版本不支持querySelector和querySelectorAll。IE8仅有限支持*   
    
 更新DOM：   
 
@@ -2831,7 +2879,7 @@ document.querySelector('.foo\\\\bar')
 一种是修改innerHTML属性，可以修改一个DOM节点的文本内容，还可以直接通过HTML片段修改DOM节点内部的子树    
 innerHTML会直接替换掉原来的所有子节点    
 
-第二种是修改innerText或textContent属性，这样可以自动对字符串进行HTML编码，保证无法设置任何HTML标签   
+第二种是修改[innerText或textContent属性](https://www.cnblogs.com/wangwg1994/p/8412866.html)，这样可以自动对字符串进行HTML编码，保证无法设置任何HTML标签   
 innerText不返回隐藏元素的文本，而textContent返回所有文本。另外注意IE9以下不支持textContent    
 
 插入DOM：   
@@ -2839,15 +2887,16 @@ innerText不返回隐藏元素的文本，而textContent返回所有文本。另
 获得了某个DOM节点，想在这个DOM节点内插入新的DOM  
 
 appendChild，把一个子节点添加到父节点的最后一个子节点：    
-
+*[setAttribute()](http://www.w3school.com.cn/jsref/met_element_setattribute.asp)和[getAttribute()](http://www.w3school.com.cn/jsref/met_element_getattribute.asp)*                     
 ```
 var d = document.createElement('style');
 d.setAttribute('type', 'text/css');
 d.innerHTML = 'p { color: red }';
 document.getElementsByTagName('head')[0].appendChild(d);
-```     
+```      
 
-insertBefore,把子节点插入到指定的位置,子节点会插入到referenceElement之前:    
+insertBefore,把子节点插入到指定的位置,子节点会插入到referenceElement之前:        
+
 `parentElement.insertBefore(newElement, referenceElement);`    
 
 删除DOM：   
@@ -2861,7 +2910,7 @@ var removed = parent.removeChild(self);
 removed === self; // true
 ```   
 
-*注意：children属性是一个只读属性，并且它在子节点变化时会实时更新。删除多个节点时，要注意children属性时刻都在变化。*     
+*注意：[children属性](http://www.runoob.com/jsref/prop-element-children.html)是一个只读属性，并且它在子节点变化时会实时更新。删除多个节点时，要注意children属性时刻都在变化。*     
 
 <h3 id="25">操作表单和文件</h3>   
 
@@ -2978,7 +3027,7 @@ fileInput.addEventListener('change', function () {
 
 上面的代码演示了如何通过HTML5的File API读取文件内容。   
 以DataURL的形式读取到的文件是一个字符串，类似于data:image/jpeg;base64,/9j/4AAQSk...(base64编码)...，常用于设置图像。    
-如果需要服务器端处理，把字符串base64,后面的字符发送给服务器并用Base64解码就可以得到原始文件的二进制内容。    
+如果需要服务器端处理，把字符串base64,后面的字符发送给服务器并用Base64解码就可以得到原始文件的二进制内容。*[文件操作与上传详解](https://github.com/zyf711/my-study/blob/master/html%2Bps-course.md#25)*                     
 
 <h3 id="26">AJAX</h3>    
 
@@ -3221,6 +3270,7 @@ loadEnd事件：传输结束，但是不知道成功还是失败。
 这种方式跨域实际上是利用了浏览器允许跨域引用JavaScript资源。     
 
 JSONP通常以函数调用的形式返回，例如，返回JavaScript内容如下：     
+
 `foo('data');`     
 
 这样一来，我们如果在页面中先准备好foo()函数，然后给页面动态加一个script节点，相当于动态读取外域的JavaScript资源，最后就等着接收回调了。     
@@ -3249,12 +3299,11 @@ function getPrice() {
     head.appendChild(js);
 }
 ```   
-
-如果浏览器支持HTML5，那么就可以一劳永逸地使用新的跨域策略：CORS了。    
-*ie9以上支持cors*   
+ 
+如果浏览器支持HTML5，那么就可以一劳永逸地使用新的跨域策略：CORS了。*ie9以上支持cors*               
 CORS全称Cross-Origin Resource Sharing，是HTML5规范定义的如何跨域访问资源。     
 
-假设本域是my.com，外域是sina.com，只要响应头Access-Control-Allow-Origin为  http://my.com  或者是*，本次请求就可以成功。    
+假设本域my.com，外域sina.com，只要响应头Access-Control-Allow-Origin为  http://my.com  或者是*，本次请求就可以成功。    
 可见，跨域能否成功，取决于对方服务器是否愿意给你设置一个正确的Access-Control-Allow-Origin     
 
 子域跨父域：    
@@ -3422,7 +3471,7 @@ req.send(params.join('&'));
 }
 ```   
    
-beacons：向服务器回传数据最快且最有效的方式。   
+[beacons](http://www.php.cn/js-tutorial-378259.html)：向服务器回传数据最快且最有效的方式。   
 缺点：能接收到的响应类型有限。如需要返回大量数据，用XHR。如果只关心数据发送到服务器，可以用信标技术    
    
 并没有创建img元素或插入到DOM   
@@ -3527,14 +3576,14 @@ $(function(){
     });
 ```   
    
-html:服务器端也可以构建好整个html再传回给客户端，js可以直接innerHTML插入页面，但html作为数据格式，既缓慢又臃肿。   
+html:服务器端可以构建好整个html再传回给客户端，js直接innerHTML插入页面，但html作为数据格式，既缓慢又臃肿。   
    
 自定义格式：使用XHR或动态脚本注入获取，用split()解析。 解析大数据集比jsonp略快，尺寸更小，但是可读性差。   
    
 缓存数据，避免发送不必要请求：   
 在服务端：设置HTTP头信息以确保你的响应会被浏览器缓存    
 如果希望缓存ajax，必须使用GET方式发送请求，和在响应中发送正确的http头部信息。    
-在客服端：把获取到的信息存储到本地，避免再次请求。     
+在客户端：把获取到的信息存储到本地，避免再次请求。     
 第一种技术使用简单好维护，第二种给前端最大控制权。    
 
 <h3 id="27">Promise</h3>    
@@ -3592,7 +3641,8 @@ Done: 200 OK
 ```   
 
 Promise可以串行执行任务：   
-比如，有若干个异步任务，需要先做任务1，如果成功后再做任务2，任何任务失败则不再继续并执行错误处理函数。   
+比如，有若干个异步任务，需要先做任务1，如果成功后再做任务2，任何任务失败则不再继续并执行错误处理函数。      
+
 `job1.then(job2).then(job3).catch(handleError);`         
 
 下面的例子演示了如何串行执行一系列需要异步计算获得结果的任务：    
@@ -3724,6 +3774,16 @@ Promise.race([p1, p2]).then(function (result) {
 // 由于p1执行较快，Promise的then()将获得结果'P1'。p2仍在继续执行，但执行结果将被丢弃。
 ```    
 
+<h3 id="51">fetch</h3>      
+
+XMLHttpRequest(XHR)和Fetch是浏览器的原生API                
+由于原来的XMLHttpRequest不符合关注分离原则，且基于事件的模型在处理异步上已经没有现代的Promise等那么有优势。因此Fetch出现来解决这种问题。             
+使用 window.fetch 函数可以代替以前的 $.ajax、$.get 和 $.post。          
+
+[fetch浏览器支持情况](https://caniuse.com/#search=fetch)              
+[fetch相关介绍1](https://segmentfault.com/a/1190000011433064)           
+[fetch相关介绍2](https://www.jianshu.com/p/35123b048e5e)              
+
 <h3 id="28">Canvas</h3>    
 
 Canvas是HTML5新增的组件，它就像一块幕布，可以用JavaScript在上面绘制各种图表、动画等：    
@@ -3735,7 +3795,85 @@ Canvas除了能绘制基本的形状和文本，还可以实现动画、缩放�
 可以创建多个重叠的Canvas绘制不同的层，而不是在一个Canvas中绘制非常复杂的图；    
 背景图片如果不变可以直接用img标签并放到最底层。    
 
+canvas简单示例：      
+
+```
+function cnvs_getCoordinates(e){
+    x = e.clientX;
+    y = e.clientY;
+    document.getElementById("xycoordinates").innerHTML = "Coordinates: (" + x + "," + y + ")";
+}
+ 
+function cnvs_clearCoordinates(){
+    document.getElementById("xycoordinates").innerHTML = "";
+}
+
+window.onload = function(){
+    var c = document.getElementById("canvas");
+    var cxt1 = c.getContext("2d");
+    c.width = 400
+    c.height = 200
+
+    cxt1.fillStyle = "#ff0000";
+    cxt1.fillRect(0,0,150,75); //上面的 fillRect方法拥有参数 (0,0,150,75)。意思是：在画布上绘制 150x75 的矩形，从左上角(0,0)开始
+
+    cxt1.moveTo(10,18);
+    cxt1.lineTo(150,50);
+    cxt1.lineTo(10,50);
+    cxt1.lineTo(10,18);
+    cxt1.strokeStyle = "#0000ff"; //strokeStyle 控制绘出颜色
+    cxt1.stroke(); //stroke()绘制出通过 moveTo() 和 lineTo() 方法定义的路径。默认颜色是黑色。
+
+    cxt1.fillStyle = "#000";
+    cxt1.beginPath();
+    cxt1.arc(70,16,15,0,Math.PI*2,true); //arc() 方法创建弧/曲线（用于创建圆或部分圆） 圆中心坐标是前两个参数，这里是70,16 圆大小是第三个参数，这里是15
+    cxt1.closePath();
+    cxt1.fill(); // 填充背景颜色，如果换成stroke() 就是没背景颜色的圆,渐变一般用stroke()
+
+    cxt1.font = "12px Verdana";
+    // 创建渐变
+    var gradient = cxt1.createLinearGradient(0,0,c.width,0);
+        gradient.addColorStop("0","magenta");
+        gradient.addColorStop("0.5","blue");
+        gradient.addColorStop("1.0","red");
+    // 用渐变进行填充
+    cxt1.strokeStyle = gradient;
+    cxt1.strokeText("119026244",20,96);
+
+    var gradient2 = cxt1.createLinearGradient(0,0,170,0);
+        gradient2.addColorStop("0","magenta");
+        gradient2.addColorStop("0.5","blue");
+        gradient2.addColorStop("1.0","red");
+        cxt1.strokeStyle = gradient2;
+        cxt1.lineWidth = 5;
+        cxt1.strokeRect(100,80,80,16); //strokeRect(x, y, width, height) 按照指定的位置和大小绘制一个矩形的边框（但并不填充矩形的内部）线条颜色和线条宽度由 strokeStyle 和     lineWidth 属性指定。
+
+    var gradient3 = cxt1.createLinearGradient(0,0,175,50);
+        gradient3.addColorStop(0,"#ff0000");
+        gradient3.addColorStop(1,"#00ff00");
+        cxt1.fillStyle = gradient3;
+        cxt1.fillRect(10,100,140,80);
+
+    var img = new Image()
+    img.src="http://news.baidu.com/z/resource/r/image/2014-05-21/bea6f003509e0c698bca6462dcbbaac4.jpg"
+    img.onload = function(){
+        cxt1.drawImage(img,190,0,100,100); //想控制图片宽高，用后边两个参数，这里是100，100  drawImage(image,sourceX,sourceY,sourceWidth,sourceHeight,destX,destY,destWidth,destHeight)
+        cxt1.drawImage(img,190,130,40,40);
+        cxt1.drawImage(img,240,130,40,40,240,130,40,40);
+}
+
+}
+
+<div id="coordiv" style="width:200px;height:200px;border:1px solid #c3c3c3;" onmousemove="cnvs_getCoordinates(event)" onmouseout="cnvs_clearCoordinates()"></div>
+<div id="xycoordinates"></div>
+
+<canvas id="canvas" style="border:1px solid #c3c3c3;"></canvas>
+```
+
 <h2 id="29">jQuery</h2>     
+
+[jquery官网](http://jquery.com/)                  
+[jquery中文文档](https://www.jquery123.com/)             
 
 $这个变量不幸地被占用了，而且还不能改，那我们就只能让jQuery把$变量交出来，然后就只能使用jQuery这个变量：    
 
@@ -3942,9 +4080,6 @@ ie8和高版本浏览器可以并行下载js文件，但下载过程仍然会阻
 由于js会阻塞页面其他资源下载，所以建议把js放页面底部。   
    
 减少页面中脚本数量，可以改善性能。    
-   
-无阻塞下载js方法：   
-defer属性，只有 Internet Explorer 支持 defer 属性。   
 
 js动态创建script。文件的下载和执行过程不会阻塞页面其他进程:    
 
@@ -3966,7 +4101,7 @@ xhr.onreadystatechange = function(){
     if(xhr.readyState == 4){
         if(xhr.status >= 200 && xhr.status < 300 || xhr.status == 304){
             var script = document.createElement('script');
-            script.text = xht.responseText;
+            script.text = xhr.responseText;
             document.body.appendChild(script);
         }
     }
@@ -4101,7 +4236,7 @@ innerHTML对比DOM方法
 老版本ie下，字符串合并性能并不是最好的，可以用数组来合并大量字符串。   
       
 节点克隆：克隆已有节点，用element.clone()代替document.createElement()      
-//先创建需要重复的元素，重复的在用clone()，这样做运行结果会稍微快一点。      
+先创建需要重复的元素，重复的在用clone()，这样做运行结果会稍微快一点。      
 
 HTML集合：包含了DOM节点引用的类数组对象。底层文档对象更新时，他也会自动更新。     
 
@@ -4144,14 +4279,9 @@ var arr = HtmlToArray(html)
 ``` 
    
 使用children代替childNodes会更快，因为children能区分元素节点。集合项更少。   
-   
-querySelectorAll()方法：   
-使用css选择器作为参数并返回一个NodeList类数组对象，不会返回HTML集合。返回的节点不会对应实时的文本结构。   
-
-querySelector() 方法返回文档中匹配指定 CSS 选择器的一个元素。   
-querySelector()和querySelectorAll()支持id8及以上版本。    
   
-重排和重绘可能代价非常昂贵，应合并多次对DOM和样式的修改，然后一次处理掉：   
+重排和重绘可能代价非常昂贵，应合并多次对DOM和样式的修改，然后一次处理掉：    
+*[cssText的使用](https://www.cnblogs.com/majingyi/p/6840818.html)*             
 
 ```
 var ele = document.getElementById('mydiv');
@@ -4166,7 +4296,8 @@ var ele = document.getElementById('mydiv');
 ele.className = 'active';
 ```
 
-批量修改DOM：   
+批量修改DOM：    
+*[cloneNode()](http://www.w3school.com.cn/tiy/t.asp?f=jsref_node_clonenode)方法克隆所有属性以及它们的值*            
 
 ```
 <ul id="mylist"></ul>
@@ -4216,17 +4347,12 @@ var fragment = document.createDocumentFragment();
 appendData( fragment,data );
 document.getElementById('mylist').appendChild(fragment);
 ```     
-  
-动画中使用绝对定位。  
-   
-缓存布局信息   
-
+           
 <h3 id="37">算法和流程控制</h3>  
 
 代码的组织结构和解决具体问题的思路是影响代码性能的主要因素    
   
-for循环 while do-while for-in   
-for-in每次迭代操作会同时搜索实例和原型属性，除非明确需要迭代一个属性数量未知的对象，否则避免用。    
+for循环 while do-while
 
 优化循环，减少对象成员及数组成员以及数组项的查找次数     
 
@@ -4245,7 +4371,7 @@ do{...} while( k<num );
 ```
    
 倒序循环是编程语言中一种通用的性能优化方法。颠倒数组的顺序来提高性能   
-倒序循环，并把减法操作放在控制条件中，每个条件只是简单和0比较，控制条件与true比较时，转化下是不是true就好了。   
+倒序循环，并把减法操作放在控制条件中，每个条件只是简单和0比较，控制条件与true比较时，转化下是不是true就好了。      
 
 ```
 for( var i=items.length;i--; ){...}
@@ -4259,10 +4385,7 @@ do{...} while( k-- );
 
 *while循环没退出条件，或打断点没打好一直运行，都有可能把浏览器搞挂了。*      
    
-达夫设备：一种限制迭代次数的模式   
-
-forEach()遍历一个数组的所有成员：    
-`items.forEach( function(value,index,array){...} )  //参数：当前数组项的值，索引，数组本身`   
+达夫设备：一种限制迭代次数的模式       
 
 if-else,switch,查找表   
 
@@ -4314,6 +4437,66 @@ alert(factorial)//24 (4*3*2*1)
 算法中含太多层递归。   
 递归改为用迭代实现。   
 
+递归就是自己调自己，如：         
+
+```
+var ids = [34112,98325,68125];
+(function sendRequest(){
+    var id = ids.shift();
+    if(id){
+        $.ajax({url:'/get'data:{id}}).always(function(){
+            console.log('finished');
+            sendRequest();
+        })
+    }else{
+        console.log('all finished')
+    }
+})()
+```
+
+递归实现一个查DOM的功能：      
+
+```
+function getElementById(node,id){
+    if(!node){return null}
+    if(node.id === id){return node}
+    for(var i=0;i<node.childNodes.length;i++){
+        var found = getElementById(node.childNodes[i],id);
+        if(found){return found}
+    }
+    return null;
+}
+getElementById(document,'d-cal');
+```
+
+chrome浏览器的查DOM是使用非递归实现的：     
+
+```
+function getElementById(node,id){
+    while(node){
+        if(node.id === id){return node}
+        node = nextElement(node)
+    }
+    return null
+}
+
+function nextElement(node){
+    if(node.children.length){
+        return node.children[0]
+    }
+    if(node.nextElementSibling){
+        return node.nextElementSibling
+    }
+    while(node.parentNode){
+        if(node.parentNode.nextElementSibling){
+            return node.parentNode.nextElementSibling
+        }
+        node = node.parentNode
+    }
+    return null;
+}
+```
+
 多次调用递归函数时，为避免重复工作，可以用一种递归算法的memoization技术:   
 
 ```
@@ -4359,7 +4542,7 @@ setTimeout(),setInterval()接收相同参数，要执行的函数和执行前的
 var start = +new Date();
 var stop;
 (function(a) {
-console.log(a);  //使用()运算符，打印出123
+console.log(a);
 })(123)
 stop = +new Date();
 alert( stop-start );
@@ -4395,32 +4578,6 @@ setTimeout(function(){
 ```   
 
 *注意：使用定时器处理数组的副作用是处理数组的总时长增加了。*
-
-Web Workers:    
-引入一个接口，能使代码运行且不占用浏览器UI线程的时间，也不影响其他worker中运行的代码。   
-   
-Web Workers有着不同的全局运行环境，因此无法从js代码中创建它。需要创建一个完全独立的js文件：    
-
-```
-var worker = new Worker('b.js');
-worker.onmessage = function(event){
-    alert(event.data);
-}
-worker.postMessage('zheng')
-
-//b.js内容：
-self.onmessage = function(event){self.postMessage('hello ' + event.data + "!")}
-
-//self指向全局worker对象
-//postMessage传递数据
-//onmessage接收信息 该事件event对象有一个data属性用于存放传入的数据
-```   
-  
-worker通过importScripts()加载外部js文件：importScripts('file1.js','file2.js')     
-
-如需终止 Web Workers，并释放浏览器/计算机资源，使用 terminate() 方法   
-
-解析一个很大的json。假设数据量足够大。worker成为不错的解决方案。   
 
 <h3 id="39">编程实践</h3>   
   
@@ -4570,7 +4727,7 @@ Math.random() 方法可返回介于 0 ~ 1 之间的一个随机数。
    
 使用未压缩过的脚本进行调试和性能分析。   
    
-DOMContentLoaded事件触发的时刻，表示DOM树已经解析完成并准备就绪。   
+DOMContentLoaded事件触发的时刻，表示DOM树已经解析完成并准备就绪。和jq的ready()事件一样，jq也是这么做的，兼容就用，不兼容用其他方法实现       
 window的load事件触发的时刻，表示DOM准备就绪后所有外部资源也已经加载完成。   
    
 chrome控制台开发人员工具：     
@@ -4748,7 +4905,7 @@ execReg(reg,str)
 ```    
    
 匹配内容中指定的字母文字等:     
-{1}匹配一个 {2}匹配连续的两个 {3,4}匹配连续的三个或者四个,有四个就不匹配三个，匹配最多的    
+{1}匹配一个,{2}匹配连续的两个,{3,4}匹配连续的三个或者四个,有四个就不匹配三个，匹配最多的        
 {1,} 匹配最少一个，多了不限。z+ 和 z{1,} 是一个意思    
 
 
@@ -4995,7 +5152,9 @@ alert(result31) // 想要用$这个字符的话，需要写成$$
 ```   
 
 把里边的数字都替换成加1的。如果是9就变成0：      
-`'312355902'.replace(/\d/g,function(k){return ((k|0)+1)%10})  //如果想9变10，就去掉对10取余`   
+
+`'312355902'.replace(/\d/g,function(k){return ((k|0)+1)%10})  //如果想9变10，就去掉对10取余`      
+
 求余就是a除以b看余多少。如果a小于b。余数就是a本身。 一个整数对2取余，不是1就是0     
 
 search方法 str.search(reg); 返回正则表达式第一次匹配的位置。    
@@ -5036,7 +5195,7 @@ console.log(result35) //字符串被分为了有5个元素的数组，其中包�
 
 `/h(ello|appy) hippo/.test('hello there, happy hippo')`     
 
-首先查找第一个h。接下来，子表达式(ello|appy)选择最左侧检车ello是否匹配字符串中下一个字符。    
+首先查找第一个h。接下来，子表达式(ello|appy)选择最左侧检查ello是否匹配字符串中下一个字符。    
 匹配成功，进而匹配随后的空格，由于hippo中的h无法匹配下一个字符串中的t。匹配无法继续。此时，    
 会回溯到最近的决策点（匹配完首字符h后面的位置），尝试匹配第二个分支。匹配没有成功，也没有更多可选项。    
 所以正则表达式认为从第一个字符开始匹配是不能成功的，从第二个字符开始重新尝试，也就是从e。没有找到h。   
@@ -5082,7 +5241,7 @@ var abc = str.charAt( str.length-1 ) == ';'//要快于正则
 js与html之间交互便是通过事件实现的     
 
 DOM0级事件处理程序    
-传统方式，比如btn.onclick=function(){}       
+传统方式，比如`btn.onclick=function(){}`                   
 取消btn的onclick事件：`abc.onclick = null`    
 
 ```
@@ -5151,11 +5310,9 @@ event.target || event.srcElement
 
 事件委托能：    
 提高性能，每一个函数都会占用内存空间，只添加一个事件处理程序，占内存空间更少。     
-动态监听未来元素。     
-
-DOMContentLoaded事件，html5事件，和jq的ready()事件一样，jq也是这么做的，兼容就用，不兼容用其他方法实现       
+动态监听未来元素。          
        
-从文档中删除带有事件处理程序的元素时，可通过纯粹的DOM操作，比如removeChild，replaceChild方法。       
+从文档中删除带有事件处理程序的元素时，可通过纯粹的DOM操作，比如[removeChild](http://www.runoob.com/jsref/met-node-removechild.html)，[replaceChild](http://www.runoob.com/jsref/met-node-replacechild.html)方法。       
 但更多是用innerHTML替换页面中的一部分，如果用innerHTML来删除，那么原来的事件处理程序极有可能无法垃圾回收。   
 
 对于列表项点击触发，可以逐一对li进行处理事件绑定，但一旦li较多，就会有性能问题，可用事件委托绑定到ul上，event中的target判断来执行代码：     
@@ -5306,7 +5463,8 @@ target 触摸的DOM节点
 var touch0 = null;
 	document.body.addEventListener('touchstart', function (ev) {
 		touch0 = ev.touches[0];
-		console.log('touchstart');console.log(ev)
+		console.log('touchstart');
+        console.log(ev);
 	});
 	document.body.addEventListener('touchmove', function (ev) {
 		var touch = ev.touches[0];
@@ -5375,7 +5533,7 @@ window系统刷新率，60HZ就是帧率fps，即一秒钟60帧。一秒钟的�
     
 首先js做一些逻辑，触发样式变化，style把应用的样式规则计算好，把响应到的页面元素进行重新布局layout    
 再把它画到内存的一个画布里，paint成了像素，最后把这个画布刷新到页面上，叫做composite。形成一帧。     
-假设一帧花了50ms，name此时的帧率就为1s/50ms=20fps     
+假设一帧花了50ms，那么此时的帧率就为1s/50ms=20fps     
 
 掉帧分析：Chrome的timeline标签，勾上js profile和paint选项，单击记录按钮。 新版是Performance标签。自动记录。    
    
@@ -5393,7 +5551,7 @@ window系统刷新率，60HZ就是帧率fps，即一秒钟60帧。一秒钟的�
 减少渲染堵塞：   
 
 避免head标签js堵塞：所有放在head标签的css和js都会堵塞渲染。可以给script加defer属性。但只是异步加载，      
-执行还是会在readystatechange变为Interactive后按顺序依次执行。另外，dafer在老浏览器上表现行为不一致，有兼容问题。     
+执行还是会在readystatechange变为Interactive后按顺序依次执行。另外，dafer在老浏览器ie6-9上表现行为不一致，有兼容问题。     
 所以一般把js放在body后面就行了。    
     
 减少head标签里的css资源：      
@@ -5413,11 +5571,11 @@ window系统刷新率，60HZ就是帧率fps，即一秒钟60帧。一秒钟的�
    
 把css写成内联的：    
 如果css只有10k或者20k。写成内联也未尝不可。谷歌搜索和淘宝PC版就是这么干的。      
-这样虽然对缓存不利，但对首次加载有很大作用。因为如果把css放到CDN上，为了得到这个css，首先需要域名解析，然后建立     
-http/https连接，其次才是下载。做这些的时候可能早已把html中的css下载完了。     
-究竟哪个更好，可以再Chrome控制台查看。具体问题具体分析。     
+这样虽然对缓存不利，但对首次加载有很大作用。因为如果把css放到CDN上，为了得到这个css，首先需要域名解析，然后建立http/https连接，其次才是下载。            
+做这些的时候可能早已把html中的css下载完了。究竟哪个更好，可以在Chrome控制台查看。具体问题具体分析。             
 
-使用响应式图片：     
+使用响应式图片：      
+*[picture标签](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/picture)*              
 
 ```
 <picture>
@@ -5429,7 +5587,7 @@ source srcset="banner_w800.jpg" media="(max-width:800px)">
 
 以上代码如果是用js动态插进去的，mac上的chrome会加载两张图，只有写在html里面，初始化页面才会只加载一张。     
 可以用js判断浏览器支不支持srcset。如果支持就不写src属性了，不支持就不用写srcset了。    
-picture必须下img标签，否则无法显示。对picture的操作也都是在img上。      
+picture必须有img标签，否则无法显示。对picture的操作也都是在img上。      
 
 延迟加载图片：     
 渲染页面的时候别把图片地址放到src上，放到一个data的属性中：    
@@ -5631,8 +5789,10 @@ HTTP/1.1 定义的请求方法有8种：GET、POST、PUT、DELETE、PATCH、HEAD
 下面是一个POST方法的请求报文：    
 
 ```
-POST 　/index.php　HTTP/1.1 　　 请求行 
-Host: localhost     请求头 
+请求行
+POST 　/index.php　HTTP/1.1 　　  
+Host: localhost     
+请求头 
 User-Agent: Mozilla/5.0 (Windows NT 5.1; rv:10.0.2) Gecko/20100101 Firefox/10.0.2　　
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,/;q=0.8 
 Accept-Language: zh-cn,zh;q=0.5 
@@ -5660,7 +5820,7 @@ HTTP响应报文主要由状态行、响应头部、空行以及响应数据组�
 4开头 （请求错误）这些状态代码表示请求可能出错，妨碍了服务器的处理           
 5开头（服务器错误）这些状态代码表示服务器在尝试处理请求时发生内部错误。 这些错误可能是服务器本身的错误，而不是请求出错。           
 
-例：访问http://www.baidu.com,自动转到https    
+例：访问[http://www.baidu.com](http://www.baidu.com),自动转到https    
 后端做的重定向，通常用Nginx的rewrite或者return规则，返回3开头的状态码让浏览器重定向，如307    
 
 响应头部:与请求头部类似，为响应报文添加了一些附加信息。如：Content-Type响应正文的类型      
@@ -5693,9 +5853,9 @@ Hello HTTP!
     
 浏览器解析html代码，并请求html代码中的资源:     
 
-浏览器拿到index.html文件后，就开始解析其中的html代码，遇到js/css/image等静态资源时，就向服务器端去请求下载      
+浏览器拿到index.html文件后，就开始解析其中的html代码，遇到js/css/image等静态资源时，就向服务器端去请求下载。             
 会使用多线程下载，每个浏览器的线程数不一样，这个时候就用上keep-alive特性了，建立一次HTTP连接，可以请求多个资源，      
-下载资源的顺序就是按照代码里的顺序，但是由于每个资源大小不一样，而浏览器又多线程请求请求资源，所以查看显示的顺序并不一定是代码里面的顺序。       
+下载资源的顺序就是按照代码里的顺序，但是由于每个资源大小不一样，而浏览器又多线程请求资源，所以查看显示的顺序并不一定是代码里面的顺序。       
 
 浏览器在请求静态资源时（在未过期的情况下），向服务器端发起一个http请求（询问自从上一次修改时间到现在有没有对资源进行修改），      
 如果服务器端返回304状态码（告诉浏览器服务器端没有修改），那么浏览器会直接读取本地的该资源的缓存文件。      
@@ -5704,7 +5864,7 @@ Hello HTTP!
     
 客户端和服务器通过三次握手建立了TCP连接以后，当数据传送完毕，四次挥手：      
 
-第一次挥手：主机1（可以使客户端，也可以是服务器端），设置Sequence Number，向主机2发送一个FIN报文段；       
+第一次挥手：主机1（可以是客户端，也可以是服务器端），设置Sequence Number，向主机2发送一个FIN报文段；       
 此时，主机1进入FIN_WAIT_1状态；这表示主机1没有数据要发送给主机2了；      
    
 第二次挥手：主机2收到了主机1发送的FIN报文段，向主机1回一个ACK报文段，Acknowledgment Number为Sequence Number加1；      
@@ -5819,12 +5979,13 @@ Sec-WebSocket-Location: ws://example.com/
 设置一个误差范围值，通常称为”机器精度“，而对于Javascript来说，这个值通常是2^-52。      
 **ES6**中，已经为我们提供了这样一个属性：Number.EPSILON，而这个值正等于2^-52。       
 这个值非常非常小，在底层计算机已经帮我们运算好，并且无限接近0，但不等于0,。这个时候我们只要判断(0.1+0.2)-0.3<Number.EPSILON       
-在这个误差的范围内就可以判定0.1+0.2===0.3为true。     
+在这个误差的范围内就可以判定0.1+0.2===0.3为true。[Math.pow()](http://www.runoob.com/jsref/jsref-pow.html)          
 
 ```
-Number.EPSILON=(function(){     //解决兼容性问题
-                return Number.EPSILON?Number.EPSILON:Math.pow(2,-52);
-            })();
+Number.EPSILON=(function(){
+    //解决兼容性问题     
+    return Number.EPSILON?Number.EPSILON:Math.pow(2,-52);
+})();
 
 function numbersequal(a,b){  
         return Math.abs(a-b)<Number.EPSILON;
@@ -5867,8 +6028,37 @@ Golang:语法简单学习成本低。但对 WebAssembly 的支持还处于未正
      
 <h3 id="50">js与多线程</h3>
     
-html5引入了Web Worker，让js支持多线程，做一个斐波那契计算     
-worker.js:      
+html5引入了Web Worker，让js支持多线程。           
+Web Worker 是运行在后台的                          
+引入一个接口，能使代码运行且不占用浏览器UI线程的时间，也不影响其他worker中运行的代码。     
+*[Web Worker 使用教程，work轮询服务器状态，同页面worker等](http://www.ruanyifeng.com/blog/2018/07/web-worker.html)*            
+   
+Web Worker有着不同的全局运行环境，因此无法从js代码中创建它。需要创建一个完全独立的js文件：    
+
+```
+//a.js内容：
+var worker = new Worker('b.js');
+worker.onmessage = function(event){
+    alert(event.data);
+}
+worker.postMessage('zheng')
+
+//b.js内容：
+self.onmessage = function(event){self.postMessage('hello ' + event.data + "!")}
+
+//self指向全局worker对象
+//postMessage传递数据
+//onmessage接收信息 该事件event对象有一个data属性用于存放传入的数据
+```   
+  
+worker通过importScripts()加载外部js文件：importScripts('file1.js','file2.js')     
+
+如需终止 Web Workers，并释放浏览器/计算机资源，使用 terminate() 方法   
+
+解析一个很大的json。假设数据量足够大。worker成为不错的解决方案。     
+
+
+做一个斐波那契计算。worker.js:      
 
 ```
 function fibonacci(num){
@@ -5924,75 +6114,13 @@ Node.js的单线程模型：
 
 Node.js也是单线程的，但是由于数据库连接本来就是多线程，调用操作系统的io文件读取也是多线程，所以node的异步是借助于数据库和io多线程。     
 
-<h3 id="51">前端算法与数据结构</h3>  
-
-递归就是自己调自己，如：    
-
-```
-var ids = [34112,98325,68125];
-(function sendRequest(){
-    var id = ids.shift();
-    if(id){
-        $.ajax({url:'/get'data:{id}}).always(function(){
-            console.log('finished');
-            sendRequest();
-        })
-    }else{
-        console.log('all finished')
-    }
-})()
-```
-
-递归实现一个查DOM的功能：    
-
-```
-function getElementById(node,id){
-    if(!node){return null}
-    if(node.id === id){return node}
-    for(var i=0;i<node.childNodes.length;i++){
-        var found = getElementById(node.childNodes[i],id);
-        if(found){return found}
-    }
-    return null;
-}
-getElementById(document,'d-cal');
-```
-
-chrome浏览器的查DOM是使用非递归实现的：     
-
-```
-function getElementById(node,id){
-    while(node){
-        if(node.id === id){return node}
-        node = nextElement(node)
-    }
-    return null
-}
-
-function nextElement(node){
-    if(node.children.length){
-        return node.children[0]
-    }
-    if(node.nextElementSibling){
-        return node.nextElementSibling
-    }
-    while(node.parentNode){
-        if(node.parentNode.nextElementSibling){
-            return node.parentNode.nextElementSibling
-        }
-        node = node.parentNode
-    }
-    return null;
-}
-```
-
 <h2 id="57">模块化</h2>    
 
 <h3 id="58">模块化发展</h3>    
 
 模块化：    
-以功能块为单位进行程序设计，实现其求解算法的方法称为模块化。原则是：高内聚，低耦合。     
-模块化的目的是为了降低程序复杂度，是程序设计，调试和维护等操作简化。     
+以功能块为单位，进行程序设计，实现其求解算法的方法称为模块化。原则是：高内聚，低耦合。     
+模块化的目的是为了降低程序复杂度，使程序设计，调试和维护等操作简化。     
 
 高内聚：尽量减少不同文件中函数的交叉引用。     
 低耦合：模块与模块之间要相互独立。       
@@ -6051,7 +6179,7 @@ module_speical.b2();
 ```
 
 这种方法避免了命名冲突，又使得私有变量_index不能被外部访问和修改。      
-如果不适用一些模块化框架，只用jq或zepto类库完成开发，匿名函数实现模块化是常用方式。            
+如果不使用一些模块化框架，只用jq或zepto类库完成开发，匿名函数实现模块化是常用方式。            
 
 <h3 id="59">CommonJS/AMD/CMD</h3>  
 
@@ -6159,7 +6287,8 @@ require.config({
 CDM:      
 [CMD 模块定义规范](https://www.cnblogs.com/jiangxiaobo/p/5587234.html)      
 
-在 CMD 规范中，一个模块就是一个文件。代码的书写格式如下：    
+在 CMD 规范中，一个模块就是一个文件。代码的书写格式如下：      
+
 `define(factory);`    
     
 <h3 id="60">ES6模块支持</h3>     
@@ -6168,8 +6297,10 @@ ES6模块功能主要有两个命令构成：
 export规定模块对外的接口       
 import用于输入其他模块提供的功能     
 
+[ES6模块详解](http://es6.ruanyifeng.com/#docs/module)           
+
 export：    
-ES6中，一个模块也是一个独立的文件，具有独立的作用域，通过export命令输出内部变量：      
+**ES6**中，一个模块也是一个独立的文件，具有独立的作用域，通过export命令输出内部变量：      
 
 ```
 //car.js
@@ -6285,8 +6416,8 @@ Babel只转换语法(如箭头函数)，可以使用 babel-polyfill 支持新的
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>php页面</title>
+    <meta charset="UTF-8">
+    <title>php页面</title>
 </head>
 <body>
 <?php
@@ -7710,16 +7841,4 @@ $.ajax.get('news/3892357').then(res=>{
 package.json的script里设置：       
 
 `"start": "concurrently \"npm run dev\" \"node proxy.js\""`         
-
-
-
-
-
-
-
-
-
-
-
-
 
