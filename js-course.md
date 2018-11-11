@@ -682,6 +682,35 @@ var o = {
 }
 ```
 
+[判断传入对象类型](https://www.cnblogs.com/jq-melody/p/4499333.html)：      
+
+Object.prototype.toString.call(o)能直接返回对象的类属性。         
+形如"[object class]"的字符串，我们通过截取class，并能知道传入的对象是什么类型:                   
+
+```
+function isClass(o){
+    if(o===null) return "Null";
+    if(o===undefined) return "Undefined";
+    return Object.prototype.toString.call(o).slice(8,-1);
+}
+```   
+
+[克隆对象](https://www.cnblogs.com/amiezhang/p/8023731.html)：         
+**es6**的Object.assign        
+
+```
+var obj = {a:1,b:2}  
+var newObj = Object.assign({}, obj); 
+```
+
+JSON对象序列化方法克隆对象：          
+*这个方法明显是简单得多，但是有个弊端，就是不能复制函数*            
+
+```
+var obj = {a:1,b:2}  
+var newObj = JSON.parse(JSON.stringify(obj)); 
+```
+
 <h3 id="5">条件判断</h3>
 js把null、undefined、0、NaN和空字符串''视为false，其他值一概视为true     
   
@@ -6367,11 +6396,39 @@ someName()
 
 <h2 id="61">Babel</h2>          
 
-[Babel中文网](https://www.babeljs.cn/)     
+**ES6**转码器，转为ES5在浏览器或其他环境执行。      
+
+[Babel中文网](https://www.babeljs.cn/)        
+
+命令行转码babel-cli：        
+
+`npm i -g babel-cli`       
+
+转码结果输出到标准输出：      
+
+`babel example.js`      
+
+转码结果写入一个文件：     
+
+`babel example.js --out-file compiled.js`         
+
+`babel example.js -o compiled.js`              
+
+整个目录转码：      
+
+`babel src --out-dir lib`        
+ 
+`babel src -d lib`                
+
+*在不同项目使用不同版本babel，需将babel-cli安装在项目中*                
+
+babel-cli工具自带babel-node命令，提供一个支持**ES6**的REPL环境，可以直接运行**ES6**代码：           
+
+`babel-node example.js`            
 
 babel支持npm包形式安装：    
 
-`npm install --save-dev babel-cli babel-preset-env`    
+`npm install --save-dev babel babel-cli babel-preset-env`    
 
 安装成功后，package.json文件：     
 
@@ -6381,7 +6438,7 @@ babel支持npm包形式安装：
 }
 ```
 
-创建配置.babelrc文件：     
+创建配置.babelrc文件存放在根目录：     
 
 ```
 {
@@ -6389,12 +6446,47 @@ babel支持npm包形式安装：
 }
 ```
 
-Babel只转换语法(如箭头函数)，可以使用 babel-polyfill 支持新的全局变量,      
-例如 Promise 、新的原生方法如 String.padStart (left-pad) 等。      
+Babel只转换语法(如箭头函数)，可以使用 babel-polyfill 支持新的API,      
+例如 Promise,generator,set,maps,proxy等全局对象，和定义在全局对象上的新的原生方法如Array.from,Object.assign等。      
 
 `npm install --save-dev babel-polyfill`      
 
 使用它时需要在你应用程序的入口点顶部或打包配置中引入。       
+
+babel用于浏览器环境：    
+*从babel6.0开始不再直接提供浏览器版本，要用构建工具创建出来，或使用[babel-standalone](https://github.com/babel/babel-standalone#usage)模块提供的浏览器版本*           
+
+[traceur](https://github.com/google/traceur-compiler)用于浏览器环境：       
+*还可用于node和命令行转换，[详见traceur入门](https://github.com/google/traceur-compiler/wiki/Getting-Started)*                   
+
+```
+<h1 id="message"></h1>
+    <script src="https://google.github.io/traceur-compiler/bin/traceur.js"></script>
+    <script src="https://google.github.io/traceur-compiler/bin/BrowserSystem.js"></script>
+    <script src="https://google.github.io/traceur-compiler/src/bootstrap.js"></script>
+    <script type="module">
+      class Greeter {
+        constructor(message) {
+          this.message = message;
+        }
+
+        greet() {
+          var element = document.querySelector('#message');
+          element.innerHTML = this.message;
+        }
+      };
+
+      var greeter = new Greeter('Hello, world!');
+      greeter.greet();
+    </script>
+```
+
+
+网页实时将**ES6**代码转换为ES5代码，对性能有影响。生产环境下需要加载转码好的脚本。          
+
+在线转换：              
+babel提供一个REPL[在线编辑器](https://babeljs.io/repl)            
+google提供的traceur[在线编辑器](https://google.github.io/traceur-compiler/demo/repl.html#)              
 
 <h2 id="62">前端工程化</h2>          
 
@@ -7231,9 +7323,9 @@ document.getElementById('app').innerHTML = 'hello quick !';
 
 webpack 4 引入了 production(生产) 和 development(开发) 模式：         
 
-一个典型的项目可能有：
-用于开发的配置文件，用于定义 webpack dev server 和其他东西     
-用于生产的配置文件，用于定义UglifyJSPlugin，sourcemaps 等     
+一个典型的项目可能有：          
+用于开发的配置文件，定义 webpack dev server 和其他东西           
+用于生产的配置文件，定义UglifyJSPlugin，sourcemaps 等           
 
 打开 package.json 并填充 script 部分：     
 
@@ -7277,7 +7369,8 @@ color:#f50;
 
 执行`npm run dev` 会动态创建style标签写入css     
 
-将散落在各地的css提取出来，生成main.css文件，在index.html文件link加载：     
+将散落在各地的css提取出来，生成main.css文件，在index.html文件link加载：       
+
 mini-css-extract-plugin      
 *注意：确保将 webpack 更新到 4.2.0 版。 否则 mini-css-extract-plugin 将无效*      
 *在过去，这是 extract-text-webpack-plugin 的工作。*：      
@@ -7317,7 +7410,9 @@ plugins: [
 通过在项目文件夹中创建名为 .babelrc 的新文件来配置 Babel ：     
 
 ```
-
+{
+	"presets":["env"]
+}
 ```
 
 除非要自定义entry point(入口点) ，否则无需webpack.config.js里指定babel-loader:      
@@ -7452,7 +7547,8 @@ index.ejs模板动态设置最新静态资源：
 </html> 
 ```    
 
-运行`npm run build` 生成dist文件夹和文件     
+运行`npm run build` 生成dist文件夹和文件      
+
 *如没有，输入`webpack -p`运行生产模式，生成dist文件*      
 
 生产环境css压缩，用到optimize-css-assets-webpack-plugin：        
@@ -7463,7 +7559,7 @@ index.ejs模板动态设置最新静态资源：
 
 ```
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin"); //设置生产模式，所以不用npm install装uglifyjs-webpack-plugin
+const UglifyJsPlugin = require("uglifyjs-webpack-plugin"); //设置生产模式，所以不用npm i uglifyjs-webpack-plugin
 
 optimization: {
     minimizer: [
@@ -7491,7 +7587,7 @@ new ImageminPlugin({
 })
 ```
 
-给生产环境生成问价加chunkhash：     
+给生产环境生成的文件加chunkhash：     
 *问题在于修改css文件，js文件会一同算出新chunkhash*      
 
 ```
@@ -7635,7 +7731,7 @@ module.exports = config
 使用路由异步resolve后，在请求到该页面时，才去加载页面，所以自然没有必要把所有页面css自动合并到一起加载。       
 此时mini-css-extract-plugin无法把每个vue页面写的style合并到一起，如还想一起加载，可以改用老插件extract-text-webpack-plugin：      
 
-`npm i extract-text-webpack-plugin --save-dev`     
+`npm i extract-text-webpack-plugin@next --save-dev`     
 
 在webpack.config.js加入配置：        
 
