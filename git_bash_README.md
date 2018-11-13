@@ -124,7 +124,16 @@ Git的版本库中存了很多东西，其中最重要的就是称为stage（或
 `$ git push -u origin master`   
 
 之后每次提交到远程就   
-`$ git push origin master`   
+`$ git push origin master`    
+
+如果创建时选上了创建README.md文件，push时会报错，如：          
+
+`error: failed to push some refs to 'git@github.com:zyf711/vue2-answer.git`       
+
+这个问题是因为远程库与本地库不一致造成的，不用在本地建README文件，把远程库同步到本地库就可以了        
+把远程库中的更新合并到本地库中，–rebase的作用是取消掉本地库中刚刚的commit，并把他们接到更新后的版本库之中：          
+
+`git pull --rebase origin master`            
 
 ### 从远程库克隆到本地：
 github上新建一个仓库，叫gitskills。创建时选上创建readme.md文件   
