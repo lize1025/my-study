@@ -7468,11 +7468,66 @@ const { VueLoaderPlugin } = require('vue-loader'); //vue-loader，15的版本需
 new VueLoaderPlugin() //vue-loader，15的版本需要再添加plugin的配置
 ```
 
+安装less：        
+
+`npm i less less-loader --save-dev`            
+
+更新 webpack 配置：    
+
+```
+{
+    test:/\.vue$/,
+    loader:'vue-loader',
+    options:{
+        loaders:{
+            css:[
+                'vue-style-loader',
+                'mini-css-extract-plugin',
+                'css-loader'
+            ],
+            less:[
+                'vue-style-loader',
+                'mini-css-extract-plugin',
+                'css-loader',
+                'less-loader'
+            ]
+        }
+    }
+},
+{
+    test: /\.less$/,
+    use: [ //数组形式的话，编译是从后往前。
+        MiniCssExtractPlugin.loader,
+        // 'style-loader',
+        'css-loader',
+        'less-loader'
+    ]
+}
+```
+
+需要的文件引入即可使用，如在入口index.js引入：    
+*假设在style.less里写less*             
+
+`import './style.less';`             
+
+或直接vue文件里写less：           
+
+```
+<style scoped lang="less">
+p{
+    background: #333;
+    img{
+        height: 200px;
+    }
+}
+</style>
+```
+
 url-loader和file-loader支持图片和字体等文件：     
 
 `npm i url-loader file-loader --save-dev`     
 
-更新 webpack 配置：               
+更新 webpack 配置：                
 
 ```
 {
@@ -7480,6 +7535,53 @@ url-loader和file-loader支持图片和字体等文件：
     loader:'url-loader?limit=1024' //文件小于1k就以base64形式加载
 }
 ```    
+
+安装webpack-spritesmith 雪碧图：          
+
+`npm i --save-dev webpack-spritesmith`             
+
+更新 webpack 配置：           
+
+```
+const SpritesmithPlugin = require('webpack-spritesmith')
+
+new SpritesmithPlugin({
+    //设置源icons,即icon的路径，必选项
+    src: {
+        cwd: path.resolve(__dirname, 'src/images/icons'),
+        glob: '*.png'
+    },
+    //设置导出的sprite图及对应的样式文件，必选项
+    target: {
+        image: path.resolve(__dirname, 'src/images/sprites/sprite.png'),
+        css: path.resolve(__dirname, 'src/images/sprites/sprite.css')  //也可以为less, sass文件，需要先安装相关loader
+    },
+    //设置sprite.png的引用格式
+    apiOptions: {
+        cssImageRef: './sprite.png'  //cssImageRef为必选项
+    },
+    //配置spritesmith选项，非必选
+    spritesmithOptions: {
+        algorithm: 'top-down'//设置图标的排列方式
+    }
+    })
+```
+
+以上设置是把原始小图标放入src文件夹下的images文件夹下的icons文件夹内，开发模式启动后，会自动和icons文件夹同级生成sprites文件夹。       
+sprites文件夹内部生成sprites.css和sprites.png文件。使用：                 
+
+html文件或vue文件引用图片：       
+*icon-home是生成的css类名,需自行改名。icon是把i标签转换为行内块元素，需自己设置*             
+
+`<i class="icon icon-home"></i>`        
+
+把需要引用雪碧图的文件内设置i的样式，或直接放到公共css文件夹，这里放到style.less内：      
+
+`.icon {display: inline-block;}`      
+
+在入口文件index.js引入生成的雪碧图样式,即可在所有页面写入i标签和想要的图片样式类名：            
+
+`import './images/sprites/sprite.css';`              
 
 方便开发生产环境切换，新建用于生产环境的配置文件webpack.prod.config.js       
 用到webpack-merge模块，合并两个配置文件：     
@@ -7599,127 +7701,6 @@ output:{
 new MiniCssExtractPlugin({
     filename:'[name].[chunkhash].css'
 })
-```
-
-最终webpack.prod.config.js：      
-
-```
-const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const { VueLoaderPlugin } = require('vue-loader');
-const merge = require('webpack-merge');
-const webpackBaseConfig = require('./webpack.config.js');
-webpackBaseConfig.plugins = [];
-
-// 压缩js，css
-const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
-
-//压缩图片
-const ImageminPlugin = require('imagemin-webpack-plugin').default
-
-module.exports = merge(webpackBaseConfig,{
-	mode: 'production',
-	output:{
-		publicPath:'/dist/',
-		filename:'[name].[chunkhash].js',
-	},
-	optimization: {
-	    minimizer: [
-			new UglifyJsPlugin({
-			    cache: true,
-			    parallel: true,
-			    sourceMap: true 
-			  }),
-			new OptimizeCSSAssetsPlugin({}) 
-	    ]
-	},
-	plugins:[
-		new MiniCssExtractPlugin({
-			filename:'[name].[chunkhash].css'
-		}),
-		new HtmlWebpackPlugin({
-			filename:'./index_prod.html',
-			template:'./index.ejs',
-			inject:false
-		}),
-		new VueLoaderPlugin(),
-		new ImageminPlugin({ 
-				test: /\.(jpe?g|gif|png|svg)$/i,
-				optipng: {
-				optimizationLevel:6
-				}	
-    	})
-	]
-});
-```
-
-最终webpack.config.js：      
-
-```
-const path = require('path');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const { VueLoaderPlugin } = require('vue-loader'); //vue-loader，15的版本需要再添加plugin的配置
-
-const config = {
-	mode: 'development', // 不设置默认production
-	// entry,output均按默认路径和文件名设置，所以可以都不写。
-	entry: {
-		main:'./src/index.js'
-	},
-	output: {
-		path:path.join(__dirname,'./dist'),
-		publicPath:'/dist/', //指定资源文件引用目录，可以是CDN
-		filename: 'main.js'
-	},
-	module:{
-		rules:[
-			{
-				test:/\.vue$/,
-				loader:'vue-loader',
-				options:{
-					loaders:{
-						css:[
-							'vue-style-loader',
-							'mini-css-extract-plugin',
-							'css-loader'
-						]
-					}
-				}
-			},
-			{
-				test: /\.html$/,
-				use: [
-						{
-							loader: "html-loader",
-							options: { minimize: true }
-						}
-				]
-			},
-			{
-			    test: /\.css$/,
-			    use: [ //数组形式的话，编译是从后往前。
-					MiniCssExtractPlugin.loader,
-					// 'style-loader',
-					'css-loader'
-				]
-      		},
-			{
-            	test:/\.(gif|jpg|png|woff|svg|eot|ttf)\??.*$/,
-            	loader:'url-loader?limit=1024' //文件小于1k就以base64形式加载
-            }
-		]
-	},
-	plugins: [
-	    //重命名提取后的css文件
-		new MiniCssExtractPlugin('main.css'),
-		//vue-loader，15的版本需要再添加plugin的配置
-    	new VueLoaderPlugin() 
-	]
-};
-
-module.exports = config
 ```
 
 前端路由vue-router    
@@ -7938,3 +7919,212 @@ package.json的script里设置：
 
 `"start": "concurrently \"npm run dev\" \"node proxy.js\""`         
 
+最终webpack.config.js文件：          
+
+```
+const path = require('path');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { VueLoaderPlugin } = require('vue-loader'); //vue-loader，15的版本需要再添加plugin的配置
+const SpritesmithPlugin = require('webpack-spritesmith') //css雪碧图
+
+const config = {
+	mode: 'development', // 不设置默认production
+	// entry,output均按默认路径和文件名设置，所以可以都不写。
+	entry: {
+		main:'./src/index.js'
+	},
+	output: {
+		path:path.join(__dirname,'./dist'),
+		publicPath:'/dist/', //指定资源文件引用目录，可以是CDN
+		filename: 'main.js'
+	},
+	module:{
+		rules:[
+			{
+				test:/\.vue$/,
+				loader:'vue-loader',
+				options:{
+					loaders:{
+						css:[
+							'vue-style-loader',
+							'mini-css-extract-plugin',
+							'css-loader'
+						],
+						less:[
+							'vue-style-loader',
+							'mini-css-extract-plugin',
+							'css-loader',
+							'less-loader'
+						]
+					}
+				}
+			},
+			{
+				test: /\.html$/,
+				use: [
+						{
+							loader: "html-loader",
+							options: { minimize: true }
+						}
+				]
+			},
+			{
+			    test: /\.css$/,
+			    use: [ //数组形式的话，编译是从后往前。
+					MiniCssExtractPlugin.loader,
+					// 'style-loader',
+					'css-loader'
+				]
+			  },
+			{
+			    test: /\.less$/,
+			    use: [ //数组形式的话，编译是从后往前。
+					MiniCssExtractPlugin.loader,
+					// 'style-loader',
+					'css-loader',
+					'less-loader'
+				]
+      		},
+			{
+            	test:/\.(gif|jpg|png|woff|svg|eot|ttf)\??.*$/,
+            	loader:'url-loader?limit=1024' //文件小于1k就以base64形式加载
+			}
+		]
+	},
+	plugins: [
+	    //重命名提取后的css文件
+		new MiniCssExtractPlugin('main.css'),
+		//vue-loader，15的版本需要再添加plugin的配置
+		new VueLoaderPlugin(),
+		new SpritesmithPlugin({
+			//设置源icons,即icon的路径，必选项
+			src: {
+			  cwd: path.resolve(__dirname, 'src/images/icons'),
+			  glob: '*.png'
+			},
+			//设置导出的sprite图及对应的样式文件，必选项
+			target: {
+			  image: path.resolve(__dirname, 'src/images/sprites/sprite.png'),
+			  css: path.resolve(__dirname, 'src/images/sprites/sprite.css')  //也可以为less, sass文件，需要先安装相关loader
+			},
+			//设置sprite.png的引用格式
+			apiOptions: {
+			  cssImageRef: './sprite.png'  //cssImageRef为必选项
+			},
+			//配置spritesmith选项，非必选
+			spritesmithOptions: {
+			  algorithm: 'top-down'//设置图标的排列方式
+			}
+		  })
+	]
+};
+
+module.exports = config
+```
+
+最终webpack.prod.config.js文件：            
+
+```
+const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { VueLoaderPlugin } = require('vue-loader');
+const merge = require('webpack-merge');
+const webpackBaseConfig = require('./webpack.config.js');
+webpackBaseConfig.plugins = [];
+
+// 压缩js，css
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
+
+//压缩图片
+const ImageminPlugin = require('imagemin-webpack-plugin').default
+
+module.exports = merge(webpackBaseConfig,{
+	mode: 'production',
+	output:{
+		publicPath:'/dist/',
+		filename:'[name].[chunkhash].js',
+	},
+	optimization: {
+	    minimizer: [
+			new UglifyJsPlugin({
+			    cache: true,
+			    parallel: true,
+			    sourceMap: true 
+			  }),
+			new OptimizeCSSAssetsPlugin({}) 
+	    ]
+	},
+	plugins:[
+		new MiniCssExtractPlugin({
+			filename:'[name].[chunkhash].css'
+		}),
+		new HtmlWebpackPlugin({
+			filename:'./index_prod.html',
+			template:'./index.ejs',
+			inject:false
+		}),
+		new VueLoaderPlugin(),
+		new ImageminPlugin({ 
+				test: /\.(jpe?g|gif|png|svg)$/i,
+				optipng: {
+				optimizationLevel:6
+				}	
+    	})
+	]
+});
+```
+
+最终package.json文件内容：               
+
+```
+{
+  "name": "webpack-quick",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack-dev-server --host 192.168.10.122 --open --history-api-fallback --config webpack.config.js",
+    "build": "webpack --progress --hide-modules --config webpack.prod.config.js",
+    "start": "concurrently \"npm run dev\" \"node proxy.js\""
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^8.0.4",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "concurrently": "^4.0.1",
+    "css-loader": "^1.0.1",
+    "file-loader": "^2.0.0",
+    "html-webpack-plugin": "^3.2.0",
+    "imagemin-webpack-plugin": "^2.3.0",
+    "less": "^3.8.1",
+    "less-loader": "^4.1.0",
+    "mini-css-extract-plugin": "^0.4.4",
+    "optimize-css-assets-webpack-plugin": "^5.0.1",
+    "request": "^2.88.0",
+    "style-loader": "^0.23.1",
+    "url-loader": "^1.1.2",
+    "vue-hot-reload-api": "^2.3.1",
+    "vue-loader": "^15.4.2",
+    "vue-style-loader": "^4.1.2",
+    "vue-template-compiler": "^2.5.17",
+    "webpack": "^4.23.1",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.10",
+    "webpack-merge": "^4.1.4",
+    "webpack-spritesmith": "^0.5.4"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "vue": "^2.5.17",
+    "vue-router": "^3.0.1",
+    "vuex": "^3.0.1"
+  }
+}
+```
