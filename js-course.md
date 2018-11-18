@@ -90,7 +90,8 @@ a | b  //7
 转成2进制    
 3 011   
 7 111   
-或运算有一个是1就是1，所以是111，再转换为10进制就是7   
+或运算有一个是1就是1，所以是111，再转换为10进制就是7      
+       
 a&b都是1才是1    
 a^b一样是0，不一样是1     
 
@@ -110,7 +111,7 @@ Math.floor(123.13234) //123
 ```    
 
 二进制转换十进制：    
-100最右边开始0*2的0次方+0*2的1次方+1*2的2次方。结果就是4    
+100最右边开始0\*2的0次方+0\*2的1次方+1\*2的2次方。结果就是4    
    
 十进制转换二进制：   
 除以2：   
@@ -121,7 +122,8 @@ Math.floor(123.13234) //123
 然后反过来看，12的二进制就是1100   
 
 基本数据类型：undefined,null,string,number,boolean     
-不能给基本类型添加属性和方法    
+基本类型的变量是存放在栈区的，栈区包括了变量的标识符和变量的值        
+不能给基本类型添加属性和方法        
 基本类型值是不可变的：     
 
 ```
@@ -130,7 +132,9 @@ name.toUpperCase() //ZHENG
 console.log(name) //zheng
 ```   
     
-基本类型的变量是存放在栈区的，栈区包括了变量的标识符和变量的值     
+引用类型：object、Array、RegExp、Date、Function、        
+特殊的基本包装类型(String、Number、Boolean)以及单体内置对象(Global、Math)。           
+
 引用类型的值是可变的。    
 引用类型的值同时保存在栈区（栈内存）和堆区（堆内存）中的对象。    
 栈区保存变量标识符和指向堆内存中该对象的指针，也可以说该对象在堆内存中的地址。    
@@ -141,7 +145,7 @@ var b = {}
 a == b //false
 ```  
     
-引用类型的值是按引用访问的，就是比较两个对象堆内存中的地址是否相同，明显不同。    
+引用(复合)类型的值是按引用访问的，就是比较两个对象堆内存中的地址是否相同，明显不同。    
 引用类型的赋值，其实是对象保存在栈区地址指针的赋值，因此两个变量指向同一个对象，任何操作都会相互影响。     
     
 变量向变量赋值引用类型时：     
@@ -153,9 +157,11 @@ a.name = 'Zheng'
 b.age = 1
 console.log(b.name) //Zheng
 console.log(a.age) //1
-a = null
+a = null //null值表示一个空对象指针
 b //{name: "Zheng", age: 1}
 ```    
+
+x=y=z=[1,2,3]那xyz都是数组123      
 
 变量向变量赋值基本类型时：    
 
@@ -167,11 +173,33 @@ console.log(d) //10
 console.log(c) //11
 ```    
 
-x=y=z=[1,2,3]那xyz都是数组123               
-
 <h3 id="new1">let和const命令</h3>
 
-**ES6**新增了let命令，所有声明的变量只在let命令所在的代码块内有效：   
+局部作用域：由于JavaScript的变量作用域实际上是函数内部，我们在for循环等语句块中是无法定义具有局部作用域的变量的：          
+
+```
+function foo() {
+    for (var i=0; i<100; i++) {
+            //
+        }
+    i += 100; // 仍然可以引用变量i
+}
+```    
+
+为了解决块级作用域，**ES6**引入了新的关键字let，用let替代var可以申明一个块级作用域的变量：      
+
+```
+function foo() {
+    var sum = 0;
+        for (let i=0; i<100; i++) {
+            sum += i;
+         }
+    // SyntaxError:
+    i += 1;
+}
+```     
+
+所有声明的变量只在let命令所在的代码块内有效：     
 
 ```
 {
@@ -266,6 +294,16 @@ foo.prop // 123
 //将foo指向另一个对象，就会报错
 foo = {} 
 ```   
+
+```
+const a = {}
+const b = a
+a.name = 'Zheng'
+b.age = 1
+console.log(b.name) //Zheng
+console.log(a.age) //1
+a = null //报错
+```    
 
 ```
 const a = [];
@@ -374,6 +412,7 @@ toUpperCase()把一个字符串全部变为大写：
 ```
 var s = 'Hello';
 s.toUpperCase(); // 返回'HELLO'
+s //Hello
 ```   
 
 toLowerCase()把一个字符串全部变为小写：   
@@ -384,7 +423,7 @@ var lower = s.toLowerCase(); // 返回'hello'并赋值给变量lower
 ```   
 
 stringObject.indexOf(searchvalue,fromindex) 返回字符串首次出现的位置    
-stringObject.charAt(index) 返回制定位置的字符串   
+stringObject.charAt(index) 返回指定位置的字符串   
 stringObject.split(separator,howmany) 用于把字符串分割成数组   
 stringObject.concat(str1,str2,str3) 合并多个字符串，返回合并的结果，实际值并未改变。也可合并数组。   
    
@@ -409,6 +448,24 @@ function uniqueArray(arr){
     return retArray
 }
 uniqueArray([1,1,1,1,1,2,3,4,5,6,7,3,4,5,])
+
+//或封装起来
+var util = (function(){
+	var unique = function(arr){
+		var ret = [];
+		for(var i = 0;i<arr.length;i++){
+			if(ret.indexOf(arr[i])<0){
+				ret.push(arr[i])
+			}			
+		}
+		return ret
+	};
+	return {
+		unique:unique
+	}
+})()
+
+util.unique([1,1,1,1,1,2,3,4,5,6,7,3,4,5,])
 ```   
    
 charAt() 方法可返回指定位置的字符:  
@@ -612,15 +669,15 @@ for( var i in arr ){
 }
 ```   
 
-只有hasOwnPrototype()能给出正确答案:
+只有hasOwnPropertype()能给出正确答案:
 
 ```
 Object.prototype.bar = 1
 var foo ={goo:undefined}
 foo.bar //1
 'bar' in foo //true
-foo.hasOwnPrototype('bar') //false
-foo.hasOwnPrototype('goo') //true
+foo.hasOwnProperty('bar') //false
+foo.hasOwnProperty('goo') //true
 ```    
   
 凡是通过new Function()创建的对象都是函数对象，其他的都是普通对象：   
@@ -685,13 +742,13 @@ var o = {
 [判断传入对象类型](https://www.cnblogs.com/jq-melody/p/4499333.html)：      
 
 Object.prototype.toString.call(o)能直接返回对象的类属性。         
-形如"[object class]"的字符串，我们通过截取class，并能知道传入的对象是什么类型:                   
+形如"[object class]"的字符串，通过截取class，并能知道传入的对象是什么类型:                   
 
 ```
 function isClass(o){
     if(o===null) return "Null";
     if(o===undefined) return "Undefined";
-    return Object.prototype.toString.call(o).slice(8,-1);
+    return Object.prototype.toString.call(o).slice(8,-1).toLowerCase();         
 }
 ```   
 
@@ -1053,45 +1110,11 @@ MYAPP.version = 1.0;
 MYAPP.foo = function () {
     return 'foo';
 };
-```     
-
-局部作用域：由于JavaScript的变量作用域实际上是函数内部，我们在for循环等语句块中是无法定义具有局部作用域的变量的：  
-
-```
-function foo() {
-    for (var i=0; i<100; i++) {
-            //
-        }
-    i += 100; // 仍然可以引用变量i
-}
-```    
-
-为了解决块级作用域，**ES6**引入了新的关键字let，用let替代var可以申明一个块级作用域的变量：    
-
-```
-function foo() {
-    var sum = 0;
-        for (let i=0; i<100; i++) {
-            sum += i;
-         }
-    // SyntaxError:
-    i += 1;
-}
-```     
-常量：   
-
-如果要申明一个常量，通常用全部大写的变量来表示“这是一个常量，不要修改它的值”   
-**ES6**标准引入了新的关键字const来定义常量，const与let都具有块级作用域：   
-
-```
-const PI = 3.14;
-PI = 3; // 某些浏览器不报错，但是无效果！
-PI; // 3.14
-```    
+```      
 
 解构赋值：    
 
-从 **ES6** 开始，JavaScript引入了解构赋值，可以同时对一组变量进行赋值。  
+从 **ES6** 开始，JavaScript引入了解构赋值，可以同时对一组变量进行赋值。       
    
 ```
 var [x, y, z] = ['hello', 'JavaScript', 'ES6']; //相当于↓:     
@@ -1250,7 +1273,7 @@ xiaoming.age(); // 今年调用是28,明年调用就变成29了
 
 apply(),call(),bind():      
 
-以下代码this并不在函数作用域中查找name。a函数在全局上下文中执行，一次a内部的this指向全局对象：         
+以下代码this并不在函数作用域中查找name。a函数在全局上下文中执行，因此a内部的this指向全局对象：         
 
 ```
 var name = 'tiger';
@@ -1365,12 +1388,15 @@ filter()接收的回调函数，其实可以有多个参数。通常我们仅使
 
 ```
 var r,arr = ['apple', 'strawberry', 'banana', 'pear', 'apple', 'orange', 'orange', 'strawberry'];
-r = arr.filter(function (element, index, self) {
+r = arr.filter(function (element, index, self) { //参数位置不能错
     return self.indexOf(element) === index;
 });
 ```    
 
 <h3 id="13">闭包</h3>
+
+闭包就是能够读取其他函数内部变量的函数        
+只有函数内部的子函数才能读取局部变量，因此可以把闭包简单理解成"定义在一个函数内部的函数"。           
 
 函数作为返回值：         
 高阶函数除了可以接受函数作为参数外，还可以把函数作为结果值返回。     
@@ -1423,6 +1449,10 @@ var results = count();
 var f1 = results[0];
 var f2 = results[1];
 var f3 = results[2];
+
+f1(); // 16
+f2(); // 16
+f3(); // 16
 ```    
 
 返回闭包时要引用循环变量，或者后续会发生变化的变量:      
@@ -1459,6 +1489,9 @@ f3(); // 9
 })(3); // 9
 ```     
 
+闭包可以用在许多地方。它的最大用处有两个：       
+一个是前面提到的可以读取函数内部的变量，另一个就是让这些变量的值始终保持在内存中。         
+
 闭包使用场景：     
 可以封装一个私有变量:    
 
@@ -1486,7 +1519,8 @@ c2.inc(); // 13
 
 闭包使用场景：      
 [JavaScript闭包之Fibonacci数列](https://blog.csdn.net/u012058778/article/details/49851749)      
-计算斐波那契数列：    
+计算斐波那契数列指定项的值：
+*以下fib(10)是第十一项的值。fib(0)会引起递归无限循环。*             
 
 ```
 var fib = (function(){
@@ -1645,13 +1679,11 @@ obj.getAge(2018); // 28
 generator（生成器）是 **ES6** 标准引入的新的数据类型。一个generator看上去像一个函数，但可以返回多次：    
 generator和函数不同的是，generator由function*定义（注意多出的星号），并且，除了return语句，还可以用yield返回多次。    
 
-要编写一个产生斐波那契数列的函数，可以这么写：    
+计算斐波那契数列各项的值，可以这么写：    
 
 ```
 function fib(max) {
-    var
-        t,
-        a = 0,
+    var a = 0,
         b = 1,
         arr = [0, 1];
     while (arr.length < max) {
@@ -1669,11 +1701,9 @@ fib(10); // [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
 
 ```
 function* fib(max) {
-    var
-        t,
-        a = 0,
+    var a = 0,
         b = 1,
-        n = 0;
+        n = 0
     while (n < max) {
         yield a;
         [a, b] = [b, a + b];
@@ -1699,7 +1729,8 @@ f.next(); // {value: undefined, done: true}
 第二个方法是直接用for ... of循环迭代generator对象，这种方式不需要我们自己判断done：    
 
 ```
-for (var x of fib(10)) {
+var f = fib(10)
+for (var x of f) {
     console.log(x); // 依次输出0, 1, 1, 2, 3, ...
 }
 ```   
@@ -1851,7 +1882,7 @@ var s = new String('str'); // 'str',生成了新的包装类型
 不要使用new Number()、new Boolean()、new String()创建包装对象；  
 
 用parseInt()或parseFloat()来转换任意类型到number；   
-*ES6将parseInt()和parseFloat()移植到了number上*    
+**ES6**将parseInt()和parseFloat()移植到了number上    
 
 用String()来转换任意类型到string，或者直接调用某个对象的toString()方法；   
 
@@ -2463,7 +2494,7 @@ class Student {
 }
 ```    
 
-class的定义包含了构造函数constructor和定义在原型对象上的函数hello()     
+class的定义包含了构造函数constructor(实例不共享的)和定义在原型对象上的函数(实例共享的)hello()     
 这样就避免了Student.prototype.hello = function () {...}这样分散的代码。   
 
 最后，创建一个Student对象代码和前面章节完全一样：    
@@ -2555,7 +2586,6 @@ var calculateBouns = function(level,salary) {
 console.log(calculateBouns('A',10000)); // 40000
 ```   
 
-策略模式指的是定义一系列的算法，并且把它们封装起来。    
 策略模式不仅仅只封装算法，还可以用来封装一系列的业务规则，只要这些业务规则目标一致，我们就可以使用策略模式来封装它们     
 
 策略模式表单效验：    
@@ -6208,7 +6238,95 @@ module_speical.b2();
 ```
 
 这种方法避免了命名冲突，又使得私有变量_index不能被外部访问和修改。      
-如果不使用一些模块化框架，只用jq或zepto类库完成开发，匿名函数实现模块化是常用方式。            
+如果不使用一些模块化框架，只用jq或zepto类库完成开发，匿名函数实现模块化是常用方式。               
+
+```
+var util = (function(){
+	var io = function(arr){
+		var ret = [];
+		for(var i = 0;i<arr.length;i++){
+			if(ret.indexOf(arr[i])<0){
+				ret.push(arr[i])
+			}			
+		}
+		return ret
+	};
+	var fi = function(arr){
+		var ret = [];
+		ret = arr.filter(function(element,index,self){
+			return self.indexOf(element) === index;
+		})
+		return ret
+	};
+	var sp = function(arr){
+		for(var i=0;i<arr.length;i++){
+			for(var j = i+1;j<arr.length;j++){
+				if(arr[i] == arr[j]){
+					arr.splice(j,1);
+					j--
+				}
+			}
+		}
+		return arr
+	};
+	var se = function(arr){
+		return Array.from(new Set(arr))
+	};
+	var fib = (function(){
+		var arr = [0,1,1];
+		return function(n){
+			var res = arr[n];
+			if(res){
+				return res
+			}else{
+				arr[n] = fib(n-1) + fib(n-2);
+				return arr[n];
+			}
+		}
+	})();
+	var fib2 = function fib(max) {
+	    var a = 0,
+	        b = 1,
+	        arr = [0, 1];
+	    while (arr.length < max) {
+	        [a, b] = [b, a + b];
+	        arr.push(b);
+	    }
+	    return arr;
+	};
+	var fib3 = function* fib(max) {
+	    var a = 0,
+	        b = 1,
+	        n = 0
+	    while (n < max) {
+	        yield a;
+	        [a, b] = [b, a + b];
+	        n ++;
+	    }
+	    return;
+	};
+	return {
+		//数组去重
+		io:io,
+		fi:fi,
+		sp:sp,
+		se:se,
+		//斐波那契
+		fib:fib,
+		fib2:fib2,
+		fib3:fib3
+	}
+})()
+
+util.fi([1,1,1,1,1,2,3,4,5,6,7,3,4,5,])
+util.fib2(10)
+
+util.fib3(10)
+var f = util.fib3(10)
+for (var x of f) {
+    console.log(x);
+}
+```
 
 <h3 id="59">CommonJS/AMD/CMD</h3>  
 
