@@ -1,5 +1,7 @@
 # 移动端知识点   
 
+Web APP：                              
+
 移动端常用技术：    
 css3图片帧动画，[拍照](https://www.cnblogs.com/apanly/p/5731086.html)，[地理定位](https://www.cnblogs.com/moyuling/p/8965192.html)，手势识别，音频支持，[重力感应](https://blog.csdn.net/tangxiujiang/article/details/78080090)，canvas图形，多屏互动，vr虚拟实现技术3d全景绑定陀螺仪。    
             
@@ -404,4 +406,34 @@ iphone5,5s在safari上，当前页后边有全屏视频，即使不显示，位�
 解决：用到timeupdate(当播放位置改变时触发)，currentTime(当前位置)，当有了currentTime>0时，就说明播放过了，然后暂停，等再次被play()    
 安卓下不能同时存在两个初始化视频，没有用户主动触发行为，第二个视频play()是无效的。但在视频已经播放过的情况下，是可以play()操作的。   
 如果一个video标签，可以通过动态改变src方法，改变src后的play()是可以播放的。    
-    
+
+Hybrid APP：                  
+
+一切使用web技术开发原生移动应用的场景都可以视为混合式开发          
+
+原先混合开发在理念上保持使用html，css，js的体系结构在WebView中执行的概念，但现阶段，web前端技术开始深入地融入原生应用的开发体系。              
+
+混合式开发种类：        
+
+WebView模式：        
+代表是PhoneGap和Cordova，App原生部分仅仅作为一个容器，主要业务代码通过html，css，js放置在WebView中执行。           
+*对于web前端开发人员，[Cordova](https://cordova.apache.org/)开发主要需要关注插件API的使用和相关事件的监听[Cordova入门](https://blog.csdn.net/csdn100861/article/details/78585333)*              
+
+javaScriptCore模式：              
+通过js调用原生代码渲染原生控件的混合式开发。               
+javaScriptCore框架原来只提供在WebView的webkit内核中，在ios7中开放了这一功能，之后在Android中也提供了类似功能，从而催生出了React Native这        
+样使用js作为bridge操作原生代码来构建应用的方案。构建出的整个应用可以被理解为原生应用。            
+
+微信小程序：       
+本质仍使用WebView方案，但独立设计了一套语法对应传统的html，css，js。限制了一些可能导致问题的语法。               
+依赖应用的内部设计，并非一个通用的解决方案。           
+
+Flutter：         
+除了以上方案，谷歌退出了Flutter混合跨平台开发方案，通过Dart语言直接控制完成实现了整个UI层。              
+
+混合式开发的优势：       
+跨平台       
+快速发布       
+功能提升            
+
+
