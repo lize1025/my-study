@@ -227,12 +227,46 @@ ul li.item 2个元素选择器，1个类选择器，权重0,0,1,2
 
 *css浏览器默认属性要大于继承属性*     
 
-<h3 id="4">Flex弹性盒布局</h3>      
+<h3 id="4">Flex弹性盒布局</h3>       
+
+[Flex 布局教程：语法篇](http://www.ruanyifeng.com/blog/2015/07/flex-grammar.html)          
+[Flex 布局教程：实例篇](http://www.ruanyifeng.com/blog/2015/07/flex-examples.html)            
+[Flex 布局最简单表单](http://www.ruanyifeng.com/blog/2018/10/flexbox-form.html)              
+
+任何一个容器都可以指定为 Flex 布局:        
+
+`.box{display: flex;}`         
+
+行内元素也可以使用 Flex 布局:         
+
+`.box{display: inline-flex;}`          
+
+设为 Flex 布局以后，子元素的float、clear和vertical-align属性将失效。         
+
+采用 Flex 布局的元素，称为 Flex 容器（flex container），简称"容器"。它的所有子元素自动成为容器成员，称为 Flex 项目（flex item），简称"项目"。     
+
+容器的属性:       
+
+flex-direction 决定主轴的方向            
+flex-wrap 定义，如果一条轴线排不下，如何换行。默认不换行         
+flex-flow 是flex-direction属性和flex-wrap属性的简写形式            
+justify-content 定义了项目在主轴上的对齐方式(类似水平对其方式)                          
+align-items 定义项目在交叉轴上如何对齐(类似垂直对齐方式)                  
+align-content 定义了多根轴线的对齐方式(类似多行垂直对其方式)               
+
+项目的属性：           
+
+order 定义项目的排列顺序。数值越小，排列越靠前，默认为0            
+flex-grow 定义项目的放大比例，默认为0(分配剩余空间)                         
+flex-shrink 定义了项目的缩小比例，默认为1           
+flex-basis 定义了在分配多余空间之前，项目占据的主轴空间            
+flex 是flex-grow, flex-shrink 和 flex-basis的简写，默认值为0 1 auto              
+align-self 许单个项目有与其他项目不一样的对齐方式，可覆盖align-items属性            
+    
+<h3 id="5">垂直水平居中方法</h3>        
 
 flex等宽垂直水平居中布局：       
-[Flex 布局语法教程](https://www.runoob.com/w3cnote/flex-grammar.html)     
-*注意，设为Flex布局以后，子元素的float、clear和vertical-align属性将失效。*
-
+     
 ```
 .box{
 	display:flex;
@@ -252,8 +286,6 @@ h1{
     <h1>flex弹性布局</h1>
 </div>
 ```    
-    
-<h3 id="5">垂直水平居中方法</h3>        
 
 position定宽高垂直水平居中：   
    
@@ -932,7 +964,7 @@ RGB:rgb(255,255,255) = rgb(100%,100%,100%) = #ffffff = #fff
 
 RGBA:色彩模式与RGB相同，新增Alpha透明度:      
 *ie6-8不支持rgba，需要通过滤镜实现*       
-`color:rgb(0,0,0,0.5) /*黑色字体，百分之50不透明度*/`          
+`color:rgba(0,0,0,0.5) /*黑色字体，百分之50不透明度*/`          
 
 HSL:H为色调，取值0-360， S饱和度,L亮度，0.0%-100%，：      
 `color:hsl(360,50%,50%)`     
