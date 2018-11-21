@@ -1213,30 +1213,9 @@ console.log("Server running at http://127.0.0.1:8080/");
 <h3 id="15">WebSocket协议</h3>          
 
 基于TCP连接进行全双工通信。允许数据在两个方向上同时传输。可以用于开发即时聊天，互动游戏，股票信息等应用。     
-[WebSocket 详解教程](https://www.cnblogs.com/jingmoxukong/p/7755643.html)
-
-WebSocket 客户端:    
-WebSocket 对象作为一个构造函数，用于新建 WebSocket 实例：    
-
-`var ws = new WebSocket('ws://localhost:8080');`    
-
-提供多种事件用于监听数据传输：     
-
-```
-ws.onopen = function(evt) { 
-  console.log("Connection open ..."); 
-  ws.send("Hello WebSockets!");
-};
-
-ws.onmessage = function(evt) {
-  console.log( "Received Message: " + evt.data);
-  ws.close();
-};
-
-ws.onclose = function(evt) {
-  console.log("Connection closed.");
-};      
-```
+[WebSocket 详解教程](https://www.cnblogs.com/jingmoxukong/p/7755643.html)              
+             
+[理解WebSocket和TCP/IP](https://github.com/zyf711/my-study/blob/master/js-course.md#47)         
 
 <h3 id="16">WebRTC实时通讯</h3>          
 
@@ -1433,6 +1412,8 @@ redText.on("dragover", function(event){
 ```
 
 <h3 id="19">Web Workers</h3>     
+
+[js与多线程](https://github.com/zyf711/my-study/blob/master/js-course.md#50)           
 
 赋予js多线程运行的能力，可以将耗时的操作放在Web Workers线程里运行，防止页面出现假死。     
 根据输入的值，计算对应的位置在斐波那契数列中的值，index.html:      

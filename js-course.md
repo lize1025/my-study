@@ -504,7 +504,7 @@ arr.slice(0, 3); // ['A', 'B', 'C']
 arr.slice(3); // ['D', 'E', 'F', 'G']
 ```  
 
-如果不给slice()传递任何参数，它就会从头到尾截取所有元素。利用这一点，我们可以很容易地复制一个Array：   
+如果不给slice()传递任何参数，它就会从头到尾截取所有元素。利用这一点，我们可以很容易地复制数组：                  
 
 ```
 var arr = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
@@ -590,8 +590,8 @@ function uniqueArray(arr){
 uniqueArray([1,2,2,3,3,3,3,1,2,3,5,4,2])
 ```
     
-concat()方法把当前的Array和另一个Array连接起来，并返回一个新的Array：    
-*concat()也可用于合并字符串,返回合并后的结果。*       
+concat()方法把当前的Array和另一个Array连接起来，并返回一个新的Array，参数空也可以复制数组：    
+*concat()也可用于合并字符串,返回合并后的结果。*           
 
 ```
 var arr = ['A', 'B', 'C'];
@@ -786,6 +786,7 @@ for (;;) { // 将无限循环下去
 ```  
   
 省略一个条件：   
+*for循环继续执行的条件，是;;之间的这个判断要为真。所以前边要有分号*                
 
 ```
 var i = 0;
@@ -3874,6 +3875,23 @@ XMLHttpRequest(XHR)和Fetch是浏览器的原生API
 [fetch相关介绍1](https://segmentfault.com/a/1190000011433064)           
 [fetch相关介绍2](https://www.jianshu.com/p/35123b048e5e)              
 
+```
+// 通过fetch获取百度的错误提示页面
+fetch('https://www.baidu.com/search/error.html', {
+    method: 'POST',
+    headers: new Headers({
+      'Content-Type': 'application/x-www-form-urlencoded' // 指定提交方式为表单提交
+    }),
+    body: new URLSearchParams([["foo", 1],["bar", 2]]).toString()
+  })
+  .then((res)=>{
+    return res.text()
+  })
+  .then((res)=>{
+    console.log(res)
+  })
+```
+
 <h3 id="28">Canvas</h3>    
 
 Canvas是HTML5新增的组件，它就像一块幕布，可以用JavaScript在上面绘制各种图表、动画等：    
@@ -3905,7 +3923,7 @@ window.onload = function(){
     c.height = 200
 
     cxt1.fillStyle = "#ff0000";
-    cxt1.fillRect(0,0,150,75); //上面的 fillRect方法拥有参数 (0,0,150,75)。意思是：在画布上绘制 150x75 的矩形，从左上角(0,0)开始
+    cxt1.fillRect(0,0,150,75); //在画布上绘制 150x75 的矩形，从左上角(0,0)开始
 
     cxt1.moveTo(10,18);
     cxt1.lineTo(150,50);
@@ -3916,7 +3934,7 @@ window.onload = function(){
 
     cxt1.fillStyle = "#000";
     cxt1.beginPath();
-    cxt1.arc(70,16,15,0,Math.PI*2,true); //arc() 方法创建弧/曲线（用于创建圆或部分圆） 圆中心坐标是前两个参数，这里是70,16 圆大小是第三个参数，这里是15
+    cxt1.arc(70,16,15,0,Math.PI*2,true); //创建弧/曲线（用于创建圆或部分圆） 圆中心坐标是前两个参数70,16 圆大小是第三个参数15
     cxt1.closePath();
     cxt1.fill(); // 填充背景颜色，如果换成stroke() 就是没背景颜色的圆,渐变一般用stroke()
 
@@ -3936,7 +3954,9 @@ window.onload = function(){
         gradient2.addColorStop("1.0","red");
         cxt1.strokeStyle = gradient2;
         cxt1.lineWidth = 5;
-        cxt1.strokeRect(100,80,80,16); //strokeRect(x, y, width, height) 按照指定的位置和大小绘制一个矩形的边框（但并不填充矩形的内部）线条颜色和线条宽度由 strokeStyle 和     lineWidth 属性指定。
+        cxt1.strokeRect(100,80,80,16); 
+        //strokeRect(x, y, width, height) 
+        //按照指定的位置和大小绘制一个矩形的边框（但并不填充矩形的内部）线条颜色和线条宽度由 strokeStyle 和lineWidth 属性指定。
 
     var gradient3 = cxt1.createLinearGradient(0,0,175,50);
         gradient3.addColorStop(0,"#ff0000");
@@ -4304,7 +4324,7 @@ function hasCla(ele,cN1,cN2){
   
 <h3 id="36">DOM编程</h3> 
 
-DOM文档对象模型。用于操作XML和HTML文档的程序接口，浏览器中，主要用来与html文档打交道，在浏览器中用js实现的。   
+DOM文档对象模型。用于操作XML和HTML文档的程序接口，浏览器中，主要用来与html文档打交道，在浏览器中用js实现。       
 
 减少访问DOM的次数，把运算尽量留给ECMAscript   
 
@@ -4328,7 +4348,8 @@ innerHTML对比DOM方法
 节点克隆：克隆已有节点，用element.clone()代替document.createElement()      
 先创建需要重复的元素，重复的在用clone()，这样做运行结果会稍微快一点。      
 
-HTML集合：包含了DOM节点引用的类数组对象。底层文档对象更新时，他也会自动更新。     
+HTML集合：包含了DOM节点引用的类数组对象。底层文档对象更新时，他也会自动更新。      
+*[NodeList是节点的集合，HTMLCollection是元素节点的集合，NamedNodeMap是特性节点的集合，它们都是类数组对象](https://www.cnblogs.com/xiaohuochai/p/5827389.html)*           
 
 ```
 document.getElementsByName()
@@ -4387,7 +4408,8 @@ ele.className = 'active';
 ```
 
 批量修改DOM：    
-*[cloneNode()](http://www.w3school.com.cn/tiy/t.asp?f=jsref_node_clonenode)方法克隆所有属性以及它们的值*            
+*[cloneNode()](http://www.w3school.com.cn/tiy/t.asp?f=jsref_node_clonenode)方法克隆所有属性以及它们的值。*            
+*[replaceChild](http://www.runoob.com/jsref/met-node-replacechild.html)方法可将某个子节点替换为另一个。*            
 
 ```
 <ul id="mylist"></ul>
@@ -4444,9 +4466,7 @@ document.getElementById('mylist').appendChild(fragment);
   
 for循环 while do-while
 
-优化循环，减少对象成员及数组成员以及数组项的查找次数     
-
-for循环继续执行的条件，是;;之间的这个判断要为真      
+优化循环，减少对象成员及数组成员以及数组项的查找次数       
 
 ```
 for( var i=0,len=items.length;i<len;i++ ){...}
@@ -4509,14 +4529,15 @@ switch( value ){
 递归：   
 
 ```
-var factorial = (function f(num){
-if(num<=1){
-return 1;
-}else{
-return num*arguments.callee(num-1);
-}
+var factorial = (function(num){
+	if( num <= 1){ 
+		return 1
+	}else{
+		return num * arguments.callee( num - 1 ) 
+	}
 })(4)
-alert(factorial)//24 (4*3*2*1)    
+
+alert(factorial)
 ```   
 
 递归遇到调用栈大小限制,调用栈错误。   
@@ -4656,7 +4677,7 @@ for循环时间过长，主要原因里边执行代码复杂，或者数组太�
 为避免锁定浏览器给用户带来的糟糕体验，可以使用定时器处理数组:    
 
 ```
-var todo = items.concat() //克隆数组items
+var todo = items.concat() //复制数组items
 setTimeout(function(){
     process( todo.shift() );
     if( todo.length ){
@@ -4671,7 +4692,21 @@ setTimeout(function(){
 
 <h3 id="39">编程实践</h3>   
   
-setTimeout(),setInterval()第一个参数传函数，不要传字符串。    
+setTimeout(),setInterval()第一个参数传函数，不要传字符串。     
+
+作为第一个参数的函数将会在全局作用域中执行，因此函数内的 this 将会指向这个全局对象：       
+
+```
+function Foo() {
+    this.value = 42;
+    this.method = function() {
+        // this 指向全局对象
+        console.log(this.value); // 输出：undefined
+    };
+    setTimeout(this.method, 500);
+}
+new Foo();
+```             
 
 使用object，array直接量：    
 
@@ -4732,9 +4767,9 @@ var removeHandler = document.body.addEventListener ?
 ```
 for( var i=0,len=div.length;i<len;i++ ){
     if( i%2 ){ //注意索引0开始
-        div[i].className = 'even'
+        div[i].className = 'even' //偶数
     }else{
-        div[i].className = 'odd'
+        div[i].className = 'odd' //奇数
     }
 }	
 ```   
@@ -4777,8 +4812,11 @@ Math.random() 方法可返回介于 0 ~ 1 之间的一个随机数。
 ```   
 
 生成n到m的随机数      
+
 `Math.random()*(m-n)+n | 0`       
+
 要想到m就是     
+
 `Math.random()*(m-n+1)+n | 0`      
    
 <h3 id="40">构建并部署高性能js应用</h3>   
@@ -5331,9 +5369,14 @@ var abc = str.charAt( str.length-1 ) == ';'//要快于正则
 js与html之间交互便是通过事件实现的     
 
 DOM0级事件处理程序    
-传统方式，比如`btn.onclick=function(){}`                   
-取消btn的onclick事件：`abc.onclick = null`    
+传统方式:      
 
+`btn.onclick=function(){}`                    
+
+取消btn的onclick事件：       
+
+`abc.onclick = null`        
+ 
 ```
 <input type="text" onclick="showValue()">
 function showValue(){alert(this.value)} 
@@ -5346,8 +5389,8 @@ function showValue(obj){alert(obj.value)}
 
 ```
 //只会弹出world
-document.querySelector('#div1).onclick = function(ev){alert('hello')}
-document.querySelector('#div1).onclick = function(ev){alert('world')}
+document.querySelector('#div1').onclick = function(ev){alert('hello')}
+document.querySelector('#div1').onclick = function(ev){alert('world')}
 ```
    
 DOM2级事件处理程序    
@@ -5378,7 +5421,7 @@ obj.bind()
 ```   
    
 事件捕获：     
-一个事件发生后，从window出发，不断经过下级节点直到目标节点，之间过程就是捕获阶段，而所经过的节点都会触发对应事件。      
+一个事件发生后，从window出发，不断经过下级节点直到目标节点，之间过程就是捕获阶段，所经过的节点都会触发对应事件。      
 *IE不支持捕获，但对于委托而言，冒泡已经足够了。*
 window--document--body--div    
 
@@ -5641,8 +5684,7 @@ window系统刷新率，60HZ就是帧率fps，即一秒钟60帧。一秒钟的�
 减少渲染堵塞：   
 
 避免head标签js堵塞：所有放在head标签的css和js都会堵塞渲染。可以给script加defer属性。但只是异步加载，      
-执行还是会在readystatechange变为Interactive后按顺序依次执行。另外，dafer在老浏览器ie6-9上表现行为不一致，有兼容问题。     
-所以一般把js放在body后面就行了。    
+执行还是会在readystatechange变为Interactive后按顺序依次执行。另外，defer在老浏览器ie6-9上表现行为不一致，有兼容问题,所以一般把js放在body后面就行了。         
     
 减少head标签里的css资源：      
 不要放太多的base64在css里：例如一张3k的图片转成base64体积变成了4k。    
@@ -5660,7 +5702,7 @@ window系统刷新率，60HZ就是帧率fps，即一秒钟60帧。一秒钟的�
 ```   
    
 把css写成内联的：    
-如果css只有10k或者20k。写成内联也未尝不可。谷歌搜索和淘宝PC版就是这么干的。      
+如果css只有10k或者20k。写成内联也未尝不可。谷歌搜索和[淘宝PC版](https://www.taobao.com/)就是这么干的。      
 这样虽然对缓存不利，但对首次加载有很大作用。因为如果把css放到CDN上，为了得到这个css，首先需要域名解析，然后建立http/https连接，其次才是下载。            
 做这些的时候可能早已把html中的css下载完了。究竟哪个更好，可以在Chrome控制台查看。具体问题具体分析。             
 
@@ -5748,6 +5790,8 @@ DNS预读取：
 可以用DNS预读取技术，加快打开速度，方法是在head标签里写几个link：     
 
 ```
+<meta http-equiv="x-dns-prefetch-control" content="off">
+
 <link rel="dns-prefecth" href="https://www.google.com">
 <link rel="dns-prefecth" href="https://connect.facebook.net">
 <link rel="dns-prefecth" href="https://staticxx.facebook.com">
@@ -6186,8 +6230,42 @@ worker.onmessage = function(event){
 var num = 1000;
 worker.postMessage(num);
 ```
+
+有时，浏览器需要轮询服务器状态，以便第一时间得知状态改变。这个工作可以放在 Worker 里面：            
+
+```
+function createWorker(f) {
+  var blob = new Blob(['(' + f.toString() +')()']);
+  var url = window.URL.createObjectURL(blob);
+  var worker = new Worker(url);
+  return worker;
+}
+
+var pollingWorker = createWorker(function (e) {
+  var cache;
+
+  function compare(new, old) { ... };
+
+  setInterval(function () {
+    fetch('/my-api-endpoint').then(function (res) {
+      var data = res.json();
+
+      if (!compare(data, cache)) {
+        cache = data;
+        self.postMessage(data);
+      }
+    })
+  }, 1000)
+});
+
+pollingWorker.onmessage = function () {
+  // render data
+}
+
+pollingWorker.postMessage('init');
+```
    
-js的多线程是真的多线程，一口气创建500个线程，操作系统会一下子多出500个线程。js的多线程是调用系统API创建的多线程。     
+js的多线程是真的多线程，一口气创建500个线程，操作系统会一下子多出500个线程。js的多线程是调用系统API创建的。     
 js的多线程无法操作DOM，没有window对象，每个线程的数据都是独立的。     
 js单线程里边的特例，如异步回调，是chrome自己的io线程处理的，每发一个请求必须要有一个线程跟着，限制了同一个域最多同时发6个请求。     
 
@@ -6543,6 +6621,25 @@ import someName from './export-default'
 someName()
 ```
 
+export 与 import 的复合写法:     
+
+如果在一个模块之中，先输入后输出同一个模块，import语句可以与export语句写在一起:      
+
+```
+export { foo, bar } from 'my_module';
+
+// 可以简单理解为
+import { foo, bar } from 'my_module';
+export { foo, bar };
+```
+
+上面代码中，export和import语句可以结合在一起，写成一行。       
+但需要注意的是，写成一行以后，foo和bar实际上并没有被导入当前模块，只是相当于对外转发了这两个接口，导致当前模块不能直接使用foo和bar。       
+
+默认接口的写法如下:        
+
+`export { default } from 'foo';`            
+
 <h2 id="61">Babel</h2>          
 
 **ES6**转码器，转为ES5在浏览器或其他环境执行。      
@@ -6596,7 +6693,7 @@ babel支持npm包形式安装：
 ```
 
 Babel只转换语法(如箭头函数)，可以使用 babel-polyfill 支持新的API,      
-例如 Promise,generator,set,maps,proxy等全局对象，和定义在全局对象上的新的原生方法如Array.from,Object.assign等。      
+例如 Promise,generator,set,map,proxy等全局对象，和定义在全局对象上的新的原生方法如Array.from,Object.assign等。      
 
 `npm install --save-dev babel-polyfill`      
 
@@ -7074,7 +7171,7 @@ css sprites:
      
 [showdown类库](https://github.com/showdownjs/showdown)：开源的Markdown解析器，用于将Markdown解析为html。      
 
-存储部分通过html5的indexedDB进行保存：     
+存储部分通过html5的[indexedDB](http://www.ruanyifeng.com/blog/2018/07/indexeddb.html)进行保存：     
 
 ```
 
@@ -7420,7 +7517,7 @@ webpack-quick里创建webpack.config.js文件并初始化设置：
 var config = {}
 module.exports = config 
 
-//支持es6后可以：
+//支持es6后,配置package.js后可以：
 //const config = {}
 //export default config
 ```
@@ -7485,8 +7582,13 @@ webpack 4 引入了 production(生产) 和 development(开发) 模式：
 }
 ```   
 
-`npm run dev` //生成没压缩的开发版           
-`npm run build` //生成压缩的生产版,默认是生产版      
+生成没压缩的开发版：               
+
+`npm run dev`        
+
+生成压缩的生产版,默认是生产版     
+
+`npm run build`               
 
 production mode(生产模式) 可以开箱即用地进行各种优化。 包括压缩，作用域提升，tree-shaking 等。      
 development mode(开发模式)针对速度进行了优化，仅仅提供了一种不压缩的 bundle 。      
@@ -7520,7 +7622,8 @@ color:#f50;
 
 将散落在各地的css提取出来，生成main.css文件，在index.html文件link加载：       
 
-mini-css-extract-plugin      
+`mini-css-extract-plugin`          
+      
 *注意：确保将 webpack 更新到 4.2.0 版。 否则 mini-css-extract-plugin 将无效*      
 *在过去，这是 extract-text-webpack-plugin 的工作。*：      
 
