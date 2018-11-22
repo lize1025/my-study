@@ -760,12 +760,101 @@ var obj = {a:1,b:2}
 var newObj = Object.assign({}, obj); 
 ```
 
+以上将原始对象复制到一个空对象，得到了原始对象克隆。          
+不过只能克隆原始对象自身值，要想同时克隆它继承的值，需要保持继承链：           
+
+```
+var obj = {a:1}
+var pro = Object.getPrototypeOf(obj)
+var newObj = Object.assign(Object.create(pro),obj)
+```
+
 JSON对象序列化方法克隆对象：          
 *这个方法明显是简单得多，但是有个弊端，就是不能复制函数*            
 
 ```
 var obj = {a:1,b:2}  
 var newObj = JSON.parse(JSON.stringify(obj)); 
+```
+      
+Object.assign        
+            
+用于将源对象的所有可枚举属性复制到目标对象，第一个参数是目标对象，后边参数是源对象。          
+如果目标对象与源对象有同名属性，或多个源对象有同名属性，后面属性会覆盖前面的属性。          
+            
+```
+var obj = {a:1}
+var newObj = Object.assign({},obj)
+newObj.b = 2
+obj //{a:1}
+nweObj //{a:1,b:2}
+```
+
+如果参数不是对象，会先转成对象。undefined和null无法转成对象直接报错。      
+
+Object.assign是浅复制，如果源对象某个属性的值是对象，name目标对象复制得到的是这个对象的引用：          
+
+```
+var obj1 = {a:{b:1}}
+var obj2 = Object.assign({},obj1)
+
+obj.a.b = 2
+obj2.a.b //2
+```
+
+常见用途：       
+为对象添加属性：       
+
+```
+class Point {
+    constructor(x,y){
+        Objcet.assign(this,{x,y})
+    }
+}
+```
+
+为对象添加方法：          
+
+```
+Object.assign(SomeClass.prototype,{
+    someMethod(arg1,arg2){},
+    anotherMethod(){}
+})
+
+//等同于：
+someClass.prototype.someMethod = function(arg1,arg2){}
+someClass.prototype.anotherMethod = function(){}
+```
+
+为属性指定默认值：         
+
+```
+//DEFAULTS是默认值
+//opt用户提供参数
+//如有同名属性，opt覆盖DEFAULTS属性
+
+const DEFAULTS = {
+    logLevel : 0,
+    outputFormat : html
+}
+
+function pro(opt){
+    opt = Object.assign({},DEFAULTS,opt)
+    console.log(opt)
+}
+
+//由于存在深度复制问题，DEFAULTS和opt对象只能是简单值，不能指向另一个对象，否则导致DEFAULTS不起作用
+
+const DEFAULTS = {
+    url:{
+        host:'example.com',
+        port:8080
+    }
+}
+
+pro({url:{port:7070}}) 
+
+//结果url.host不存在了
 ```
 
 <h3 id="5">条件判断</h3>
@@ -2183,7 +2272,9 @@ js创建对象的时候，都有一个__proto__的内置对象，用于指向创
 zyf.__proto__ === Person.prototype //true
 Person.prototype.__proto__ === Object.prototype //true
 Object.prototype.__proto__ === null //true
-```   
+```     
+
+*__proto__并不是语言本身的特性，而是各大浏览器厂商具体实现时添加的私有属性，生产环境中，可以使用[Object.getPrototypeOf方法](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/keys)来获取实例对象的原型*                          
   
 原型对象prototype中都有个预定义的constructor属性，用来引用他的函数对象，这是循环引用    
 JavaScript对每个创建的对象都会设置一个原型，指向它的原型对象。     
@@ -2477,6 +2568,8 @@ class A {}
    
 <h3 id="21">class继承</h3>   
 
+[Class 的基本语法和Class的继承](http://es6.ruanyifeng.com/#docs/class)            
+
 新的关键字class从 **ES6** 开始正式被引入到JavaScript中。class的目的就是让定义类更简单:   
 
 ```
@@ -2489,6 +2582,7 @@ class Student {
         alert('Hello, ' + this.name + '!');
     }
     //定义一个静态方法，不需要实例化，直接用类调用
+    //静态方法可以被子类继承
     static sayhello(){
         alert('hello')
     }
@@ -2496,7 +2590,13 @@ class Student {
 ```    
 
 class的定义包含了构造函数constructor(实例不共享的)和定义在原型对象上的函数(实例共享的)hello()     
-这样就避免了Student.prototype.hello = function () {...}这样分散的代码。   
+这样就避免了Student.prototype.hello = function () {...}这样分散的代码。     
+
+```
+Student.hasOwnProperty('name') //true
+Student.hasOwnProperty('hello') //fasle
+Student.hasOwnProperty('sayhello') //true
+```
 
 最后，创建一个Student对象代码和前面章节完全一样：    
 
@@ -2506,6 +2606,13 @@ xiaoming.hello();
 
 Student.sayhello(); //直接调用静态方法
 ```    
+
+class不存在变量提升：            
+
+```
+new Foo(); //ReferenceError
+class Foo{}
+```
 
 用class定义对象的另一个巨大的好处是继承更方便了,简化原型链代码。       
    
@@ -2531,7 +2638,157 @@ s.myGrade() //调用PrimaryStudent类的属性
 
 *注意: PrimaryStudent的定义也是class关键字实现的，而extends则表示原型链对象来自Student。   
 PrimaryStudent需要通过super(name)来调用父类的构造函数，否则父类的name属性无法正常初始化。   
-PrimaryStudent已经自动获得了父类Student的hello方法，我们又在子类中定义了新的myGrade方法*    
+PrimaryStudent已经自动获得了父类Student的hello方法，我们又在子类中定义了新的myGrade方法*        
+
+super关键字即可当函数又可当对象使用：       
+
+super作为函数使用，**ES6**规定子类的构造函数必须执行一次super函数：          
+
+```
+class A{}
+class B extends A{
+    constructor(){
+        super()
+    }
+}
+```
+
+super作为对象使用，在普通方法中指向父类的原型对象，在静态方法中指向父类：       
+
+```
+class A {
+    p(){
+        return 2
+    }
+}
+
+class B extends A{
+    constructor(){
+        super()
+        console.log(super.p())
+    }
+    invok(){
+        console.log(super.p())
+    }
+}
+
+let b = new B() //2
+b.invok() //2
+```
+
+class的prototype属性和__proto__属性：       
+
+大多数浏览器的 ES5 实现之中，每一个对象都有__proto__属性，指向对应的构造函数的prototype属性。       
+
+Class 作为构造函数的语法糖，同时有prototype属性和__proto__属性，因此同时存在两条继承链：             
+子类的__proto__属性，表示构造函数的继承，总是指向父类。        
+子类prototype属性的__proto__属性，表示方法的继承，总是指向父类的prototype属性。              
+
+```
+class A {
+}
+
+class B extends A {
+}
+
+B.__proto__ === A // true
+B.prototype.__proto__ === A.prototype // true
+```
+
+原生构造函数的继承:          
+
+原生构造函数是指语言内置的构造函数，通常用来生成数据结构。大致有：                        
+   
+Boolean()               
+Number()             
+String()            
+Array()                
+Date()                
+Function()            
+RegExp()              
+Error()            
+Object()           
+
+ES5 是先新建子类的实例对象this，再将父类的属性添加到子类上，由于父类的内部属性无法获取，导致无法继承原生的构造函数。            
+**ES6** 允许继承原生构造函数定义子类，**ES6** 是先新建父类的实例对象this，然后再用子类的构造函数修饰this，使得父类的所有行为都可以继承。                
+
+extends关键字不仅可以用来继承类，还可以用来继承原生的构造函数：           
+
+```
+class VersionedArray extends Array {
+  constructor() {
+    super();
+    this.history = [[]];
+  }
+  commit() {
+    this.history.push(this.slice());
+  }
+  revert() {
+    this.splice(0, this.length, ...this.history[this.history.length - 1]);
+  }
+}
+
+var x = new VersionedArray();
+
+x.push(1);
+x.push(2);
+x // [1, 2]
+x.history // [[]]
+
+x.commit();
+x.history // [[], [1, 2]]
+
+x.push(3);
+x // [1, 2, 3]
+x.history // [[], [1, 2]]
+
+x.revert();
+x // [1, 2]
+```
+
+上面代码中，VersionedArray会通过commit方法，将自己的当前状态生成一个版本快照，存入history属性。                
+revert方法用来将数组重置为最新一次保存的版本。除此之外，VersionedArray依然是一个普通数组，所有原生的数组方法都可以在它上面调用。                
+
+class表达式：       
+
+与函数一样，类也可以使用表达式的形式定义：            
+
+```
+const MyClass = class Me {
+  getClassName() {
+    return Me.name;
+  }
+};
+```
+
+上面代码使用表达式定义了一个类。需要注意的是，这个类的名字是MyClass而不是Me，Me只在 Class 的内部代码可用，指代当前类           
+*name属性总是返回紧跟在class关键字后面的类名*              
+
+```
+let inst = new MyClass();
+inst.getClassName() // Me
+Me.name // ReferenceError: Me is not defined
+```
+
+如果类的内部没用到的话，可以省略Me，也就是可以写成下面的形式:             
+
+`const MyClass = class { /* ... */ };`         
+
+采用 Class 表达式，可以写出立即执行的 Class:              
+
+```
+let person = new class {
+  constructor(name) {
+    this.name = name;
+  }
+
+  sayName() {
+    console.log(this.name);
+  }
+}('张三');
+
+person.sayName(); // "张三"
+```
 
 <h3 id="43">设计模式</h3>     
 
