@@ -48,7 +48,8 @@ label里for，关联到input里的id即可一同选中。
       
 tabindex规定tab键控制次序 几乎所有浏览器均支持 tabindex 属性，除了 Safari。   
     
-readonly="flase" 在input中加上这句，就可以变成只读，能保留现有value，并且不能往里输入。    
+readonly="readonly"，能保留现有value，但不能往里输入。值可以通过form传递出去。           
+Readonly只针对input(text / password)和textarea                  
     
 [jade](https://segmentfault.com/a/1190000000357534):源于Node.js的HTML 模板引擎       
     
@@ -206,11 +207,13 @@ input中autocomplete 属性
 autocomplete="off" 规定输入字段不启用自动完成功能     
 适用于 form，以及下面的 input 类型：text, search, url, telephone, email, password, datepickers, range 以及 color。  
 
-required:input元素为必填      
+required:input元素为必填        
+
 `<input type="text" placeholder="此项必填" required>`    
 
-autofocus:页面加载时，自动聚焦。
-`<input type="text" name="fname" autofocus="autofocus" />`     
+autofocus:页面加载时，自动聚焦。            
+
+`<input type="text" name="fname" autofocus="autofocus" />`        
 
 form:将input元素和特定的form表单关联     
 
@@ -1735,18 +1738,18 @@ PS打开UI图，文件->导出->illustrator。 AI执行file->Scripts->SaveDocsAs
 ```
 /*html实体的方式*/
 @font-face {
-			font-family: 'icomoon';
-			src:  url('fonts/icomoon.eot?xmo1ez');
-			src:  url('fonts/icomoon.eot?xmo1ez#iefix') format('embedded-opentype'),
-			url('fonts/icomoon.ttf?xmo1ez') format('truetype'),
-			url('fonts/icomoon.woff?xmo1ez') format('woff'),
-			url('fonts/icomoon.svg?xmo1ez#icomoon') format('svg');
-		}
-		.icon-uniE900{
-			font-family: 'icomoon';
-			font-size:24px;
-			color:red;
-		}
+        font-family: 'icomoon';
+        src:  url('fonts/icomoon.eot?xmo1ez');
+        src:  url('fonts/icomoon.eot?xmo1ez#iefix') format('embedded-opentype'),
+        url('fonts/icomoon.ttf?xmo1ez') format('truetype'),
+        url('fonts/icomoon.woff?xmo1ez') format('woff'),
+        url('fonts/icomoon.svg?xmo1ez#icomoon') format('svg');
+    }
+    .icon-uniE900{
+        font-family: 'icomoon';
+        font-size:24px;
+        color:red;
+    }
 
 <span class="icon-uniE900">&#xe900</span>
 
@@ -1816,13 +1819,12 @@ img兼容性比embed稍差，缺点是由于是一个外链，没法用css控制
 
 ```
 <svg>
-    <symbol viewBow="0 0 101.5 57.9" id="active-triangle">
-		<path fill="#123456" d="M100.4.5L50.5 57.1 1.1.5h99.3z"/>
-	</symbol>
-    <symbol viewBow="0 0 101.5 57.9" id="logo">
-		<path fill="#123456" d="M100.4.5L50.5 57.1 1.1.5h99.3z"/>
-	</symbol>
-
+<symbol viewBow="0 0 101.5 57.9" id="active-triangle">
+    <path fill="#123456" d="M100.4.5L50.5 57.1 1.1.5h99.3z"/>
+</symbol>
+<symbol viewBow="0 0 101.5 57.9" id="logo">
+    <path fill="#123456" d="M100.4.5L50.5 57.1 1.1.5h99.3z"/>
+</symbol>
 </svg>
 ```
    
@@ -2135,7 +2137,7 @@ xhr.setRequestHeader('Content-Type','multipart/form-data; boundary='+boundary);
 并设置编码方式，然后拼表单格式的数据进行上传：     
 
 ```
-vardata=img.src;
+var data=img.src;
 data=data.replace('data:'+file.type+';base64,','');
 xhr.sendAsBinary([
     //name=data
