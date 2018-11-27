@@ -67,15 +67,16 @@
     * [13.2 CommonJS/AMD/CMD](#59)  
     * [13.3 ES6模块支持](#60)  
 * [14.Babel](#61)
-* [14.前端工程化](#62)
-    * [14.1 工程化必要性和发展史](#63)
-    * [14.2 Grunt开发简易相册](#64)
-    * [14.3 Gulp构建MarkDown编辑器](#65)
-    * [14.4 Webpack4+vue2](#66)
+* [15.前端工程化](#62)
+    * [15.1 工程化必要性和发展史](#63)
+    * [15.2 Grunt开发简易相册](#64)
+    * [15.3 Gulp构建MarkDown编辑器](#65)
+    * [15.4 Webpack4+vue2](#66)
+* [16.前后端接口联调](#67)
                                                                                                                                                
 
   
-<h2 id="1">快速入门</h2>          
+<h2 id="1">快速入门</h2>                
      
 <h3 id="new2">基本语法和数据类型</h3>                                                                                                                                                 
 typeof typeof 任何 返回string    
@@ -6166,7 +6167,8 @@ Http使用TCP作为它的支撑运输协议。HTTP客户机发起一个与服务
 
 Client向Server发送请求命令   
 
-一个HTTP请求报文由请求行（request line）、请求头部（header）、空行和请求数据4个部分组成：    
+一个HTTP请求报文由请求行（request line）、请求头部（header）、空行和请求数据4个部分组成：     
+*[HTTP请求行、请求头、请求体详解](https://blog.csdn.net/u010256388/article/details/68491509)*             
 请求行分为三个部分：请求方法、请求地址和协议版本     
 HTTP/1.1 定义的请求方法有8种：GET、POST、PUT、DELETE、PATCH、HEAD、OPTIONS、TRACE。     
 
@@ -6174,7 +6176,14 @@ HTTP/1.1 定义的请求方法有8种：GET、POST、PUT、DELETE、PATCH、HEAD
 
 协议版本的格式为：HTTP/主版本号.次版本号，有HTTP/1.0和HTTP/1.1和HTTP2.0    
   
-请求头部为请求报文添加了一些附加信息，由“名/值”对组成，每行一对，名和值之间使用冒号分隔。如：User-Agent 发送请求的应用程序名称        
+请求头部为请求报文添加了一些附加信息，由“名/值”对组成，每行一对，名和值之间使用冒号分隔。常见请求头：      
+
+Accept 可接受的响应内容类型（Content-Types） 如：Accept: text/plain               
+Accept-Charset 可接受的字符集 如：Accept-Charset: utf-8           
+Cookie 客户端的Cookie就是通过这个报文头属性传给服务端的 如：Cookie: $Version=1; Skin=new;                      
+Referer 表示这个请求是从哪个URL过来的 如：Referer: http://itbilu.com/nodejs                              
+Cache-Control 对缓存进行控制 如：Cache-Control: no-cache           
+
 
 请求数据，可选部分，比如GET请求就没有请求数据。      
 下面是一个POST方法的请求报文：    
@@ -6208,8 +6217,8 @@ HTTP响应报文主要由状态行、响应头部、空行以及响应数据组�
 1开头：信息类，表示收到web浏览器请求，正在进一步处理    
 2开头：（请求成功）表示成功处理了请求的状态代码。        
 3开头 （请求被重定向）表示要完成请求，需要进一步操作         
-4开头 （请求错误）这些状态代码表示请求可能出错，妨碍了服务器的处理           
-5开头（服务器错误）这些状态代码表示服务器在尝试处理请求时发生内部错误。 这些错误可能是服务器本身的错误，而不是请求出错。           
+4开头 处理发生错误，责任在客户端，如客户端的请求一个不存在的资源，客户端未被授权，禁止访问等。              
+5开头 处理发生错误，责任在服务端，如服务端抛出异常，路由出错，HTTP版本不支持等。                     
 
 例：访问[http://www.baidu.com](http://www.baidu.com),自动转到https    
 后端做的重定向，通常用Nginx的rewrite或者return规则，返回3开头的状态码让浏览器重定向，如307    
@@ -8635,5 +8644,119 @@ module.exports = merge(webpackBaseConfig,{
     "vue-router": "^3.0.1",
     "vuex": "^3.0.1"
   }
+}
+```
+
+<h2 id="16">前后端接口联调</h2>       
+
+[前后端联调实践总结](https://blog.csdn.net/a41202197514/article/details/76476071)           
+[前后端联调](https://www.cnblogs.com/frx666/p/6877578.html)           
+[公司项目里如何进行前后端接口联调](https://blog.csdn.net/qq_33814088/article/details/81632509)           
+
+前后端约定好接口，前端根据接口进行开发写Mock和测试，后端写单元测试与集成测试,两边都完成后，进行功能联调，解决问题，开发完成。             
+
+明确前后端的约定：         
+
+根据需求一起约定交互的内容               
+包括但不限于如下内容：                          
+接口名称、请求路径、请求方式                        
+返回字段结构、对应字段名和字段类型以及字段边界值                  
+异常情况数据约定                    
+一份逼真的样例数据              
+前端可以根据这个数据造出各种数据                  
+
+后端对约定的履行：                
+根据约定实现相应的需求                
+使用Postman 进行接口测试              
+使用浏览器进行接口jsonp功能测试             
+
+前端对约定的履行：                        
+根据约定实现相应的需求                   
+Mock数据：                             
+使用FEKit Mock数据                 
+[Vue:使用webpack搭建MOCK服务器](https://www.jianshu.com/p/287c202240d5)                   
+[vue+vuecli+webpack中使用mockjs模拟后端数据](https://segmentfault.com/a/1190000011696879)          
+[gulp构建之mock data](https://segmentfault.com/a/1190000002668509)                
+使用YKit Mock数据                
+使用Charles/Fiddler 代理接口响应                
+任意其他Mock，代理，转发工具获取Mock数据                   
+通过变换Mock数据，进行功能测试               
+
+真正的联调：                 
+前端完成自测              
+后端完成自测             
+一起验证需求的实现             
+
+联调必备技能：               
+
+DNS与HOSTS              
+DNS（Domain Name System）的认识                  
+DNS提供将域名解析为IP             
+域名只是便于记忆，真正起作用的还是IP             
+GFW作用，HOST翻墙                  
+域名解析顺序                  
+浏览器缓存>浏览器代理>HOST文件>系统DNS缓存                
+本地DNS服务器>上级DNS>…>顶级DNS              
+
+实现前后端接口联调:               
+
+前后端完全分离，前后端分别拥有自己的域名和服务器:       
+
+前端服务器域名为“chping.website”，后端服务器域名为”chping.site”。         
+css、js和图片等静态文件:      
+静态文件的请求路径建议使用我们前端服务器的绝对路径,如:http://chping.website/css/reset.css        
+
+host解决在开发阶段，我们的服务器上还没有自己的静态文件却能显示正常。      
+在hosts文件中添加下面这一条：      
+127.0.0.1chping.website       
+
+ajax后端数据：      
+ajax中的请求写绝对路径（如：http://chping.site/userlist ，获取用户列表）        
+此时后端接口如果没有开发好，通过hosts文件的修改可以实现 chping.site 域名映射到本地来             
+
+一台服务器一个域名：            
+
+css、js和图片等静态文件：        
+如果采用相对项目根路径的书写方式来写静态文件路径，要先和后端商量好，把前端整个项目放在根目录下。             
+
+ajax后端数据：            
+可以写绝对路径（域名+请求路径），利用host文件来改变域名映射实现联调。          
+
+调试阶段：        
+
+前后端分别拥有自己的域名和服务器:          
+
+启动你本地的项目       
+将 chping.website 域名通过HostAdmin设置为:                         
+ 127.0.0.1 chping.website             
+\# 202.201.112.232 chping.website //假设202.201.112.232是线上服务器的ip             
+打开浏览器，并清除一下浏览器缓存，重新打开你们开发的网站。        
+此时网站是获取到的静态资源就是从你本地获取的了，但是ajax获取的数据确实后端返回的真是数据。            
+修改bug，这时候线上的版本可以实时查看修改的前端内容，修改完bug，QA说了OK，就可以把修改的文件替换掉服务器上的版本就行了            
+
+一台服务器一个域名:     
+
+在本地修改，本地查看，测试好了以后上传到服务器，看看线上环境可不可以，OK当然好；不行就本地接着改，然后在上传。          
+
+解决跨域：     
+
+本地前端开发环境dev地址大多是 localhost:8080      
+而后台服务器的访问地址就有很多种情况了，比如 后端程序猿本地IP（127.0.0.1:8889），或者外网域名，        
+当前端与后台进行数据交互时，自然就出现跨域问题（后台服务没做处理情况下）。       
+axios不支持jsonp, 所以我们就要使用http-proxy-middleware中间件做代理         
+
+现在通过在前端修改 vue-cli 的配置可解决： vue-cli中的 config/index.js 下配置 dev选项的 {proxyTable}:       
+
+```
+proxyTable: {
+
+'/api': {
+
+target: '127.0.0.1:8889', // 真实请求的地址
+
+changeOrigin: true, // 是否跨域
+
+}
+
 }
 ```
