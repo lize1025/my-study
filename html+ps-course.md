@@ -8,18 +8,19 @@
     * [2.4 调用摄像头拍照](#6)
     * [2.5 手机摇一摇](#7)
     * [2.6 离线和存储--随手记](#8)
-    * [2.7 LocalStorage与SessionStorage](#9)
-    * [2.8 IndexedDB实现便签管理](#10)
-    * [2.9 Canvas、SVG、WebGL](#11)
-    * [2.10 PostMessage](#12)
-    * [2.11 XMLHttpRequest Level 2](#13)
-    * [2.12 Server Sent Event](#14)
-    * [2.13 WebSocket协议](#15)
-    * [2.14 WebRTC实时通讯](#16)
-    * [2.15 History与单页应用](#17)
-    * [2.16 Drag和Drop](#18)
-    * [2.17 Web Workers](#19)
-    * [2.18 Performance AIP 分析网站性能](#20)
+    * [2.7 cookie](#28)
+    * [2.8 LocalStorage与SessionStorage](#9)
+    * [2.9 IndexedDB实现便签管理](#10)
+    * [2.10 Canvas、SVG、WebGL](#11)
+    * [2.11 PostMessage](#12)
+    * [2.12 XMLHttpRequest Level 2](#13)
+    * [2.13 Server Sent Event](#14)
+    * [2.14 WebSocket协议](#15)
+    * [2.15 WebRTC实时通讯](#16)
+    * [2.16 History与单页应用](#17)
+    * [2.17 Drag和Drop](#18)
+    * [2.18 Web Workers](#19)
+    * [2.19 Performance AIP 分析网站性能](#20)
 * [3. html5优化实践](#21)  
     * [3.1 使用history改善AJAX列表请求体验](#22)
     * [3.2 使用图标字体iconfont代替雪碧图](#23)  
@@ -46,7 +47,7 @@ form里`action="http://baidu.com/s"`然后input里name="wd"，这样submit提交
    
 label里for，关联到input里的id即可一同选中。       
       
-tabindex规定tab键控制次序 几乎所有浏览器均支持 tabindex 属性，除了 Safari。   
+tabindex规定tab键控制次序 几乎所有浏览器均支持 tabindex 属性。      
     
 readonly="readonly"，能保留现有value，但不能往里输入。值可以通过form传递出去。           
 Readonly只针对input(text / password)和textarea                  
@@ -57,8 +58,7 @@ a里放span，然后span里再放a。就会出问题。可用控制台看。
    
 html里边如果想直接打空格叫网页显示空格。那么：空格要输入法的全角空格才管用    
     
-<fieldset\>将表单内的相关元素分组。   
-<fieldset\> 标签将表单内容的一部分打包，生成一组相关表单的字段。   
+<fieldset\>将表单内的相关元素分组。将表单内容的一部分打包，生成一组相关表单的字段。      
 <legend\> 标签为 fieldset 元素定义标题。   
 
 ```
@@ -71,7 +71,15 @@ html里边如果想直接打空格叫网页显示空格。那么：空格要输�
 </fieldset>
 ```   
 
-ie8+ <video\>有poster属性可以带有预览图。   
+ie8+ <video\>有poster属性可以带有预览图。     
+
+```
+<video width="320" height="240" poster="/i/w3school_logo_black.gif" controls>
+   <source src="/i/movie.mp4" type="video/mp4">
+   <source src="/i/movie.ogg" type="video/ogg">
+   Your browser does not support the video tag.
+</video>
+```
    
 HTML插入FLASH的全兼容解决方案：   
    
@@ -132,7 +140,9 @@ html5 DOCTYPE及字符编码更简单了。
 ```   
 
 html5可省略引号或者用单引号。省略结束标签，如每段都没结束p标签。     
-布尔值不写就是true。如`<input type="checkbox" name="" id="" checked>` html4就要`checked="checked"`       
+布尔值不写就是true。如:      
+
+`<input type="checkbox" name="" id="" checked>`          
 
 <h3 id="3">新元素</h3>      
 
@@ -180,27 +190,33 @@ input元素的type属性扩充：
 
 search:呈现一个搜索框    
 
-tel：输入电话号码，可用pattern和maxlength限定输入格式：      
-`<input type="tel" name="tel" value="" placeholder="请输入手机号码" pattern="1[3-8][0-9]{9}" title="请输入11位手机号">`     
+tel：输入电话号码，可用pattern和maxlength限定输入格式：        
+
+`<input type="tel" name="tel" value="" placeholder="请输入手机号码" pattern="1[3-8][0-9]{9}" title="请输入11位手机号">`        
 
 url:输入URL地址    
 
 email：输入邮件地址    
 
-date：输入日期     
-`<input type="date">`    
+date：输入日期      
 
-color:输入颜色     
+`<input type="date">`     
+
+color:输入颜色        
+
 `<input type="color">`      
 
-number:输入数字     
+number:输入数字      
+
+`<input type="number" name="points" min="1" max="10" />`            
 
 range：滑块输入      
-`<input type=range min=20 max=100 step=2>`     
+
+`<input type=range min=20 max=100 step=2>`         
 
 input元素属性：     
 
-placeholder="默认内容" 属性提供可描述输入字段预期值的提示信息   
+placeholder="默认内容" 属性提供可描述输入字段预期值的提示信息       
 适用于以下的 <input\> 类型：text, search, url, telephone, email 以及 password。      
 
 input中autocomplete 属性           
@@ -213,7 +229,7 @@ required:input元素为必填
 
 autofocus:页面加载时，自动聚焦。            
 
-`<input type="text" name="fname" autofocus="autofocus" />`        
+`<input type="text" name="fname" autofocus />`        
 
 form:将input元素和特定的form表单关联     
 
@@ -235,13 +251,16 @@ datalist标签定义选项列表:
 </datalist>
 ```   
 
-progress元素表示进度条：    
+progress元素表示进度条：      
+
 `<progress value="30" max="100"></progress>`    
 
-meter元素表示标尺：    
+meter元素表示标尺：     
+
 `<meter value="3" min="0" max="10">3/10</meter>`     
 
-contenteditable属性：让普通元素可编辑      
+contenteditable属性：让普通元素可编辑        
+
 `<p contenteditable="true">这里的内容是可以编辑的</p>`     
 
 使用音频：    
@@ -560,6 +579,77 @@ self.addEventListener('install', function (evt) {
         })
     );
 });
+```
+
+<h3 id="28">cookie</h3>
+
+数据存储：            
+cookie，LocalStorage，SessionStorage，indexedDB。               
+cookie大小受限，当前域所有http请求都携带数据             
+LocalStorage一直存在本地            
+SessionStorage存活在当前页面生命周期中            
+indexedDB事务型数据库，存储大量结构化数据          
+
+Cookie 是一些数据, 存储于你电脑上的文本文件中。           
+
+当web服务器向浏览器发送web页面时，在连接关闭后，服务端不会记录用户的信息。     
+
+Cookie的作用就是用于解决 "如何记录客户端的用户信息":             
+当用户访问 web 页面时，他的名字可以记录在 cookie 中。            
+在用户下一次访问该页面时，可以在 cookie 中读取用户访问记录。       
+
+cookie设置第一次打开会显示：        
+*需在服务器下查看*            
+
+```
+<div id="first" style="display:none;">第一次打开会显示</div>
+<script>
+	window.onload = function(){
+		var res = document.cookie.substring(5);
+		if(res!="zheng"){
+			var oDate = new Date()
+		    oDate.setDate(oDate.getDate() + 30)
+		    document.cookie = "name=zheng;expires="+oDate
+		    document.getElementById('first').style.display = 'block'
+		    }
+	}
+```
+
+写，读，删：        
+
+```
+//写cookies
+function setCookie(name,value){
+    var Days = 30; 
+    var exp = new Date(); 
+    exp.setTime(exp.getTime() + Days*24*60*60*1000);
+    document.cookie = name + "="+ escape (value) + ";expires=" + exp.toGMTString(); 
+}
+
+//读取cookies 
+function getCookie(name){
+    var arr,
+        reg = new RegExp("(^| )"+name+"=([^;]*)(;|$)");
+ 
+    if(arr=document.cookie.match(reg)){
+       return unescape(arr[2]);
+     } 
+    else{return null;} 
+} 
+
+//删除cookies 
+function delCookie(name) {
+    var exp = new Date(); 
+    exp.setTime(exp.getTime() - 1); 
+    var cval = getCookie(name); 
+    if(cval! = null){ 
+        document.cookie= name + "="+cval+";expires="+exp.toGMTString();
+        } 
+} 
+
+//使用示例 
+setCookie("name","hayden");
+alert(getCookie("name"));
 ```
 
 <h3 id="9">LocalStorage与SessionStorage</h3>          
@@ -953,7 +1043,7 @@ renderer.render( scene, camera );
 
 <h3 id="12">PostMessage</h3>          
 
-PostMessage()允许来自不同源的脚本采用异步方式进行有限的通信，可以实现跨文本档、多窗口、跨域消息传递。     
+PostMessage()允许来自不同源的脚本采用异步方式进行有限的通信，可以实现跨文本文档、多窗口、跨域消息传递。     
 
 post_page.html数据发送:     
 
@@ -1837,7 +1927,7 @@ img兼容性比embed稍差，缺点是由于是一个外链，没法用css控制
 ```   
 
 ie不支持外链，可以通过插件[SVG for Everybody](https://github.com/jonathantneal/svg4everybody)让ie支持。     
-highCharts和d3js也使用了SVG           
+[highCharts](https://github.com/highcharts/highcharts)和[d3](https://github.com/d3/d3)也使用了SVG           
      
 <h3 id="24">实现前端剪裁压缩图片</h3>          
    
@@ -1890,7 +1980,7 @@ handleDrop:function($container,file){
 
 ```
 readImgFile:function(file,$img,$container){
-    var reader = newFileReader(file);
+    var reader = new FileReader(file);
     //检验用户是否选则是图片文件
     if(file.type.split("/")[0]!=="image"){
         util.toast("You should choose an image file");
@@ -2382,6 +2472,7 @@ readBlob(this.response);
 
 它有一个slice的方法，可用于切割大文件   
 网盘的断点续传有一种方法是使用blob分隔文件大小：     
+[前端实现文件的断点续传](https://www.cnblogs.com/imwtr/p/5957391.html)             
 
 ```
 let fileReader = new FileReader(),
@@ -2394,7 +2485,7 @@ fileReader.onload = function(){
     xhr.open(),xhr.send(this.result);
     sendedBytes += ONE_MB;
     if(sendedBytes < file.size){
-        //fie的slice方法继承与blob
+        //file的slice方法继承与blob
         let blob = file.slice(sendedBytes,sendedBytes + ONE_MB);
         fileReader.readAsArrayBuffer(blob)
     }
