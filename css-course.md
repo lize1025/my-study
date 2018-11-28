@@ -243,6 +243,8 @@ ul li.item 2个元素选择器，1个类选择器，权重0,0,1,2
 
 设为 Flex 布局以后，子元素的float、clear和vertical-align属性将失效。         
 
+弹性布局默认不改变项目的宽度，但是它默认改变项目的高度。如果项目没有显式指定高度，就将占据容器的所有高度。           
+
 采用 Flex 布局的元素，称为 Flex 容器（flex container），简称"容器"。它的所有子元素自动成为容器成员，称为 Flex 项目（flex item），简称"项目"。     
 
 容器的属性:       
@@ -304,7 +306,8 @@ position定宽高垂直水平居中：
 <div class="box">内容在这里</div>
 ```     
 
-transform子元素不定高垂直水平居中：    
+transform子元素不定高垂直水平居中：     
+*兼容到ie9及以上*            
 
 ```
 .box {
@@ -325,6 +328,26 @@ flex父元素不定宽垂直水平居中：
 .container {  
 	height:200px;
 	display: flex;
+	border: 1px solid gray;
+}
+.box {
+	width: 60px;
+	height:60px;
+	background: gray;
+	margin:auto;
+}
+
+<div class="container">
+	<div class="box"></div>
+</div>
+```     
+
+grid父元素不定宽垂直水平居中：     
+
+```
+.container {  
+	height:200px;
+	display: grid;
 	border: 1px solid gray;
 }
 .box {
@@ -482,13 +505,13 @@ table{width: 100%;}
 
 <h3 id="7">媒体查询</h3>          
 
-支持css3媒体查询polyfill： respond.js mediaqueries.js       
+支持css3媒体查询polyfill： [respond.js](https://github.com/scottjehl/Respond) [mediaqueries.js](https://github.com/livingston/css3-mediaqueries-js)                   
 
 媒体查询定义在css中:    
 `@media(max-width:320px){}`          
 
 媒体查询定义在页面link中：      
-`<link rel="stylesheet" href="a.css" madei="(min-width="640")">`        
+`<link rel="stylesheet" href="a.css" media="(min-width="640")">`        
 
 媒体查询的条件是多个：    
 `@media(max-width:320px),handled{}`     
@@ -740,6 +763,7 @@ CSS3 @keyframes 规则:
 	50% { top:20px; }
 	100% { width:1000px; }
 }
+```
 
 帧动画：animation-timing-function规定动画曲线              
 作用于每两个关键帧之间，而不是整个动画                
@@ -769,19 +793,12 @@ steps(1,end)等同于step-end动画分成一步，动画执行时以结尾端点
 50%{background: yellow} 
 100% {background: blue} 
 } 
-```
-      
+```      
+
 step-start ： 黄色与蓝色相互切换              
 step-end ： 红色与黄色相互切换              
-2个参数都会选择性的跳过前后部分，start跳过0%，end跳过100%             
-
-<!-- 在页面加载后对img应用新的样式 -->
-<body onload="document.querySelector('.img').className+=' show'">
-
-<!-- 定义一张默认隐藏的图片 -->
-<img class="img" src="http://pic.qiantucdn.com/01/37/07/67bOOOPICff.jpg" />
-```
-
+2个参数都会选择性的跳过前后部分，start跳过0%，end跳过100%                      
+          
 *当css3的animation动画执行结束时，触发webkitAnimationEnd事件*      
 
 <h3 id="11">常用特性</h3>          
@@ -857,7 +874,7 @@ background-origin: padding-box|border-box|content-box;
 <div class="square-03">content-box</div>
 ```
 
-background-clip:       
+[background-clip](http://www.runoob.com/try/try.php?filename=trycss3_background-clip):       
 背景区域绘制剪裁background-clip:content-box padding-box border-box(默认)      
 规定背景的绘制区域：      
 
@@ -1142,6 +1159,40 @@ position:fixed;
 top:0;
 left:0;
 ```       
+
+position:sticky       
+
+[使用 position:sticky 实现粘性布局](https://www.cnblogs.com/coco1s/p/6402723.html)             
+
+结合了 position:relative 和 position:fixed 两种定位功能于一体的特殊定位          
+*须指定 top, right, bottom 或 left 四个阈值其中之一，才可使粘性定位生效。否则其行为与相对定位相同。*           
+
+运用 position:sticky 实现头部导航栏固定:       
+
+```
+*{margin: 0;padding: 0;}
+.container {
+    background: #eee;
+    width: 600px;
+    height: 1000px;
+    margin: 0 auto;
+}
+nav {
+    position: -webkit-sticky;
+    position: sticky;
+    top:0;
+	background: #999;
+}
+
+<div class="container">
+<nav>我是导航栏</nav>
+<div class="content">
+    <p>我是内容栏</p>
+    <p>我是内容栏</p>
+    <p>我是内容栏</p>
+</div>
+</div>
+```
 
 清除浮动方法：          
 
