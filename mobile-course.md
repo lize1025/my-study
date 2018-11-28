@@ -13,10 +13,15 @@ css3图片帧动画，[拍照](https://www.cnblogs.com/apanly/p/5731086.html)，
 
 [移动前端自适应适配方法总结](http://caibaojian.com/mobile-responsive.html)               
 
-所谓前端适配，就是为了让移动设计稿在大部分的移动设备上看起来有一致的展示效果，目前比较流行的方法有两种。          
-一种是强制meta viewport宽度为设计稿宽度。       
-一种是使用rem自适应布局的flexible.js。            
-各有利弊，使用第一种在某些浏览器的webview里面会出现兼容问题，而且对于1像素会无法渲染。而用rem的方案在背景和字体上也会有某些问题。              
+所谓前端适配，就是为了让移动设计稿在大部分的移动设备上看起来有一致的展示效果，目前比较流行的方法:          
+一种是强制meta viewport宽度为设计稿宽度。
+*在某些浏览器的webview里面会出现兼容问题，而且对于1像素会无法渲染。[再谈Retina下1px的解决方案](https://www.w3cplus.com/css/fix-1px-for-retina.html)*      
+
+一种是使用rem自适应布局的淘宝[flexible.js](https://www.jianshu.com/p/04efb4a1d2f8)。     
+*在背景和字体上也会有某些问题。*         
+
+一种是[使用vw来实现移动端的适配布局](https://www.w3cplus.com/css/vw-for-layout.html)            
+*[在Vue项目中使用vw实现移动端适配](https://www.w3cplus.com/mobile/vw-layout-in-vue.html)*               
                
 强制meta viewport的宽度为设计稿的宽度：           
 
@@ -242,6 +247,29 @@ audio,canvas,video,progress{display:inline-block;}
 合理使用RAF解决脚本引起的丢帧，支持中间状态监听，android4.3以下不兼容    
 requestAnimationFrame好处是js可以和css3动画同步发生，动画更流畅。       
 在浏览器标签页运行动画，如果标签页不可见，浏览器会暂停动画。减少cpu，内存压力，节省电池电量。      
+
+[requestAnimationFrame](https://www.cnblogs.com/xiaohuochai/p/5777186.html)制作简单进度条：          
+
+```
+<div id="myDiv" style="background-color: lightblue;width: 0;height: 20px;line-height: 20px;">0%</div>
+<button id="btn">run</button>
+<script>
+var timer;
+btn.onclick = function(){
+    myDiv.style.width = '0';
+    cancelAnimationFrame(timer);
+    timer = requestAnimationFrame(function fn(){
+        if(parseInt(myDiv.style.width) < 500){
+            myDiv.style.width = parseInt(myDiv.style.width) + 5 + 'px';
+            myDiv.innerHTML =     parseInt(myDiv.style.width)/5 + '%';
+            timer = requestAnimationFrame(fn);
+        }else{
+            cancelAnimationFrame(timer);
+        }    
+    });
+}
+</script>
+```
       
 GPU加速实际上是大幅减少了合成绘制时间，提高页面速度。        
 缺点：过多使用GPU层会带来性能开销。主要原因GPU加速利用了GPU层的缓存，一旦多了，就会引起别的性能问题。       
@@ -274,24 +302,33 @@ scale(1)-scale(1.1)
 <span id="3">移动端常见bug：</span>
             
 仿app头部底部固定设置position:fixed; android2.2以上实现。ios下，当小键盘激活时（比如有点击input），回传位置浮动问题   
-解决：中间部分外层加上`position:absolute;top:30px;bottom:38px;overflow:scroll;`    
-   
+解决：中间部分外层加上            
+
+`position:absolute;top:30px;bottom:38px;overflow:scroll;`      
+     
 页面高度渲染错误：         
 在各移动端浏览器中经常会出现页面高度100%的渲染错误，页面低端和系统自带的导航条重合了，高度的不正确我们需要重置修正它，重置掉：     
+
 `document.documentElement.style.height = window.innerHeight + 'px'`       
         
 叠加区高亮：     
-点击某区域出现黄色秒闪，部分机型系统默认样式，给该元素：        
+点击某区域出现黄色秒闪，部分机型系统默认样式，给该元素：         
+
 `-webkit-tap-highlight-color:rgba(0,0,0,0)`       
        
-屏蔽点击元素时出现的阴影：`-webkit-tap-highlight-color:rgba(255,255,255,0)`      
+屏蔽点击元素时出现的阴影：
 transparent的属性值在android下无效       
+
+`-webkit-tap-highlight-color:rgba(255,255,255,0)`      
       
-`-webkit-appearance:none;`可以同时屏蔽输入框怪异的内阴影。       
+同时屏蔽输入框怪异的内阴影:           
+
+`-webkit-appearance:none;`              
     
 事件无法触发：       
-部分android机微信里事件不触发，表单无法输入。         
-解决：`-webkit-transform-translate3d(0,0,0)`        
+部分android机微信里事件不触发，表单无法输入。解决：             
+
+`-webkit-transform-translate3d(0,0,0)`        
       
 :active效果不兼容:     
 android4以下，active效果不兼容，给touch绑个空方法即可      
@@ -301,7 +338,7 @@ var tar = docuemnt.getElementById('tar');
 tar.addEventListener('touchstart',function(){},false);
 ```   
    
-解绑函数写在事件处理中，导致小米手机微信崩溃：   
+解绑函数写在事件处理中，导致小米手机微信崩溃：       
 
 ```
 var act = function(){
@@ -429,7 +466,7 @@ javaScriptCore框架原来只提供在WebView的webkit内核中，在ios7中开�
 依赖应用的内部设计，并非一个通用的解决方案。           
 
 Flutter：         
-除了以上方案，谷歌退出了Flutter混合跨平台开发方案，通过Dart语言直接控制完成实现了整个UI层。              
+除了以上方案，谷歌推出了Flutter混合跨平台开发方案，通过Dart语言直接控制完成实现了整个UI层。              
 
 混合式开发的优势：       
 跨平台       
