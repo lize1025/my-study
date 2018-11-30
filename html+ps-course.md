@@ -19,7 +19,7 @@
     * [2.15 WebRTC实时通讯](#16)
     * [2.16 History与单页应用](#17)
     * [2.17 Drag和Drop](#18)
-    * [2.18 Web Workers](#19)
+    * [2.18 多线程与Web Workers](#19)
     * [2.19 Performance AIP 分析网站性能](#20)
 * [3. html5优化实践](#21)  
     * [3.1 使用history改善AJAX列表请求体验](#22)
@@ -1504,67 +1504,127 @@ redText.on("dragover", function(event){
 })
 ```
 
-<h3 id="19">Web Workers</h3>     
+<h3 id="19">多线程与Web Workers</h3>     
 
-[js与多线程](https://github.com/zyf711/my-study/blob/master/js-course.md#50)           
-
-赋予js多线程运行的能力，可以将耗时的操作放在Web Workers线程里运行，防止页面出现假死。     
-根据输入的值，计算对应的位置在斐波那契数列中的值，index.html:      
-
-```
-<div class="calc">
-    <input type="text" />
-    <input type="button" value="计算"／>
-  </div>
-  <div>
-    计算结果：
-    <div class="result"></div>
-  </div>
-
-  <script type="text/javascript" src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
-  <script type="text/javascript" src="/index.js"></script>
-```
-
-index.js:     
+html5引入了Web Worker，让js支持多线程。           
+Web Worker 是运行在后台的                          
+引入一个接口，能使代码运行且不占用浏览器UI线程的时间，也不影响其他worker中运行的代码。     
+*[Web Worker 使用教程，work轮询服务器状态，同页面worker等](http://www.ruanyifeng.com/blog/2018/07/web-worker.html)*            
+   
+Web Worker有着不同的全局运行环境，因此无法从js代码中创建它。需要创建一个完全独立的js文件：    
 
 ```
-var input = $("input[type='text']");
-var cal = $("input[type='button']");
-var result = $(".result");
+//a.js内容：
+var worker = new Worker('b.js');
+worker.onmessage = function(event){
+    alert(event.data);
+}
+worker.postMessage('zheng')
 
-// cal.on("click", function(){
-//   console.log("clicked");
-//   var initValue = input.val();
-//   var resultValue = fibonacci(initValue);
-//   result.text(result.text() + resultValue + " ");
-// })
+//b.js内容：
+self.onmessage = function(event){self.postMessage('hello ' + event.data + "!")}
 
-cal.on("click", function(){
-  var initValue = input.val();
-  var w = new Worker("./worker.js");
-  w.postMessage(initValue);
-  w.onmessage = function(event) {
-    result.html(result.html() + initValue + " => " + event.data + "<br/>");
-  }
-})
+//self指向全局worker对象
+//postMessage传递数据
+//onmessage接收信息 该事件event对象有一个data属性用于存放传入的数据
+```   
+  
+worker通过importScripts()加载外部js文件：importScripts('file1.js','file2.js')     
 
-// function fibonacci(n) {
-//   return n < 2 ? n : fibonacci(n - 1) + fibonacci(n - 2);
-// }
-```
+如需终止 Web Workers，并释放浏览器/计算机资源，使用 terminate() 方法   
 
-worker.js:     
+解析一个很大的json。假设数据量足够大。worker成为不错的解决方案。     
+
+
+做一个斐波那契计算。worker.js:      
 
 ```
-function fibonacci(n) {
-  return n < 2 ? n : fibonacci(n - 1) + fibonacci(n - 2);
+function fibonacci(num){
+    if(num <=0){ return 0;}
+    if(num === 1 || num === 2){ return 1;}
+    var fn = 1,
+        fn1 = 1,
+        fn2 = fn + fn1;
+    for(var i = 4;i <= num;i++){
+        fn = fn1;
+        fn1 = fn2;
+        fn2 = fn + fn1;
+    }
+    return fn2;
 }
 
-this.onmessage = function(event) {
-	var resultValue = fibonacci(event.data);
-	this.postMessage(resultValue);
+//message函数里边监听接收主线程的数据
+message = function(event){
+    //主线程的数据通过event.data传进来
+    var num = event.data;
+    var result = fibonacci(num);
+    //计算完结果，给主线程发消息
+    postMessage(result);
 }
 ```
+
+主线程先启动一个worker，把数据发给它。同时监听onmessage，取到子线程传回的结果。     
+main.js:      
+
+```
+var worker = new Worker(worker.js);
+worker.onmessage = function(event){
+    console.log(`recieve result: ${event.data}`);
+};
+var num = 1000;
+worker.postMessage(num);
+```
+
+有时，浏览器需要轮询服务器状态，以便第一时间得知状态改变。这个工作可以放在 Worker 里面：            
+
+```
+function createWorker(f) {
+  var blob = new Blob(['(' + f.toString() +')()']);
+  var url = window.URL.createObjectURL(blob);
+  var worker = new Worker(url);
+  return worker;
+}
+
+var pollingWorker = createWorker(function (e) {
+  var cache;
+
+  function compare(new, old) { ... };
+
+  setInterval(function () {
+    fetch('/my-api-endpoint').then(function (res) {
+      var data = res.json();
+
+      if (!compare(data, cache)) {
+        cache = data;
+        self.postMessage(data);
+      }
+    })
+  }, 1000)
+});
+
+pollingWorker.onmessage = function () {
+  // render data
+}
+
+pollingWorker.postMessage('init');
+```
+   
+js的多线程是真的多线程，一口气创建500个线程，操作系统会一下子多出500个线程。js的多线程是调用系统API创建的。     
+js的多线程无法操作DOM，没有window对象，每个线程的数据都是独立的。     
+js单线程里边的特例，如异步回调，是chrome自己的io线程处理的，每发一个请求必须要有一个线程跟着，限制了同一个域最多同时发6个请求。     
+
+chrome的多线程：     
+
+每开一个tab，就会创建一个进程，进程是线程的容器。如点击鼠标click事件：     
+用户单击鼠标，浏览器的ui线程收到之后，把消息数据封装成一个鼠标事件发送给io线程。     
+io线程再分配给具页面的渲染线程。其中io线程和ui线程是浏览器的线程，渲染线程是每个页面自己的线程。   
+
+如果执行一段耗时的js代码，渲染线程的render线程将会被堵塞，而main线程继续接收io线程发过来的消息并排队。等待render线程处理。     
+也就是说当页面卡住的时候不断单击鼠标，等页面空闲了，单击的事件会再继续触发。    
+
+Node.js的单线程模型：      
+
+Node.js也是单线程的，但是由于数据库连接本来就是多线程，调用操作系统的io文件读取也是多线程，所以node的异步是借助于数据库和io多线程。     
 
 <h3 id="20">Performance AIP 分析网站性能</h3>     
 
@@ -1601,16 +1661,9 @@ DOMContentLoadedEnd事件执行完毕后，触发domContentLoadedEventEnd时间�
 loadEventEnd时间点表示load事件上的脚本执行完毕。至此，整个页面加载的生命周期以及性能分析方式介绍完毕。      
 
 获取到所有依赖资源的加载性能：     
-`window.performance.getEntries()`
 
-
-
-
-
-
-
-
-
+`window.performance.getEntries()`                
+             
 <h2 id="21">html5优化实践</h2>      
    
 <h3 id="22">使用history改善AJAX列表请求体验</h3>        
