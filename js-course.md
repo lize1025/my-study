@@ -71,8 +71,7 @@
     * [15.3 Gulp构建MarkDown编辑器](#65)
     * [15.4 Webpack4+vue2](#66)
 * [16.前后端接口联调](#39)
-                                                                                                                                               
-
+* [17.node.js](#50)                                                                                                                                          
   
 <h2 id="1">快速入门</h2>                
      
@@ -4387,6 +4386,17 @@ window.onload = function(){
 [jquery官网](http://jquery.com/)                  
 [jquery中文文档](https://www.jquery123.com/)             
 
+从2.x版本开始已经不再进行IE低版本(IE6、IE7、IE8)的兼容性处理         
+
+```
+<!--[if lt IE 9]>
+        <script src="js/jquery-1.10.2.js"></script>
+<![endif]-->
+<!--[if gte IE 9]><!-->
+        <script src="js/jquery-3.3.1.js"></script>
+<!--<![endif]-->
+```
+
 $这个变量不幸地被占用了，而且还不能改，那我们就只能让jQuery把$变量交出来，然后就只能使用jQuery这个变量：    
 
 ```
@@ -8668,3 +8678,56 @@ changeOrigin: true, // 是否跨域
 
 }
 ```
+
+<h2 id="50">node.js</h2>             
+
+Node.js 是一个基于 Chrome V8 引擎的 JavaScript 运行环境。              
+Node.js 使用了一个事件驱动、非阻塞式 I/O 的模型，使其轻量又高效。           
+
+[Node.js 教程](http://www.runoob.com/nodejs/nodejs-tutorial.html),[Node.js官网](https://nodejs.org/en/)             
+
+使用Node创建Web服务器:              
+以下是演示一个最基本的 HTTP 服务器架构(使用 4412 端口)，创建 server.js 文件:                
+
+```
+// 引用http模块，用于创建web服务器
+var http = require('http');
+// 创建新服务器
+http.createServer(function(req, res){
+	// 设置可以跨域的域名
+	res.setHeader('Access-Control-Allow-Origin', '*');
+	// 服务器支持"GET POST"方法
+	res.setHeader('Access-Control-Allow-Methods', 'GET,POST');
+	// 设置接收数据编码格式为utf-8
+	req.setEncoding('utf8');
+	// 返回测试数据
+	res.end(JSON.stringify({data: 'Hello World!'}));
+}).listen(4412, function(){
+	console.log('listening on http://localhost:4412');
+});
+```
+
+运行`node server.js`开启服务器            
+
+http-server 是一个简单的零配置命令行HTTP服务器, 基于 nodeJs            
+如果不想重复的写 nodeJs 的 web-server.js, 则可以使用这个:         
+*[一个简单的零配置命令行HTTP服务器 - http-server](https://www.cnblogs.com/lucker/p/4108838.html)*                   
+
+`npm i http-server g`               
+
+Windows 下使用,在站点目录下开启命令行输入:       
+
+`http-server`            
+
+会提示访问地址：           
+
+```
+Starting up http-server, serving ./
+Available on:
+  http://192.168.10.122:8080
+  http://127.0.0.1:8080
+Hit CTRL-C to stop the server
+```
+            
+
+

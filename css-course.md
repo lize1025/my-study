@@ -250,11 +250,28 @@ ul li.item 2个元素选择器，1个类选择器，权重0,0,1,2
 容器的属性:       
 
 flex-direction 决定主轴的方向            
+
+`flex-direction: row | row-reverse | column | column-reverse;`         
+
 flex-wrap 定义，如果一条轴线排不下，如何换行。默认不换行         
-flex-flow 是flex-direction属性和flex-wrap属性的简写形式            
-justify-content 定义了项目在主轴上的对齐方式(类似水平对其方式)                          
-align-items 定义项目在交叉轴上如何对齐(类似垂直对齐方式)                  
-align-content 定义了多根轴线的对齐方式(类似多行垂直对其方式)               
+
+`flex-wrap: nowrap | wrap | wrap-reverse;`             
+
+flex-flow 是flex-direction属性和flex-wrap属性的简写形式         
+
+`flex-flow: <flex-direction> || <flex-wrap>;`             
+
+justify-content 定义了项目在主轴上的对齐方式(类似水平对其方式)               
+
+`justify-content: flex-start | flex-end | center | space-between | space-around;`         
+
+align-items 定义项目在交叉轴上如何对齐(类似垂直对齐方式)         
+
+`align-items: flex-start | flex-end | center | baseline | stretch;`            
+
+align-content 定义了多根轴线的对齐方式(类似多行垂直对其方式)              
+
+`align-content: flex-start | flex-end | center | space-between | space-around | stretch;`                
 
 项目的属性：           
 
@@ -263,7 +280,7 @@ flex-grow 定义项目的放大比例，默认为0(分配剩余空间)
 flex-shrink 定义了项目的缩小比例，默认为1           
 flex-basis 定义了在分配多余空间之前，项目占据的主轴空间            
 flex 是flex-grow, flex-shrink 和 flex-basis的简写，默认值为0 1 auto              
-align-self 许单个项目有与其他项目不一样的对齐方式，可覆盖align-items属性            
+align-self 允许单个项目有与其他项目不一样的对齐方式，可覆盖align-items属性            
     
 <h3 id="5">垂直水平居中方法</h3>        
 
@@ -289,7 +306,7 @@ h1{
 </div>
 ```    
 
-position定宽高垂直水平居中：   
+position，margin定宽高垂直水平居中：   
    
 ```
 .box {
@@ -306,7 +323,7 @@ position定宽高垂直水平居中：
 <div class="box">内容在这里</div>
 ```     
 
-transform子元素不定高垂直水平居中：     
+position,transform子元素不定高垂直水平居中：       
 *兼容到ie9及以上*            
 
 ```
