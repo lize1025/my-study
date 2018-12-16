@@ -225,8 +225,25 @@ ul li.item 2个元素选择器，1个类选择器，权重0,0,1,2
 
 浏览器解析选择器的时候按照从右到左的顺序进行，导致更多层级的选择器嵌套在查找时更费时，用更简短更容易被查找的选择器是一个好习惯。       
 
-*css浏览器默认属性要大于继承属性*     
+*css浏览器默认属性要大于继承属性*      
 
+使用link rel="shortcut icon"为网页标题加图标：         
+*[参考1](http://www.cnblogs.com/lxg0/p/7644737.html) [参考2](https://www.cnblogs.com/GoTing/p/7494307.html)*            
+
+如果不设置，可能会打开页面时提示404               
+
+```
+Failed to load resource: the server responded with a status of 404 (Not Found)
+:8080/favicon.ico:1 
+```      
+
+两种写法：            
+
+```
+<link rel="shortcut icon" href="图片地址" />
+<link rel="icon" href="图片地址" type="image/gif" />
+```            
+           
 <h3 id="4">Flex弹性盒布局</h3>       
 
 [Flex 布局教程：语法篇](http://www.ruanyifeng.com/blog/2015/07/flex-grammar.html)          
